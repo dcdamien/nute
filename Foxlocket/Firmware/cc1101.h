@@ -1,0 +1,111 @@
+/* 
+ * File:   cc2500.h
+ * Author: Laurelindo
+ *
+ * Created on 11 Декабрь 2009 г., 2:08
+ */
+
+#ifndef _CC1101_H
+#define	_CC1101_H
+
+#define CC_PRINT_DEBUG
+
+#include <inttypes.h>
+#include <avr/io.h>
+#include <avr/pgmspace.h>
+#include <stdbool.h>
+#include "cc1101defins.h"
+#include "cc_rf_settings.h"
+
+
+// ================================== Defins ===================================
+// Ports
+#define CC_DDR  DDRB
+#define CC_PORT PORTB
+#define CC_PIN  PINB
+
+#define CC_GDO0 PB2
+#define CC_GDO2 PB3
+#define CC_CS   PB4
+#define CC_MOSI PB5
+#define CC_MISO PB6
+#define CC_SCLK PB7
+
+// =========================== Pseudo functions ================================
+#define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
+#define CC_SCLK_LO  CC_PORT &= ~(1<<CC_SCLK)
+#define CC_MOSI_HI  CC_PORT |=  (1<<CC_MOSI)
+#define CC_MOSI_LO  CC_PORT &= ~(1<<CC_MOSI)
+#define CC_CS_HI    CC_PORT |=  (1<<CC_CS)
+#define CC_CS_LO    CC_PORT &= ~(1<<CC_CS)
+
+#define CC_MISO_IS_HI( )    bit_is_set(CC_PIN, CC_MISO)
+#define CC_GDO0_IS_HI( )    bit_is_set(CC_PIN, CC_GDO0)
+#define CC_GDO2_IS_HI( )    bit_is_set(CC_PIN, CC_GDO2)
+
+// =============================== Variables ===================================
+enum CC_State_t {CC_Idle, CC_TX, CC_RX};
+
+#define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-3
+struct CC_Packet_t{
+    uint8_t Address;
+    uint8_t PacketID;
+    uint8_t CommandID;
+    uint8_t Data[CC_PKT_DATA_LENGTH];
+    uint8_t RSSI;
+    uint8_t LQI;
+};
+typedef struct CC_Packet_t* CC_Packet_p;
+
+struct CC_t {
+    uint8_t Address;
+    CC_Packet_p PPacket;
+    uint8_t PctArray[sizeof(struct CC_Packet_t)];
+    uint16_t Timer;
+    enum CC_State_t State;
+    enum CC_State_t NeededState;
+    uint8_t Tag;
+};
+
+extern struct CC_t CC;
+
+
+// ================================ Prototypes =================================
+void CC_Task (void);
+void CC_Init(void);
+void CC_TransmitPacket(void);
+void CC_PreparePacket(void);
+
+// Middle level
+uint8_t CC_ReadRegister (uint8_t ARegAddr);
+void CC_WriteRegister (uint8_t ARegAddr, uint8_t AData);
+void CC_WriteStrobe (uint8_t AStrobe);
+
+#ifdef CC_PRINT_DEBUG
+void CC_PrintPacket(void);
+#endif
+
+// Inner use
+void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength);
+void CC_WriteBurst_P(uint8_t ARegAddr, prog_uint8_t *PData, uint8_t ALength);
+void CC_WriteTX (uint8_t *PData, uint8_t ALength);
+void CC_ReadRX  (uint8_t *PData, uint8_t ALength);
+void CC_RfConfig(void);
+
+// low-level
+uint8_t CC_ReadWriteByte(uint8_t AByte);
+#define CC_ReadByte( )      CC_ReadWriteByte(0)
+#define CC_WriteByte(AByte) CC_ReadWriteByte(AByte)
+
+// ========================== Hi-level pseudo functions ========================
+// Strobes
+#define CC_RESET( )         CC_WriteStrobe(CC_SRES)
+#define CC_ENTER_TX( )      CC_WriteStrobe(CC_STX)
+#define CC_ENTER_RX( )      CC_WriteStrobe(CC_SRX)
+#define CC_ENTER_IDLE( )    CC_WriteStrobe(CC_SIDLE)
+#define CC_CALIBRATE()      CC_WriteStrobe(CC_SCAL)
+#define CC_FLUSH_RX_FIFO()  CC_WriteStrobe(CC_SFRX)
+
+
+#endif	/* _CC1101_H */
+
