@@ -17,6 +17,8 @@
 #include "ledskeys.h"
 #include "time_utils.h"
 
+//проверка свн
+
 int main(void) {
     LEDKeyInit();
     _delay_ms(270);
