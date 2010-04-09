@@ -17,7 +17,7 @@
 #include "ledskeys.h"
 #include "time_utils.h"
 
-//проверка свн
+#include "random.h"
 
 int main(void) {
     LEDKeyInit();
@@ -28,6 +28,7 @@ int main(void) {
 
     TimerInit();
     CC_Init();
+    RandomStart();
 
     uint16_t MainTimer;
     TimerResetDelay(&MainTimer);
@@ -37,8 +38,16 @@ int main(void) {
     // Main cycle
     while (1){
         if (TimerDelayElapsed(&MainTimer, 500)){
-//            LED_TOGGLE();
-            uint8_t b=CC_ReadRegister(CC_MARCSTATE);
+/*
+            if (ERandom.IsReady){
+                UARTNewLine();
+                //UARTSendAsHex(ERandom.Random, true);
+                UARTSendAsHex(ADCL, true);
+                RandomStart();
+            }
+*/
+//            uint8_t b=CC_ReadRegister(CC_MARCSTATE);
+            uint8_t b=CC_ReadRegister(CC_RSSI);
             UARTSendUint(b);
             UARTNewLine();
 
@@ -50,16 +59,16 @@ int main(void) {
                 CC.State = CC_Idle;
             }
 
+            else CC.NeededState = CC_RX;
+        } // if delay
+
+        CC_Task();
 /*
             if (BTN1_IS_DOWN()){
                 CC_PreparePacket();
                 CC_TransmitPacket();
             }
 */
-            else CC.NeededState = CC_RX;
-        } // if delay
-
-        CC_Task();
 
     } // while 1
 }
