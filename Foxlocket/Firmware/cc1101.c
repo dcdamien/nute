@@ -71,6 +71,7 @@ void CC_Init(void){
     CC_RESET();
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
+    CC_WriteRegister(CC_ADDR, CC.Address);       // Device address.
 
     CC_GDO0_IRQ_ENABLE();
 }
@@ -190,7 +191,6 @@ void CC_RfConfig(void){
     CC_WriteRegister(CC_IOCFG0,   CC_IOCFG0_VALUE);     // GDO0 output pin configuration.
     CC_WriteRegister(CC_PKTCTRL1, CC_PKTCTRL1_VALUE);   // Packet automation control.
     CC_WriteRegister(CC_PKTCTRL0, CC_PKTCTRL0_VALUE);   // Packet automation control.
-    CC_WriteRegister(CC_ADDR,     CC_ADDR_VALUE);       // Device address.
     CC_WriteRegister(CC_PKTLEN,   CC_PKTLEN_VALUE);     // Packet length.
 
     CC_WriteRegister(CC_PATABLE, CC_PATABLE0_VALUE);
