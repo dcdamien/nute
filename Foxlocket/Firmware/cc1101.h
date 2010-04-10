@@ -14,11 +14,14 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <stdbool.h>
+#include <avr/interrupt.h>
 #include "cc1101defins.h"
 #include "cc_rf_settings.h"
 
 
 // ================================== Defins ===================================
+#define FORCE_INLINE inline __attribute__ ((__always_inline__))
+
 // Ports
 #define CC_DDR  DDRB
 #define CC_PORT PORTB
@@ -43,6 +46,9 @@
 #define CC_GDO0_IS_HI( )    bit_is_set(CC_PIN, CC_GDO0)
 #define CC_GDO2_IS_HI( )    bit_is_set(CC_PIN, CC_GDO2)
 
+#define CC_GDO0_IRQ_ENABLE( )   GICR |= (1<<INT2)
+#define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
+
 // =============================== Variables ===================================
 enum CC_State_t {CC_Idle, CC_TX, CC_RX};
 
@@ -64,7 +70,7 @@ struct CC_t {
     uint16_t Timer;
     enum CC_State_t State;
     enum CC_State_t NeededState;
-    uint8_t Tag;
+    bool NewPacketReceived;
 };
 
 extern struct CC_t CC;

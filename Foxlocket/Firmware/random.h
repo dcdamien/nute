@@ -22,7 +22,10 @@ struct Random_t{
 
 extern struct Random_t ERandom;
 
+// =============================== Prototypes ==================================
 void RandomStart(void);
+void RandomAdd(uint8_t AData);
+
 
 #endif	/* _RANDOM_H */
 
