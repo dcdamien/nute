@@ -19,18 +19,14 @@
 #include "time_utils.h"
 
 //#define DEBUG_TRANSMITTER   // Just transmit packets in time
-
-#ifdef DEBUG_TRANSMITTER
 #define TRANSMIT_ENABLE
-#else
-//#define TRANSMIT_ENABLE
-#endif
+
 
 struct {
     uint8_t Arr[30];
     uint8_t Counter;
 } RcvdAddreses;
-//volatile
+volatile bool TransmitEnable;
 
 int main(void) {
     LEDKeyInit();
@@ -45,6 +41,7 @@ int main(void) {
 
     TimerInit();
     CC_Init();
+    TransmitEnable = false;
 
     // Setup Timer1
     TCNT1 = 0;
@@ -80,9 +77,8 @@ int main(void) {
                     // Modify our address if needed
                     if (AlienAddr == CC.Address) {
                         TIMER_ADJUST(AlienAddr);    // Setup our timer as alien address is lower
+                        TransmitEnable = false;     // Next time just listen - if there is somebody else
                         CC.Address++;
-                        UARTSendString_P(PSTR("\rNew addr: "));
-                        UARTSendAsHex(CC.Address, true);
                         eeprom_write_byte(0, CC.Address);
                     }
                     else {
@@ -108,7 +104,7 @@ int main(void) {
             CC.NewPacketReceived = false;
             UARTSendString_P(PSTR("*\r"));
             //CC_PrintPacket();
-        }
+        } // if (CC.NewPacketReceived)
     } // while 1
 }
 
@@ -116,15 +112,16 @@ int main(void) {
 ISR(TIMER1_COMPA_vect){
     PORTA |= (1<<PA0);
     #ifdef TRANSMIT_ENABLE
-    // Prepare CALL packet
+    if (TransmitEnable){
+        // Prepare CALL packet
+        CC.PPacket->Address = 0;    // Recipient address
+        CC.PPacket->PacketID = 0;   // Current packet ID, to avoid repeative treatment
+        CC.PPacket->CommandID = 0xCA;
+        CC.PPacket->Data[0] = 0x11;
+        CC.PPacket->Data[1] = CC.Address;
 
-    CC.PPacket->Address = 0;    // Recipient address
-    CC.PPacket->PacketID = 0;   // Current packet ID, to avoid repeative treatment
-    CC.PPacket->CommandID = 0xCA;
-    CC.PPacket->Data[0] = 0x11;
-    CC.PPacket->Data[1] = CC.Address;
-
-    CC_TransmitPacket();
+        CC_TransmitPacket();
+    }
     #else
     _delay_ms(1);
     #endif
@@ -133,6 +130,7 @@ ISR(TIMER1_COMPA_vect){
 
 ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
     #ifndef DEBUG_TRANSMITTER
+    TransmitEnable = true;  // May transmit next time
     if (RcvdAddreses.Counter > 0) LED_GREEN_ON();
     else LED_GREEN_OFF();
     // Clear recieved addresses
