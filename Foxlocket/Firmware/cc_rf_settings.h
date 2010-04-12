@@ -35,7 +35,9 @@
 #define CC_MCSM2_VALUE      0b00000111
 #define CC_MCSM0_VALUE      0x18        // Calibrate at IDLE->RX,TX
 //#define CC_MCSM1_VALUE      0b00001100  // Channel is always clear, RX->RX, TX->IDLE
-#define CC_MCSM1_VALUE      0b00001111  // Channel is always clear, RX->RX, TX->RX
+//#define CC_MCSM1_VALUE      0b00001111  // Channel is always clear, RX->RX, TX->RX
+//#define CC_MCSM1_VALUE      0b00000000  // Channel is always clear, RX->IDLE, TX->IDLE
+#define CC_MCSM1_VALUE      0b00000011  // Channel is always clear, RX->IDLE, TX->RX
 
 #define CC_FOCCFG_VALUE     0x1D        // Frequency Offset Compensation Configuration - RF studio
 #define CC_BSCFG_VALUE      0x1C        // Bit synchronization Configuration - RF studio
