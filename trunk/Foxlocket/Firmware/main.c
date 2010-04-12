@@ -10,7 +10,7 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 #include <inttypes.h>
-#include <avr/eeprom.h>
+//#include <avr/eeprom.h>
 
 #include "main.h"
 #include "uart_unit.h"
@@ -36,8 +36,9 @@ int main(void) {
     UARTSendString_P(PSTR("Foxlocket started\r"));
 
     // Get self address
-    CC.Address = eeprom_read_byte(0);
-    if (CC.Address == 0xFF) CC.Address = 0x01;
+    //CC.Address = eeprom_read_byte(0);
+    //if (CC.Address == 0xFF) CC.Address = 0x01;
+    CC.Address = 1;
 
     TimerInit();
     CC_Init();
@@ -60,26 +61,40 @@ int main(void) {
     while(1);
     #endif
 
-//    uint8_t InnerState;
+    uint8_t InnerState;
     uint8_t AlienAddr;
     bool AlienIsCounted;
+    CC.NeededState = CC_RX;
+
+    uint16_t FTimer;
+    TimerResetDelay(&FTimer);
+
     // Main cycle
     while (1){
-        CC.NeededState = CC_RX;
         CC_Task();
-//        InnerState = CC_ReadRegister(CC_MARCSTATE);     // Get status
+
+
+        // Print state
+        if (TimerDelayElapsed(&FTimer, 500)){
+            InnerState = CC_ReadRegister(CC_MARCSTATE); // Get radio status
+            UARTSendString_P(PSTR("\rState: "));
+            UARTSendUint(InnerState);
+        }
 
         if (CC.NewPacketReceived){ // Handle packet
-            switch (CC.PPacket->CommandID){
+            switch (CC.RX_Pkt->CommandID){
                 case PKT_ID_CALL: 
                     // If equal: adjust timer & address; if lower: adjust timer and count; if bigger: just count.
-                    AlienAddr = CC.PPacket->Data[1];
+                    AlienAddr = CC.RX_Pkt->Data[1];
                     // Modify our address if needed
                     if (AlienAddr == CC.Address) {
                         TIMER_ADJUST(AlienAddr);    // Setup our timer as alien address is lower
                         TransmitEnable = false;     // Next time just listen - if there is somebody else
                         CC.Address++;
-                        eeprom_write_byte(0, CC.Address);
+//                        eeprom_write_byte(0, CC.Address);
+                        UARTSendString_P(PSTR("\rNew Addr: "));
+                        UARTSendAsHex(CC.Address, true);
+                        UARTNewLine();
                     }
                     else {
                         if (AlienAddr < CC.Address) // Setup our timer if alien address is lower
@@ -95,6 +110,20 @@ int main(void) {
                         if (!AlienIsCounted)
                             RcvdAddreses.Arr[RcvdAddreses.Counter++] = AlienAddr;
                     }// else: isn't equal
+
+
+                    UARTSendString_P(PSTR("\rAlien: "));
+                    UARTSendAsHex(AlienAddr, true);
+                    UARTSendString_P(PSTR("\rOurs:  "));
+                    UARTSendAsHex(CC.Address, true);
+                    UARTNewLine();
+
+                    for (uint8_t i=0; i<RcvdAddreses.Counter; i++){
+                        UARTSendAsHex(RcvdAddreses.Arr[i], false);
+                        UARTSendByte(' ');
+                    }
+                    UARTNewLine();
+
                     break;
 
                 default:
@@ -102,7 +131,7 @@ int main(void) {
             }// switch
 
             CC.NewPacketReceived = false;
-            UARTSendString_P(PSTR("*\r"));
+            //UARTSendString_P(PSTR("*\r"));
             //CC_PrintPacket();
         } // if (CC.NewPacketReceived)
     } // while 1
@@ -110,22 +139,23 @@ int main(void) {
 
 // ============================== Interrupts ===================================
 ISR(TIMER1_COMPA_vect){
-    PORTA |= (1<<PA0);
+    
     #ifdef TRANSMIT_ENABLE
     if (TransmitEnable){
         // Prepare CALL packet
-        CC.PPacket->Address = 0;    // Recipient address
-        CC.PPacket->PacketID = 0;   // Current packet ID, to avoid repeative treatment
-        CC.PPacket->CommandID = 0xCA;
-        CC.PPacket->Data[0] = 0x11;
-        CC.PPacket->Data[1] = CC.Address;
+        CC.TX_Pkt->Address = 0;    // Recipient address
+        CC.TX_Pkt->PacketID = 0;   // Current packet ID, to avoid repeative treatment
+        CC.TX_Pkt->CommandID = 0xCA;
+        CC.TX_Pkt->Data[0] = 0x11;
+        CC.TX_Pkt->Data[1] = CC.Address;
 
-        CC_TransmitPacket();
+        CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH);     // Write bytes to FIFO
+        CC.NeededState = CC_TX;
     }
     #else
     _delay_ms(1);
     #endif
-    PORTA &= ~(1<<PA0);
+    
 }
 
 ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
@@ -133,6 +163,12 @@ ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
     TransmitEnable = true;  // May transmit next time
     if (RcvdAddreses.Counter > 0) LED_GREEN_ON();
     else LED_GREEN_OFF();
+
+/*
+    UARTSendUint(RcvdAddreses.Counter);
+    UARTNewLine();
+*/
+
     // Clear recieved addresses
     RcvdAddreses.Counter = 0;
     #endif

@@ -65,10 +65,10 @@ typedef struct CC_Packet_t* CC_Packet_p;
 
 struct CC_t {
     uint8_t Address;
-    CC_Packet_p PPacket;
-    uint8_t PctArray[sizeof(struct CC_Packet_t)];
+    CC_Packet_p RX_Pkt, TX_Pkt;
+    uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
+    uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
     uint16_t Timer;
-    enum CC_State_t State;
     enum CC_State_t NeededState;
     bool NewPacketReceived;
 };
@@ -111,7 +111,7 @@ uint8_t CC_ReadWriteByte(uint8_t AByte);
 #define CC_ENTER_IDLE( )    CC_WriteStrobe(CC_SIDLE)
 #define CC_CALIBRATE()      CC_WriteStrobe(CC_SCAL)
 #define CC_FLUSH_RX_FIFO()  CC_WriteStrobe(CC_SFRX)
-
+#define CC_FLUSH_TX_FIFO()  CC_WriteStrobe(CC_SFTX)
 
 #endif	/* _CC1101_H */
 
