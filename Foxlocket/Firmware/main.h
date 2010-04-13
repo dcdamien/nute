@@ -17,10 +17,11 @@
 #define CYCLE_DURATION  200
 #define PKT_DURATION    3   //tics
 
-#define TIMER_ADJUST(AL_ADR)    TCNT1 = (AL_ADR << TIMER_MULTI) + PKT_DURATION
-
 // =============================== Packet info =================================
 #define PKT_ID_CALL     0xCA
+
+// ================================ Prototypes =================================
+void TimerAdjust(void);
 
 
 #endif	/* _MAIN_H */
