@@ -38,7 +38,7 @@ int main(void) {
     // Get self address
     //CC.Address = eeprom_read_byte(0);
     //if (CC.Address == 0xFF) CC.Address = 0x01;
-    CC.Address = 1;
+    CC.Address = 1; //Never changes in CC itself
 
     TimerInit();
     CC_Init();
@@ -73,7 +73,6 @@ int main(void) {
     while (1){
         CC_Task();
 
-
         // Print state
         if (TimerDelayElapsed(&FTimer, 500)){
             InnerState = CC_ReadRegister(CC_MARCSTATE); // Get radio status
@@ -88,7 +87,7 @@ int main(void) {
                     AlienAddr = CC.RX_Pkt->Data[1];
                     // Modify our address if needed
                     if (AlienAddr == CC.Address) {
-                        TIMER_ADJUST(AlienAddr);    // Setup our timer as alien address is lower
+                        TimerAdjust();              // Setup our timer as alien address is lower
                         TransmitEnable = false;     // Next time just listen - if there is somebody else
                         CC.Address++;
 //                        eeprom_write_byte(0, CC.Address);
@@ -98,7 +97,7 @@ int main(void) {
                     }
                     else {
                         if (AlienAddr < CC.Address) // Setup our timer if alien address is lower
-                            TIMER_ADJUST(AlienAddr);
+                            TimerAdjust();
                         // Count this one if did not do it yet
                         AlienIsCounted = false;
                         for (uint8_t i=0; i<RcvdAddreses.Counter; i++){
@@ -137,9 +136,18 @@ int main(void) {
     } // while 1
 }
 
+FORCE_INLINE void TimerAdjust(void){
+    // Stop timer
+    TCCR1B = TCCR1B_OFF;
+    TCNT1H = CC.RX_Pkt->Data[3];
+    TCNT1L = CC.RX_Pkt->Data[4];
+
+    // Start timer
+    TCCR1B = TCCR1B_ON;
+}
+
 // ============================== Interrupts ===================================
 ISR(TIMER1_COMPA_vect){
-    
     #ifdef TRANSMIT_ENABLE
     if (TransmitEnable){
         // Prepare CALL packet
