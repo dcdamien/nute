@@ -137,13 +137,11 @@ int main(void) {
 }
 
 FORCE_INLINE void TimerAdjust(void){
-    // Stop timer
-    TCCR1B = TCCR1B_OFF;
-    TCNT1H = CC.RX_Pkt->Data[3];
-    TCNT1L = CC.RX_Pkt->Data[4];
-
-    // Start timer
-    TCCR1B = TCCR1B_ON;
+    uint8_t tmp = TCCR1B;
+    TIM1_STOP();
+    TCNT1H = CC.RX_Pkt->Data[2];
+    TCNT1L = CC.RX_Pkt->Data[3];
+    TCCR1B = tmp;   // Restore timer state
 }
 
 // ============================== Interrupts ===================================
@@ -156,6 +154,10 @@ ISR(TIMER1_COMPA_vect){
         CC.TX_Pkt->CommandID = 0xCA;
         CC.TX_Pkt->Data[0] = 0x11;
         CC.TX_Pkt->Data[1] = CC.Address;
+        TIM1_STOP();
+        CC.RX_Pkt->Data[2] = TCNT1H;
+        CC.RX_Pkt->Data[3] = TCNT1L;
+        // Leave timer in stopped state to stop time count until packet is transmitted
 
         CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH);     // Write bytes to FIFO
         CC.NeededState = CC_TX;
