@@ -24,11 +24,8 @@ void CC_Task (void){
         return;
     // Wait if still transmitting
     if (InnerState==CC_ST_TX19 || InnerState==CC_ST_TX20){
-        PORTA |= (1<<PA0);
         return;
     }
-    else
-        PORTA &= ~(1<<PA0);
     
     // Flush FIFO if overflow or underflow
     if (InnerState == CC_ST_RX_OVERFLOW)  CC_FLUSH_RX_FIFO();
@@ -51,9 +48,7 @@ void CC_Task (void){
         //PORTA |= (1<<PA0);
         CC_ENTER_TX();
         CC.NeededState = CC_RX;         // Enter RX after transmitting
-        
     }
-
 }
 
 void CC_Init(void){
@@ -229,16 +224,6 @@ uint8_t CC_ReadWriteByte(uint8_t AByte){
 // ============================ Interrupts =====================================
 ISR(INT2_vect){
     // Packet has been successfully recieved
-/*
-    if (CC.NewPacketReceived){
-        // Discard packet as previous was not processed
-        CC_ENTER_IDLE();
-        _delay_ms(1);
-        CC_FLUSH_RX_FIFO();
-        _delay_ms(1);
-        CC_ENTER_RX();
-    }
-*/
     PORTA |= (1<<PA1);
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {

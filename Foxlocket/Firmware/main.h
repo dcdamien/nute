@@ -8,6 +8,8 @@
 #ifndef _MAIN_H
 #define	_MAIN_H
 
+#define EE_ADDRESS  (uint8_t*)(4)
+
 // ================================= Timings ===================================
 // Divider = 1024
 #define TCCR1B_ON   (1<<WGM13)|(1<<WGM12)|(1<<CS02)|(0<<CS01)|(1<<CS00)
@@ -24,7 +26,7 @@
 #define PKT_ID_CALL     0xCA
 
 // ================================ Prototypes =================================
-void TimerAdjust(void);
+
 
 
 #endif	/* _MAIN_H */
