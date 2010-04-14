@@ -13,14 +13,10 @@
 #include <avr/eeprom.h>
 
 #include "main.h"
-//#include "uart_unit.h"
+#include "uart_unit.h"
 #include "cc1101.h"
 #include "ledskeys.h"
 #include "time_utils.h"
-
-//#define DEBUG_TRANSMITTER   // Just transmit packets in time
-#define TRANSMIT_ENABLE
-
 
 struct {
     uint8_t Arr[30];
@@ -29,6 +25,9 @@ struct {
 
 int main(void) {
     LEDKeyInit();
+
+    UARTInit();
+    UARTSendString_P(PSTR("\rFoxlocket started\r"));
 
     // Get self address
     CC.Address = eeprom_read_byte(EE_ADDRESS);
@@ -48,18 +47,23 @@ int main(void) {
 
     sei();
 
-    DDRA |= (1<<PA0)|(1<<PA1);
-    PORTA &= ~((1<<PA0)|(1<<PA1));
+    DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2);
+    PORTA &= ~((1<<PA0)|(1<<PA1)|(1<<PA2));
 
     #ifdef DEBUG_TRANSMITTER
     while(1);
     #endif
 
     bool AlienIsCounted;
-    CC.NeededState = CC_RX;
+    CC.RX_Needed = true;
 
+/*
     uint16_t FTimer;
     TimerResetDelay(&FTimer);
+*/
+
+    // DEBUG
+    uint16_t OurTime=0, AlienTime=0;
 
     // Main cycle
     while (1){
@@ -70,9 +74,15 @@ int main(void) {
                 case PKT_ID_CALL:
                     // Setup our timer if alien address is lower, and do not otherwise
                     if (AlienAddr < CC.Address) {
-                        TIM1_STOP();
-                        TCNT1 = AlienAddr << TIMER_MULTI;
-                        TIM1_START();
+                        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
+                            PORTA |= (1<<PA2);
+                            TIM1_STOP();
+                            OurTime = TCNT1;
+                            TCNT1 = (AlienAddr << TIMER_MULTI) + PKT_DURATION;
+                            AlienTime = TCNT1;
+                            TIM1_START();
+                            PORTA &= ~(1<<PA2);
+                        } // atomic
                     }
                     // Count this one if did not do it yet
                     AlienIsCounted = false;
@@ -91,6 +101,12 @@ int main(void) {
             }// switch
 
             CC.NewPacketReceived = false;
+
+            UARTSendString("Our: ");
+            UARTSendUint(OurTime);
+            UARTSendString("   Alien: ");
+            UARTSendUint(AlienTime);
+            UARTNewLine();
         } // if (CC.NewPacketReceived)
     } // while 1
 }
@@ -98,7 +114,6 @@ int main(void) {
 
 // ============================== Interrupts ===================================
 ISR(TIMER1_COMPA_vect){
-    #ifdef TRANSMIT_ENABLE
     PORTA |= (1<<PA0);
     // Prepare CALL packet
     CC.TX_Pkt->Address = 0;    // Recipient address
@@ -111,13 +126,9 @@ ISR(TIMER1_COMPA_vect){
     //    CC.NeededState = CC_TX;
     CC_ENTER_TX();
     PORTA &= ~(1<<PA0);
-    #else
-    _delay_ms(1);
-    #endif
 }
 
 ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
-    #ifndef DEBUG_TRANSMITTER
     if (RcvdAddreses.Counter > 0) LED_GREEN_ON();
     else LED_GREEN_OFF();
 
@@ -128,5 +139,4 @@ ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
 
     // Clear recieved addresses
     RcvdAddreses.Counter = 0;
-    #endif
 }

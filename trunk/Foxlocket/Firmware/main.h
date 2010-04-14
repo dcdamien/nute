@@ -21,7 +21,7 @@
 
 #define TIMER_MULTI     4   // i.e. multiply by 2^MULTI
 #define CYCLE_DURATION  200// (200*(1000/64)) // ms * 1000/divider
-#define PKT_DURATION    9   //tics
+#define PKT_DURATION    8   //tics
 
 // =============================== Packet info =================================
 #define PKT_ID_CALL     0xCA

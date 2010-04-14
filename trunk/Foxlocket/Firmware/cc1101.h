@@ -50,8 +50,6 @@
 #define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
 
 // =============================== Variables ===================================
-enum CC_State_t {CC_Idle, CC_TX, CC_RX};
-
 #define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-3
 struct CC_Packet_t{
     uint8_t Address;
@@ -69,7 +67,7 @@ struct CC_t {
     uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
     uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
     uint16_t Timer;
-    enum CC_State_t NeededState;
+    bool RX_Needed;
     bool NewPacketReceived;
 };
 
