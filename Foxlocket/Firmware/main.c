@@ -39,7 +39,7 @@ int main(void) {
 
     // Setup Timer1
     TCNT1 = 0;
-    OCR1A = CC.Address << TIMER_MULTI;
+    OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
     TCCR1A = 0;
     ICR1 = CYCLE_DURATION;
     TIMSK |= (1<<OCIE1A)|(1<<TICIE1);
@@ -50,10 +50,6 @@ int main(void) {
     DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2);
     PORTA &= ~((1<<PA0)|(1<<PA1)|(1<<PA2));
 
-    #ifdef DEBUG_TRANSMITTER
-    while(1);
-    #endif
-
     bool AlienIsCounted;
     CC.RX_Needed = true;
 
@@ -62,8 +58,6 @@ int main(void) {
     TimerResetDelay(&FTimer);
 */
 
-    // DEBUG
-    uint16_t OurTime=0, AlienTime=0;
 
     // Main cycle
     while (1){
@@ -75,13 +69,9 @@ int main(void) {
                     // Setup our timer if alien address is lower, and do not otherwise
                     if (AlienAddr < CC.Address) {
                         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                            PORTA |= (1<<PA2);
                             TIM1_STOP();
-                            OurTime = TCNT1;
-                            TCNT1 = (AlienAddr << TIMER_MULTI) + PKT_DURATION;
-                            AlienTime = TCNT1;
+                            TCNT1 = (((uint16_t)AlienAddr) << TIMER_MULTI) + PKT_DURATION;
                             TIM1_START();
-                            PORTA &= ~(1<<PA2);
                         } // atomic
                     }
                     // Count this one if did not do it yet
@@ -102,11 +92,6 @@ int main(void) {
 
             CC.NewPacketReceived = false;
 
-            UARTSendString("Our: ");
-            UARTSendUint(OurTime);
-            UARTSendString("   Alien: ");
-            UARTSendUint(AlienTime);
-            UARTNewLine();
         } // if (CC.NewPacketReceived)
     } // while 1
 }
