@@ -30,9 +30,9 @@ int main(void) {
     UARTSendString_P(PSTR("\rFoxlocket started\r"));
 
     // Get self address
-    CC.Address = eeprom_read_byte(EE_ADDRESS);
+    //CC.Address = eeprom_read_byte(EE_ADDRESS);
     //if (CC.Address == 0xFF) CC.Address = 0x01;
-    //CC.Address = 1; //Never changes in CC itself
+    CC.Address = 1; //Never changes in CC itself
 
     TimerInit();
     CC_Init();
@@ -50,14 +50,10 @@ int main(void) {
     DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2);
     PORTA &= ~((1<<PA0)|(1<<PA1)|(1<<PA2));
 
-    bool AlienIsCounted;
-
 /*
     uint16_t FTimer;
     TimerResetDelay(&FTimer);
 */
-
-
     // Main cycle
     while (1){
         CC_Task();
@@ -66,24 +62,30 @@ int main(void) {
             uint8_t AlienAddr = CC.RX_Pkt->Data[1];
             switch (CC.RX_Pkt->CommandID){
                 case PKT_ID_CALL:
-                    // Setup our timer if alien address is lower, and do not otherwise
-                    if (AlienAddr < CC.Address) {
+                    // Modify our address if needed
+                    if (AlienAddr == CC.Address) {
+                        TIMER_ADJUST(AlienAddr);      // Setup our timer as alien address is lower
+                        CC.TransmitEnable = false;     // Next time just listen - if there is somebody else
+                        CC.Address++;
                         ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                            TIM1_STOP();
-                            TCNT1 = (((uint16_t)AlienAddr) << TIMER_MULTI) + PKT_DURATION;
-                            TIM1_START();
-                        } // atomic
-                    }
-                    // Count this one if did not do it yet
-                    AlienIsCounted = false;
-                    for (uint8_t i=0; i<RcvdAddreses.Counter; i++){
-                        if (RcvdAddreses.Arr[i] == AlienAddr){
-                            AlienIsCounted = true;
-                            //break;
+                            OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
                         }
-                    }// for
-                    if (!AlienIsCounted)
-                        RcvdAddreses.Arr[RcvdAddreses.Counter++] = AlienAddr;
+//                        eeprom_write_byte(0, CC.Address);
+                    }
+                    else {
+                        // Setup our timer if alien address is lower, and do not otherwise
+                        if (AlienAddr < CC.Address) TIMER_ADJUST(AlienAddr);
+                        // Count this one if did not do it yet
+                        bool AlienIsCounted = false;
+                        for (uint8_t i=0; i<RcvdAddreses.Counter; i++){
+                            if (RcvdAddreses.Arr[i] == AlienAddr){
+                                AlienIsCounted = true;
+                                //break;
+                            }
+                        }// for
+                        if (!AlienIsCounted)
+                            RcvdAddreses.Arr[RcvdAddreses.Counter++] = AlienAddr;
+                    } // else ==
                     break; // ID = CALL
 
                 default:
@@ -99,6 +101,7 @@ int main(void) {
 
 // ============================== Interrupts ===================================
 ISR(TIMER1_COMPA_vect){
+    if (!CC.TransmitEnable) return;
     PORTA |= (1<<PA0);
     // Prepare CALL packet
     CC.TX_Pkt->Address = 0;    // Broadcast
@@ -120,7 +123,7 @@ ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
     UARTSendUint(RcvdAddreses.Counter);
     UARTNewLine();
 */
-
+    CC.TransmitEnable = true;
     // Clear recieved addresses
     RcvdAddreses.Counter = 0;
 }
