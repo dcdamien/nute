@@ -51,7 +51,6 @@ int main(void) {
     PORTA &= ~((1<<PA0)|(1<<PA1)|(1<<PA2));
 
     bool AlienIsCounted;
-    CC.RX_Needed = true;
 
 /*
     uint16_t FTimer;

@@ -31,15 +31,8 @@ void CC_Task (void){
     if (InnerState == CC_ST_RX_OVERFLOW)  CC_FLUSH_RX_FIFO();
     if (InnerState == CC_ST_TX_UNDERFLOW) CC_FLUSH_TX_FIFO();
 
-    // DEBUG
-    //if ((InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15))
-        //PORTA &= ~(1<<PA0);
-
-    // ***** Check needed states *****
-    if (CC.RX_Needed && !(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) { // If RX needed, and not still in there
-        CC_ENTER_RX();
-        return;
-    }
+    // Enter RX if not in there
+    if (!(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) CC_ENTER_RX();
 }
 
 void CC_Init(void){
@@ -204,7 +197,5 @@ ISR(INT2_vect){
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
-    // Enter RX mode as after a packet has been received CC enters IDLE mode
-    CC.RX_Needed = true;
     PORTA &= ~(1<<PA1);
 }
