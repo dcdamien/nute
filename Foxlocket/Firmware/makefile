@@ -29,7 +29,7 @@ SRC = $(TARGET).c \
 ledskeys.c \
 cc1101.c \
 time_utils.c \
-
+uart_unit.c \
 
 
 # List C++ source files here. (C dependencies are automatically generated.)

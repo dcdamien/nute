@@ -36,21 +36,10 @@ void CC_Task (void){
         //PORTA &= ~(1<<PA0);
 
     // ***** Check needed states *****
-    if ((CC.NeededState == CC_RX) && !(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) { // If RX needed, and not still in there
+    if (CC.RX_Needed && !(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) { // If RX needed, and not still in there
         CC_ENTER_RX();
         return;
     }
-
-/*
-    if (CC.NeededState == CC_TX) {
-        // Check if channel is clear
-        if (CC_GDO2_IS_HI()) return;    // Carrier detected
-        
-        //PORTA |= (1<<PA0);
-        CC_ENTER_TX();
-        CC.NeededState = CC_RX;         // Enter RX after transmitting
-    }
-*/
 }
 
 void CC_Init(void){
@@ -83,15 +72,6 @@ void CC_Init(void){
     CC_GDO0_IRQ_ENABLE();
 }
 
-void CC_TransmitPacket(void){
-    // Packet must be prepared already
-    //uint8_t InnerState = CC_ReadRegister(CC_MARCSTATE); // Get radio status
-    CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH);     // Write bytes to FIFO
-    CC.NeededState = CC_TX;
-    //CC.State = CC_Idle;                                 // Packet is now sent
-    //if (InnerState!=CC_ST_TX19 && InnerState!=CC_ST_TX20) CC_ENTER_TX();    // Enter TX mode if not in it
-}
-
 #ifdef CC_PRINT_DEBUG
 void CC_PrintPacket(void){
     for (uint8_t i=0; i<CC_PKT_LENGTH+2; i++){
@@ -101,14 +81,6 @@ void CC_PrintPacket(void){
 //    UARTNewLine();
 }
 #endif
-
-
-void CC_PreparePacket(void){
-    CC.TX_Pkt->Address = 4;    // Recipient address
-    CC.TX_Pkt->PacketID = 0;   // Current packet ID, to avoid repeative treatment
-    CC.TX_Pkt->CommandID = 1;  // Something to test
-    for (uint8_t i=0; i<CC_PKT_LENGTH-3; i++) CC.TX_Pkt->Data[i] = i;    // Something to test
-}
 
 // ============================= Inner use =====================================
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
@@ -233,6 +205,6 @@ ISR(INT2_vect){
         CC.NewPacketReceived = true;
     }
     // Enter RX mode as after a packet has been received CC enters IDLE mode
-    CC.NeededState = CC_RX;
+    CC.RX_Needed = true;
     PORTA &= ~(1<<PA1);
 }
