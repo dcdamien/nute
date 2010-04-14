@@ -8,7 +8,10 @@
 #ifndef _MAIN_H
 #define	_MAIN_H
 
+#include <avr/io.h>
+
 #define EE_ADDRESS  (uint8_t*)(4)
+
 
 // ================================= Timings ===================================
 // Divider = 64
@@ -26,6 +29,11 @@
 #define PKT_ID_CALL     0xCA
 
 // ================================ Prototypes =================================
+#define TIMER_ADJUST(AlienAddr) ATOMIC_BLOCK(ATOMIC_RESTORESTATE){\
+                                    TIM1_STOP();\
+                                    TCNT1 = (((uint16_t)AlienAddr) << TIMER_MULTI) + PKT_DURATION;\
+                                    TIM1_START();\
+                                } // atomic
 
 
 

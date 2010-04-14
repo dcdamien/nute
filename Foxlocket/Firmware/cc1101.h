@@ -68,6 +68,7 @@ struct CC_t {
     uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
     uint16_t Timer;
     bool NewPacketReceived;
+    bool TransmitEnable;
 };
 
 extern struct CC_t CC;
