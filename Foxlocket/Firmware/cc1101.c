@@ -31,8 +31,8 @@ void CC_Task (void){
     if (InnerState == CC_ST_RX_OVERFLOW)  CC_FLUSH_RX_FIFO();
     if (InnerState == CC_ST_TX_UNDERFLOW) CC_FLUSH_TX_FIFO();
 
-    // Enter RX if not in there
-    if (!(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) CC_ENTER_RX();
+    // Enter RX if not in there and if there is no unhandled packets
+    if ((!CC.NewPacketReceived) && !(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) CC_ENTER_RX();
 }
 
 void CC_Init(void){
@@ -60,7 +60,6 @@ void CC_Init(void){
     CC_RESET();
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
-    CC_WriteRegister(CC_ADDR, CC.Address);       // Device address.
 
     CC_GDO0_IRQ_ENABLE();
 }
