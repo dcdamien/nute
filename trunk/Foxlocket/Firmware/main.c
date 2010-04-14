@@ -13,7 +13,7 @@
 #include <avr/eeprom.h>
 
 #include "main.h"
-#include "uart_unit.h"
+//#include "uart_unit.h"
 #include "cc1101.h"
 #include "ledskeys.h"
 #include "time_utils.h"
@@ -29,17 +29,11 @@ struct {
 
 int main(void) {
     LEDKeyInit();
-    _delay_ms(270);
-    UARTInit();
-    UARTNewLine();
-    UARTSendString_P(PSTR("Foxlocket started\r"));
 
     // Get self address
     CC.Address = eeprom_read_byte(EE_ADDRESS);
     if (CC.Address == 0xFF) CC.Address = 0x01;
     //CC.Address = 1; //Never changes in CC itself
-
-    UARTSendAsHex(CC.Address, true);
 
     TimerInit();
     CC_Init();
@@ -61,8 +55,6 @@ int main(void) {
     while(1);
     #endif
 
-    uint8_t InnerState;
-    
     bool AlienIsCounted;
     CC.NeededState = CC_RX;
 
@@ -72,14 +64,6 @@ int main(void) {
     // Main cycle
     while (1){
         CC_Task();
-
-        // DEBUG: Print state
-        if (TimerDelayElapsed(&FTimer, 500)){
-            InnerState = CC_ReadRegister(CC_MARCSTATE); // Get radio status
-            UARTSendString_P(PSTR("\rState: "));
-            UARTSendUint(InnerState);
-        }
-
         if (CC.NewPacketReceived){ // Handle packet
             uint8_t AlienAddr = CC.RX_Pkt->Data[1];
             switch (CC.RX_Pkt->CommandID){
@@ -100,21 +84,6 @@ int main(void) {
                     }// for
                     if (!AlienIsCounted)
                         RcvdAddreses.Arr[RcvdAddreses.Counter++] = AlienAddr;
-
-                    // ====== <DEBUG> =======
-                    UARTSendString_P(PSTR("\rAlien: "));
-                    UARTSendAsHex(AlienAddr, true);
-                    UARTSendString_P(PSTR("\rOurs:  "));
-                    UARTSendAsHex(CC.Address, true);
-                    UARTNewLine();
-
-                    for (uint8_t i=0; i<RcvdAddreses.Counter; i++){
-                        UARTSendAsHex(RcvdAddreses.Arr[i], false);
-                        UARTSendByte(' ');
-                    }
-                    UARTNewLine();
-                    // ====== </DEBUG> =======
-
                     break; // ID = CALL
 
                 default:
@@ -122,8 +91,6 @@ int main(void) {
             }// switch
 
             CC.NewPacketReceived = false;
-            //UARTSendString_P(PSTR("*\r"));
-            //CC_PrintPacket();
         } // if (CC.NewPacketReceived)
     } // while 1
 }
@@ -141,7 +108,8 @@ ISR(TIMER1_COMPA_vect){
     CC.TX_Pkt->Data[1] = CC.Address;
 
     CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH);     // Write bytes to FIFO
-    CC.NeededState = CC_TX;
+    //    CC.NeededState = CC_TX;
+    CC_ENTER_TX();
     PORTA &= ~(1<<PA0);
     #else
     _delay_ms(1);

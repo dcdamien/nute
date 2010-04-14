@@ -10,7 +10,7 @@
 #include "cc1101.h"
 #include "time_utils.h"
 // DEBUG
-#include "uart_unit.h"
+//#include "uart_unit.h"
 #include "ledskeys.h"
 
 struct CC_t CC;
@@ -41,6 +41,7 @@ void CC_Task (void){
         return;
     }
 
+/*
     if (CC.NeededState == CC_TX) {
         // Check if channel is clear
         if (CC_GDO2_IS_HI()) return;    // Carrier detected
@@ -49,6 +50,7 @@ void CC_Task (void){
         CC_ENTER_TX();
         CC.NeededState = CC_RX;         // Enter RX after transmitting
     }
+*/
 }
 
 void CC_Init(void){
@@ -93,10 +95,10 @@ void CC_TransmitPacket(void){
 #ifdef CC_PRINT_DEBUG
 void CC_PrintPacket(void){
     for (uint8_t i=0; i<CC_PKT_LENGTH+2; i++){
-        UARTSendAsHex(CC.RX_PktArray[i], 1);
-        UARTSendByte(' ');
+//        UARTSendAsHex(CC.RX_PktArray[i], 1);
+//        UARTSendByte(' ');
     }
-    UARTNewLine();
+//    UARTNewLine();
 }
 #endif
 
