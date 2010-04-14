@@ -31,7 +31,7 @@ int main(void) {
 
     // Get self address
     CC.Address = eeprom_read_byte(EE_ADDRESS);
-    if (CC.Address == 0xFF) CC.Address = 0x01;
+    //if (CC.Address == 0xFF) CC.Address = 0x01;
     //CC.Address = 1; //Never changes in CC itself
 
     TimerInit();
@@ -61,6 +61,7 @@ int main(void) {
     // Main cycle
     while (1){
         CC_Task();
+
         if (CC.NewPacketReceived){ // Handle packet
             uint8_t AlienAddr = CC.RX_Pkt->Data[1];
             switch (CC.RX_Pkt->CommandID){
@@ -90,7 +91,7 @@ int main(void) {
             }// switch
 
             CC.NewPacketReceived = false;
-
+            //PORTA &= ~(1<<PA2);
         } // if (CC.NewPacketReceived)
     } // while 1
 }
@@ -100,14 +101,13 @@ int main(void) {
 ISR(TIMER1_COMPA_vect){
     PORTA |= (1<<PA0);
     // Prepare CALL packet
-    CC.TX_Pkt->Address = 0;    // Recipient address
+    CC.TX_Pkt->Address = 0;    // Broadcast
     CC.TX_Pkt->PacketID = 0;   // Current packet ID, to avoid repeative treatment
     CC.TX_Pkt->CommandID = 0xCA;
     CC.TX_Pkt->Data[0] = 0x11;
     CC.TX_Pkt->Data[1] = CC.Address;
 
     CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH);     // Write bytes to FIFO
-    //    CC.NeededState = CC_TX;
     CC_ENTER_TX();
     PORTA &= ~(1<<PA0);
 }

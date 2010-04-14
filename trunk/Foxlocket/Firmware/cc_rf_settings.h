@@ -61,7 +61,7 @@
 
 #define CC_PKTCTRL1_VALUE   0b00001110  // PQT=0, CRC autoflush=1, Append=1, Address check = 10 (check, 0 is broadcast)
 #define CC_PKTCTRL0_VALUE   0b01000100  // WhiteData=1, PKTFormat=normal, CRC enabled, Fixed Length
-#define CC_ADDR_VALUE       0x04        // Device address.
+#define CC_ADDR_VALUE       0x01        // Device address.
 #define CC_PKTLEN_VALUE     CC_PKT_LENGTH  // Packet length.
 
 // Rare use settings
