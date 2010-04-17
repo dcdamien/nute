@@ -42,7 +42,7 @@ int main(void) {
     OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
     TCCR1A = 0;
     ICR1 = CYCLE_DURATION;
-    TIMSK |= (1<<OCIE1A)|(1<<TICIE1);
+    TIMSK1 |= (1<<OCIE1A)|(1<<ICIE1);
     TIM1_START();
 
     sei();

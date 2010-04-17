@@ -46,8 +46,8 @@
 #define CC_GDO0_IS_HI( )    bit_is_set(CC_PIN, CC_GDO0)
 #define CC_GDO2_IS_HI( )    bit_is_set(CC_PIN, CC_GDO2)
 
-#define CC_GDO0_IRQ_ENABLE( )   GICR |= (1<<INT2)
-#define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
+#define CC_GDO0_IRQ_ENABLE( )   EIMSK |=  (1<<INT2)
+#define CC_GDO0_IRQ_DISABLE( )  EIMSK &= ~(1<<INT2)
 
 // =============================== Variables ===================================
 #define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-3
