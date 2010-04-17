@@ -8,8 +8,6 @@
 #ifndef _CC1101_H
 #define	_CC1101_H
 
-#define CC_PRINT_DEBUG
-
 #include <inttypes.h>
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -33,6 +31,11 @@
 #define CC_MOSI PB5
 #define CC_MISO PB6
 #define CC_SCLK PB7
+
+// Cycle
+#define CYCLE_NUMBER    5       // 0...4
+#define CYCLE_RX        0
+
 
 // =========================== Pseudo functions ================================
 #define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
@@ -63,12 +66,14 @@ typedef struct CC_Packet_t* CC_Packet_p;
 
 struct CC_t {
     uint8_t Address;
+    uint8_t State;
     CC_Packet_p RX_Pkt, TX_Pkt;
     uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
     uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
-    uint16_t Timer;
     bool NewPacketReceived;
     bool TransmitEnable;
+    uint8_t CycleCounter;
+    bool IsPowerDown;
 };
 
 extern struct CC_t CC;
@@ -84,10 +89,6 @@ void CC_PreparePacket(void);
 uint8_t CC_ReadRegister (uint8_t ARegAddr);
 void CC_WriteRegister (uint8_t ARegAddr, uint8_t AData);
 void CC_WriteStrobe (uint8_t AStrobe);
-
-#ifdef CC_PRINT_DEBUG
-void CC_PrintPacket(void);
-#endif
 
 // Inner use
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength);
@@ -107,9 +108,11 @@ uint8_t CC_ReadWriteByte(uint8_t AByte);
 #define CC_ENTER_TX( )      CC_WriteStrobe(CC_STX)
 #define CC_ENTER_RX( )      CC_WriteStrobe(CC_SRX)
 #define CC_ENTER_IDLE( )    CC_WriteStrobe(CC_SIDLE)
+#define CC_POWERDOWN( )     CC_WriteStrobe(CC_SPWD)
 #define CC_CALIBRATE()      CC_WriteStrobe(CC_SCAL)
 #define CC_FLUSH_RX_FIFO()  CC_WriteStrobe(CC_SFRX)
 #define CC_FLUSH_TX_FIFO()  CC_WriteStrobe(CC_SFTX)
+#define CC_GET_STATE()      CC_WriteStrobe(CC_SNOP)
 
 #endif	/* _CC1101_H */
 

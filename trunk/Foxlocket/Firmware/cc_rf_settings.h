@@ -36,8 +36,8 @@
 #define CC_MCSM0_VALUE      0x18        // Calibrate at IDLE->RX,TX
 //#define CC_MCSM1_VALUE      0b00001100  // Channel is always clear, RX->RX, TX->IDLE
 //#define CC_MCSM1_VALUE      0b00001111  // Channel is always clear, RX->RX, TX->RX
-//#define CC_MCSM1_VALUE      0b00000000  // Channel is always clear, RX->IDLE, TX->IDLE
-#define CC_MCSM1_VALUE      0b00000011  // Channel is always clear, RX->IDLE, TX->RX
+#define CC_MCSM1_VALUE      0b00000000  // Channel is always clear, RX->IDLE, TX->IDLE
+//#define CC_MCSM1_VALUE      0b00000011  // Channel is always clear, RX->IDLE, TX->RX
 
 #define CC_FOCCFG_VALUE     0x1D        // Frequency Offset Compensation Configuration - RF studio
 #define CC_BSCFG_VALUE      0x1C        // Bit synchronization Configuration - RF studio
@@ -48,7 +48,7 @@
 #define CC_FSCAL3_VALUE     0xEA        // }
 #define CC_FSCAL2_VALUE     0x2A        // }
 #define CC_FSCAL1_VALUE     0x00        // }
-#define CC_FSCAL0_VALUE     0x1F        // Frequency synthesizer calibration: RF studio
+#define CC_FSCAL0_VALUE     0x1F        // } Frequency synthesizer calibration: RF studio
 
 #define CC_FSTEST_VALUE     0x59        // Frequency synthesizer calibration: RF studio
 #define CC_TEST2_VALUE      0x81        // Various test settings: RF studio
@@ -57,7 +57,7 @@
 
 #define CC_FIFOTHR_VALUE    0b00000111  // RXFIFO and TXFIFO thresholds: TX 33, RX 32
 #define CC_IOCFG2_VALUE     0x0E        // GDO2 - Carrier sence
-#define CC_IOCFG0_VALUE     0x07        // Asserts when a packet has been received with CRC OK. De-asserts when the first byte is read from the RX FIFO.
+#define CC_IOCFG0_VALUE     0x07        // GDO0 - Asserts when a packet has been received with CRC OK. De-asserts when the first byte is read from the RX FIFO.
 
 #define CC_PKTCTRL1_VALUE   0b00001110  // PQT=0, CRC autoflush=1, Append=1, Address check = 10 (check, 0 is broadcast)
 #define CC_PKTCTRL0_VALUE   0b01000100  // WhiteData=1, PKTFormat=normal, CRC enabled, Fixed Length

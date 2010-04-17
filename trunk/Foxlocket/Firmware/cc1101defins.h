@@ -72,6 +72,15 @@
 #define CC_ST_RXTX_SETTLING 21
 #define CC_ST_TX_UNDERFLOW  22
 
+// Status byte states
+#define CC_STB_IDLE         0x00
+#define CC_STB_RX           0x10
+#define CC_STB_TX           0x20
+#define CC_STB_FSTXON       0x30
+#define CC_STB_CALIBRATE    0x40
+#define CC_STB_SETTLING     0x50
+#define CC_STB_RX_OVF       0x60
+#define CC_STB_TX_UNDF      0x70
 
 // Config registers addresses
 #define CC_IOCFG2   0x00
