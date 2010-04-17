@@ -1,5 +1,5 @@
 # MCU name
-MCU = atmega16
+MCU = atmega324p
 
 
 # Processor frequency.

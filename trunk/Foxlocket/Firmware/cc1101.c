@@ -4,7 +4,7 @@
  *
  * Created on 06/03/2010 г., 2:08
  */
-
+#include <avr/io.h>
 #include <util/delay.h>
 #include <inttypes.h>
 #include "cc1101.h"
@@ -39,8 +39,8 @@ void CC_Init(void){
     // ******** Hardware init section *******
     // Interrupts
     CC_GDO0_IRQ_DISABLE();
-    MCUCSR |= (1<<ISC2);    // Rising edge generates an interrupt
-    GIFR |= (1<<INTF2);     // Clear IRQ flag
+    EICRA |= (1<<ISC21)|(1<<ISC20); // Rising edge generates an interrupt
+    EIFR |= (1<<INTF2);             // Clear IRQ flag
     // Setup ports
     CC_DDR  &= ~((1<<CC_GDO0)|(1<<CC_GDO2)|(1<<CC_MISO));
     CC_DDR  |=   (1<<CC_CS)|(1<<CC_MOSI)|(1<<CC_SCLK);
