@@ -7,32 +7,36 @@
 #include <avr/io.h>
 #include <util/delay.h>
 #include <inttypes.h>
+#include <util/atomic.h>
 #include "cc1101.h"
-#include "time_utils.h"
 // DEBUG
-//#include "uart_unit.h"
 #include "ledskeys.h"
 
 struct CC_t CC;
 
 void CC_Task (void){
-    uint8_t InnerState;
-    // **** Check state *****
-    InnerState = CC_ReadRegister(CC_MARCSTATE);     // Get status
-    // Wait if temporary state
-    if (InnerState==CC_ST_FS_WAKEUP6 || InnerState==CC_ST_FS_WAKEUP7 || InnerState==CC_ST_CALIBRATE8 || InnerState==CC_ST_SETTLING9 || InnerState==CC_ST_SETTLING10 || InnerState==CC_ST_SETTLING11 || InnerState==CC_ST_FSTXON)
-        return;
-    // Wait if still transmitting
-    if (InnerState==CC_ST_TX19 || InnerState==CC_ST_TX20){
-        return;
-    }
-    
-    // Flush FIFO if overflow or underflow
-    if (InnerState == CC_ST_RX_OVERFLOW)  CC_FLUSH_RX_FIFO();
-    if (InnerState == CC_ST_TX_UNDERFLOW) CC_FLUSH_TX_FIFO();
-
-    // Enter RX if not in there and if there is no unhandled packets
-    if ((!CC.NewPacketReceived) && !(InnerState==CC_ST_RX13 || InnerState==CC_ST_RX14 || InnerState==CC_ST_RX15)) CC_ENTER_RX();
+    if ((CC.CycleCounter == CYCLE_RX) || ((CC.CycleCounter != CYCLE_RX) && (!CC.IsPowerDown))){
+        CC_GET_STATE();
+        switch (CC.State){
+            case CC_STB_RX_OVF:
+                CC_FLUSH_RX_FIFO();
+                break;
+            case CC_STB_TX_UNDF:
+                CC_FLUSH_TX_FIFO();
+                break;
+            case CC_STB_IDLE:
+                if (CC.CycleCounter == CYCLE_RX){
+                    if (!CC.NewPacketReceived) CC_ENTER_RX();
+                }
+                else { // if in TX cycle we are idle, then we just have transmitted something and may sleep again
+                    CC_POWERDOWN();
+                    CC.IsPowerDown = true;
+                }
+                break;  
+            default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
+                break;
+        }//Switch
+    } //if check needed
 }
 
 void CC_Init(void){
@@ -53,7 +57,6 @@ void CC_Init(void){
     SPSR = (1<<SPI2X);
 
     // ******* Firmware init section *******
-    TimerResetDelay(&CC.Timer);
     CC.RX_Pkt = (CC_Packet_p)&CC.RX_PktArray[0];  // treat array as structure
     CC.TX_Pkt = (CC_Packet_p)&CC.TX_PktArray[0];  // treat array as structure
     CC.NewPacketReceived = false;
@@ -63,16 +66,6 @@ void CC_Init(void){
 
     CC_GDO0_IRQ_ENABLE();
 }
-
-#ifdef CC_PRINT_DEBUG
-void CC_PrintPacket(void){
-    for (uint8_t i=0; i<CC_PKT_LENGTH+2; i++){
-//        UARTSendAsHex(CC.RX_PktArray[i], 1);
-//        UARTSendByte(' ');
-    }
-//    UARTNewLine();
-}
-#endif
 
 // ============================= Inner use =====================================
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
@@ -129,8 +122,9 @@ void CC_WriteStrobe (uint8_t AStrobe){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         CC_CS_LO;               // Start transmission
         while (CC_MISO_IS_HI());// Wait for chip to become ready
-        CC_WriteByte(AStrobe);  // Write strobe
+        CC.State = CC_ReadWriteByte(AStrobe);  // Write strobe
         CC_CS_HI;               // End transmission
+        CC.State &= 0b01110000; // Mask needed bits
     } // atomic
 }
 
