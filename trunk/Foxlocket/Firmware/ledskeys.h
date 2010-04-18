@@ -15,6 +15,19 @@ void LEDKeyInit (void);
 //#define BTN1        PD7
 
 // Pseudo functions
+//#define NO_LED
+#ifdef NO_LED
+
+#define LED_RED_ON( )
+#define LED_RED_OFF( )
+#define LED_RED_TOGGLE( )
+
+#define LED_GREEN_ON( )
+#define LED_GREEN_OFF( )
+#define LED_GREEN_TOGGLE( )
+
+#else
+
 #define LED_RED_ON( )       LED_PORT |=  (1<<LED_RED)
 #define LED_RED_OFF( )      LED_PORT &= ~(1<<LED_RED)
 #define LED_RED_TOGGLE( )   LED_PORT ^=  (1<<LED_RED)
@@ -22,6 +35,8 @@ void LEDKeyInit (void);
 #define LED_GREEN_ON( )     LED_PORT |=  (1<<LED_GREEN)
 #define LED_GREEN_OFF( )    LED_PORT &= ~(1<<LED_GREEN)
 #define LED_GREEN_TOGGLE( ) LED_PORT ^=  (1<<LED_GREEN)
+
+#endif
 
 //#define BTN2_IS_DOWN( ) bit_is_clear (BTN_PIN, BTN2)
 //#define BTN1_IS_DOWN( ) bit_is_clear (BTN_PIN, BTN1)

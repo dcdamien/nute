@@ -5,17 +5,15 @@
  * Created on 06/03/2010 г., 2:08
  */
 #include <avr/io.h>
-#include <util/delay.h>
 #include <inttypes.h>
 #include <util/atomic.h>
 #include "cc1101.h"
-// DEBUG
-#include "ledskeys.h"
 
 struct CC_t CC;
 
 void CC_Task (void){
-    if ((CC.CycleCounter == CYCLE_RX) || ((CC.CycleCounter != CYCLE_RX) && (!CC.IsPowerDown))){
+    //if ((CC.CycleCounter == CYCLE_RX) || ((CC.CycleCounter != CYCLE_RX) && (!CC.IsPowerDown))){
+    //if (CC.CycleCounter == CYCLE_RX){
         CC_GET_STATE();
         switch (CC.State){
             case CC_STB_RX_OVF:
@@ -28,15 +26,18 @@ void CC_Task (void){
                 if (CC.CycleCounter == CYCLE_RX){
                     if (!CC.NewPacketReceived) CC_ENTER_RX();
                 }
+/*
                 else { // if in TX cycle we are idle, then we just have transmitted something and may sleep again
-                    CC_POWERDOWN();
+                    //CC_POWERDOWN();
+                    CC_ENTER_IDLE();
                     CC.IsPowerDown = true;
                 }
+*/
                 break;  
             default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
                 break;
         }//Switch
-    } //if check needed
+//    } //if check needed
 }
 
 void CC_Init(void){
