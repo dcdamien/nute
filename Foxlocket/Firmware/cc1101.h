@@ -33,9 +33,7 @@
 #define CC_SCLK PB7
 
 // Cycle
-#define CYCLE_NUMBER    4
-#define CYCLE_RX        0
-
+#define CYCLE_NUMBER    7
 
 // =========================== Pseudo functions ================================
 #define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
@@ -73,7 +71,6 @@ struct CC_t {
     bool NewPacketReceived;
     bool TransmitEnable;
     uint8_t CycleCounter;
-    bool IsPowerDown;
 };
 
 extern struct CC_t CC;
