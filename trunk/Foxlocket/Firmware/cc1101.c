@@ -23,7 +23,7 @@ void CC_Task (void){
                 CC_FLUSH_TX_FIFO();
                 break;
             case CC_STB_IDLE:
-                if (CC.CycleCounter == CYCLE_RX){
+                if (CC.CycleCounter == 0){ // rx cycle
                     if (!CC.NewPacketReceived) CC_ENTER_RX();
                 }
 /*

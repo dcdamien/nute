@@ -9,8 +9,8 @@
 #include <avr/interrupt.h>
 #include <inttypes.h>
 #include <avr/wdt.h>
-
 #include <util/delay.h>
+
 #include <avr/pgmspace.h>
 
 #include "main.h"
@@ -22,23 +22,51 @@
 struct {
     uint8_t Arr[30];
     uint8_t Counter;
-} RcvdAddreses;
+} RcvdAddresses;
+
+enum MotorState_t {M_Idle, M_On, M_Off};
+struct {
+    uint8_t Count;
+    uint8_t PWMcounter;
+    uint16_t Timer, TimerUpdate;
+    enum MotorState_t State;
+} EMotor;
 
 int main(void) {
+    GeneralInit();
+    // ******** Main cycle *********
+    while (1){
+        wdt_reset();    // Reset watchdog
+        CC_Task();
+        Motor_TASK();
+        Packet_TASK();
+    } // while 1
+}
+
+FORCE_INLINE void GeneralInit(void){
     wdt_enable(WDTO_2S);
     LEDKeyInit();
 
-    // Debug
+    // DEBUG
     UARTInit();
     UARTSendString_P(PSTR("\rFoxlocket started\r"));
     DDRA = 0xFF;
     PORTA = 0;
 
-    CC.Address = 2; //Never changes in CC itself
-    CC.CycleCounter = CYCLE_RX;
+    CC.Address = 1; //Never changes in CC itself
+    CC.CycleCounter = 0;
 
     TimerInit();
     CC_Init();
+
+    // Setup motor
+    MOTOR_DDR |= (1<<MOTOR_P);
+    EMotor.State = M_Idle;
+    TimerResetDelay(&EMotor.TimerUpdate);
+    // Motor blink at power-on
+    MOTOR_ON();
+    _delay_ms(200);
+    MOTOR_OFF();
 
     // Setup Timer1: cycle timings
     TCNT1 = 0;
@@ -49,63 +77,78 @@ int main(void) {
     TIM1_START();
 
     sei();
+}
 
-    #define FTMR
-    #ifdef FTMR
-    uint16_t FTimer;
-    TimerResetDelay(&FTimer);
-    #endif
+void Motor_TASK(void){
+    if (EMotor.Count > 0){
+        LED_GREEN_ON(); // DEBUG
+        switch (EMotor.State){
+            case M_Idle:    // First came here
+                TimerResetDelay(&EMotor.Timer);
+                MOTOR_ON();
+                EMotor.State = M_On;
+                break;
 
-    // Main cycle
-    while (1){
-        wdt_reset();
-        CC_Task();
-        #ifdef FTMR
-        if (TimerDelayElapsed(&FTimer, 1000)){
-            //CC_GET_STATE();
-            //UARTSendAsHex(CC.State, true);
-            UARTSendUint(CC.Address);
-            UARTNewLine();
-        }
-        #endif
+            case M_On:
+                if (!TimerDelayElapsed(&EMotor.Timer, MOTOR_ON_TIME)) return;
+                TimerResetDelay(&EMotor.Timer);
+                MOTOR_OFF();
+                EMotor.State = M_Off;
+                break;
 
-        if (CC.NewPacketReceived){ // Handle packet
-            PORTA |= (1<<PA4);
-            uint8_t AlienAddr = CC.RX_Pkt->Data[1];
-            switch (CC.RX_Pkt->CommandID){
-                case PKT_ID_CALL:
-                    // Modify our address if needed
-                    if (AlienAddr == CC.Address) {
-                        TIMER_ADJUST(AlienAddr);    // Adjust our timer as alien address is lower
-                        CC.CycleCounter = CC.RX_Pkt->Data[2];   // Adjust cycle counter
-                        CC.TransmitEnable = false;  // Next time just listen - if there is somebody else
-                        CC.Address++;               // Increase our address
-                        ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  // Change our IRQ timestamp
-                            OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
-                        }//atomic
-                    }// if equal
-                    else {
-                        // Adjust our timer if alien address is lower, and do not otherwise
-                        if (AlienAddr < CC.Address){
-                            TIMER_ADJUST(AlienAddr);                // Adjust our timer as alien address is lower
-                            CC.CycleCounter = CC.RX_Pkt->Data[2];   // Adjust cycle counter
-                        }
-                        // Count this one if did not do it yet
-                        bool AlienIsCounted = false;
-                        for (uint8_t i=0; i<RcvdAddreses.Counter; i++)
-                            if (RcvdAddreses.Arr[i] == AlienAddr) AlienIsCounted = true;
-                        if (!AlienIsCounted)
-                            RcvdAddreses.Arr[RcvdAddreses.Counter++] = AlienAddr;
-                    } // else not equal
-                    break; // ID = CALL
+            case M_Off:
+                if (!TimerDelayElapsed(&EMotor.Timer, MOTOR_OFF_TIME)) return;
+                // Blink ended, check if this one was the last
+                EMotor.Count--;
+                if (EMotor.Count > 0){
+                    TimerResetDelay(&EMotor.Timer);
+                    MOTOR_ON();
+                    EMotor.State = M_On;
+                }
+                else EMotor.State = M_Idle;
+                break;
+        } //switch
+    } // if >0
+    else LED_GREEN_OFF();// DEBUG
+}
 
-                default:
-                    break;
-            }// switch
-            CC.NewPacketReceived = false;
-            PORTA &= ~(1<<PA4);
-        } // if (CC.NewPacketReceived)
-    } // while 1
+void Packet_TASK(void){
+    if (!CC.NewPacketReceived) return;
+
+    PORTA |= (1<<PA4); // DEBUG
+    uint8_t AlienAddr = CC.RX_Pkt->Data[1];
+    switch (CC.RX_Pkt->CommandID){
+        case PKT_ID_CALL:
+            // Modify our address if needed
+            if (AlienAddr == CC.Address) {
+                TIMER_ADJUST(AlienAddr);    // Adjust our timer as alien address is lower
+                CC.CycleCounter = CC.RX_Pkt->Data[2];   // Adjust cycle counter
+                CC.TransmitEnable = false;  // Next time just listen - if there is somebody else
+                CC.Address++;               // Increase our address
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE){  // Change our IRQ timestamp
+                    OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
+                }//atomic
+            }// if equal
+            else {
+                // Adjust our timer if alien address is lower, and do not otherwise
+                if (AlienAddr < CC.Address){
+                    TIMER_ADJUST(AlienAddr);                // Adjust our timer as alien address is lower
+                    CC.CycleCounter = CC.RX_Pkt->Data[2];   // Adjust cycle counter
+                }
+                // Count this one if did not do it yet
+                bool AlienIsCounted = false;
+                for (uint8_t i=0; i<RcvdAddresses.Counter; i++)
+                    if (RcvdAddresses.Arr[i] == AlienAddr) AlienIsCounted = true;
+                if (!AlienIsCounted)
+                    RcvdAddresses.Arr[RcvdAddresses.Counter++] = AlienAddr;
+            } // else not equal
+            break; // ID = CALL
+
+        default:
+            break;
+    }// switch
+    CC.NewPacketReceived = false;
+    PORTA &= ~(1<<PA4); // DEBUG
 }
 
 
@@ -124,52 +167,28 @@ ISR(TIMER1_COMPA_vect){
 
     CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
     CC_ENTER_TX();                                  // Entering TX will put device out of sleep mode
-    CC.IsPowerDown = false;
     PORTA &= ~(1<<PA0); // DEBUG
 }
 
-// ******* Cycle end interrupt *******
+// Cycle end interrupt 
 ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
+    // Do things needed at end of RX cycle
+    if (CC.CycleCounter == 0){
+//        if (TimerDelayElapsed(&EMotor.TimerUpdate, 1000)){
+        if (EMotor.State == M_Idle){ // Update only when show has completed
+            EMotor.Count = RcvdAddresses.Counter;
+            if (EMotor.Count > MAX_COUNT_TO_FLINCH) EMotor.Count = MAX_COUNT_TO_FLINCH; // Saturate count
+            RcvdAddresses.Counter = 0;
+        }
+    }
     // Handle cycle counter
-    if (++CC.CycleCounter >= CYCLE_NUMBER) CC.CycleCounter = 0;
-    
-    // Enable transmitting in new RX cycle
-    if (CC.CycleCounter == CYCLE_RX) CC.TransmitEnable = true;
+    if (++CC.CycleCounter >= CYCLE_NUMBER) CC.CycleCounter = 0; 
+
+    // New cycle has begun
+    if (CC.CycleCounter == 0) CC.TransmitEnable = true;  // Enable transmitting in new RX cycle
+    else CC_ENTER_IDLE();                                // Powerdown CC when needed
 
     // DEBUG
-    if (CC.CycleCounter == CYCLE_RX) PORTA |= (1<<PA2);
+    if (CC.CycleCounter == 0) PORTA |= (1<<PA2);
     else PORTA &= ~(1<<PA2);
-
-    // Powerdown CC if needed
-   // if (CC.CycleCounter == CYCLE_RX) {
-/*
-        CC_ENTER_RX();
-        UARTSendAsHex(CC.State, 1);
-        UARTNewLine();
-        CC.IsPowerDown = false;
-*/
-   // }
-   // else {
-        // Busywait CC
-      //  do{
-    //        CC_GET_STATE();
-//            UARTSendAsHex(CC.State, 1);
-  //          UARTNewLine();
-     //   }while(CC.State == 0x20);
-
-
-/*
-    if ((CC.CycleCounter != CYCLE_RX) && (!CC.IsPowerDown)) {
-        //CC_POWERDOWN();
-        CC_ENTER_IDLE();
-        CC.IsPowerDown = true;
-    }
-*/
-
-    // Display received aliens
-    if (RcvdAddreses.Counter > 0) LED_GREEN_ON();
-    else LED_GREEN_OFF();
-    // Clear recieved addresses
-    RcvdAddreses.Counter = 0;
 }
-
