@@ -33,7 +33,7 @@
 #define CC_SCLK PB7
 
 // Cycle
-#define CYCLE_NUMBER    5       // 0...4
+#define CYCLE_NUMBER    4
 #define CYCLE_RX        0
 
 
