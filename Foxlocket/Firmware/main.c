@@ -174,8 +174,8 @@ ISR(TIMER1_COMPA_vect){
 ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
     // Do things needed at end of RX cycle
     if (CC.CycleCounter == 0){
-//        if (TimerDelayElapsed(&EMotor.TimerUpdate, 1000)){
-        if (EMotor.State == M_Idle){ // Update only when show has completed
+        if (TimerDelayElapsed(&EMotor.TimerUpdate, 1000)){
+//        if (EMotor.State == M_Idle){ // Update only when show has completed
             EMotor.Count = RcvdAddresses.Counter;
             if (EMotor.Count > MAX_COUNT_TO_FLINCH) EMotor.Count = MAX_COUNT_TO_FLINCH; // Saturate count
             RcvdAddresses.Counter = 0;

@@ -33,7 +33,7 @@
 #define CC_SCLK PB7
 
 // Cycle
-#define CYCLE_NUMBER    7
+#define CYCLE_NUMBER    4
 
 // =========================== Pseudo functions ================================
 #define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
