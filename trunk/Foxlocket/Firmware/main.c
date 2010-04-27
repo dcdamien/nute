@@ -14,6 +14,7 @@
 #include "main.h"
 #include "cc1101.h"
 #include "time_utils.h"
+#include "UART1_to_SPI.h"
 
 struct {
     uint8_t Arr[30];
@@ -30,6 +31,7 @@ struct {
 
 int main(void) {
     GeneralInit();
+    UART1_to_SPI_init();
     // ******** Main cycle *********
     while (1){
         wdt_reset();    // Reset watchdog

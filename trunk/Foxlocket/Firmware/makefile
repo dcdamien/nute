@@ -28,6 +28,7 @@ OBJDIR = obj
 SRC = $(TARGET).c \
 cc1101.c \
 time_utils.c \
+UART1_to_SPI.c\
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
