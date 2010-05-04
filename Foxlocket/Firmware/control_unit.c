@@ -34,6 +34,8 @@ UCSR1C|=(1<<UCSZ11); //LSB first
 //USART1 Baud Rate: 9600
 UBRR1H=0x00;
 UBRR1L=0x33;
+
+
 }
 
 /*
@@ -53,4 +55,9 @@ ISR(USART1_UDRE_vect)
     UDR1= data;
     curent_ind++;
     if (curent_ind>4) curent_ind=1;
+}
+
+void LED_on (void)
+{
+    LED_DDR=0;
 }
