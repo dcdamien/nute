@@ -31,9 +31,17 @@ struct {
 
 int main(void) {
     GeneralInit();
-    UART1_to_SPI_init();
+    control_unit_init();
     // ******** Main cycle *********
+    unsigned char i=0;
     while (1){
+        i++;
+        if (i>9) i=0;
+        display_digits[0]=Dig[i];
+        display_digits[1]=Dig[i];
+        display_digits[2]=Dig[i];
+        display_digits[3]=Dig[i];
+
         wdt_reset();    // Reset watchdog
         CC_Task();
         Motor_TASK();
