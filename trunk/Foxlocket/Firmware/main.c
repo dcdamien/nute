@@ -14,7 +14,7 @@
 #include "main.h"
 #include "cc1101.h"
 #include "time_utils.h"
-#include "UART1_to_SPI.h"
+#include "control_unit.h"
 
 struct {
     uint8_t Arr[30];
