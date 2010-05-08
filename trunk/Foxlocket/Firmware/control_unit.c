@@ -7,7 +7,9 @@
 
 
 unsigned char curent_ind=0;
-unsigned char display_digits [DISPLAY_NAMBER];
+volatile unsigned char display_digits [DISPLAY_NAMBER];
+unsigned char rx_buf [32];
+unsigned char rx_buf_counter=0;
 
 void control_unit_init(void)
 {
@@ -35,11 +37,11 @@ void Dig_init(void)
   Dig[1] = (b+c);           // нужно сумму макросов отнять от
   Dig[2] =  (a+b+g+e+d);     // 255. Если с общим катодом, то
   Dig[3] =  (a+b+g+c+d);     // отнимать не нужно.
-  Dig[4] =  (f+g+b+c);       // Имена макросов соответствуют
-  Dig[5] =  (a+f+g+c+d);     // именам сегментов индикатора
-  Dig[6] =  (a+f+g+c+d+e);
-  Dig[7] =  (a+b+c);
-  Dig[8] =  (a+b+c+d+e+f+g);
+  Dig[4] = (f+g+b+c);       // Имена макросов соответствуют
+  Dig[5] = (a+f+g+c+d);     // именам сегментов индикатора
+  Dig[6] = (a+f+g+c+d+e);
+  Dig[7] = (a+b+c);
+  Dig[8] = (a+b+c+d+e+f+g);
   Dig[9] = (a+b+c+d+f+g);
 }
 
@@ -54,27 +56,55 @@ void UART1_init(void)
 
     UCSR1A=0x00;
     UCSR1B=0;
-    UCSR1B |= (1<<UDRIE1); // включаем прерывание  USART1 Data Register Empty
+    //UCSR1B |= (1<<UDRIE1); // включаем прерывание  USART1 Data Register Empty
+    UCSR1B |= (1<<TXCIE1); // включаем прерывание по передаче
+   // UCSR1B |= (1<<RXCIE1); // включаем прерывание по приему
+ 
     UCSR1B |= (1<<TXEN1); // включаем передачу
+    UCSR1B |= (1<<RXEN1); // включаем прием
+
 
     UCSR1C=0;
     UCSR1C|=(1<<UMSEL11); // включаем режим SPI
     UCSR1C|=(1<<UMSEL10); // .....SPI.....
 
     UCSR1C|=(1<<UCSZ11); //LSB first
-    //UCSR1C|=(1<<UCPHA1);
+    UCSR1C|=(1<<UCPHA1);
+    UCSR1C|=(1<<UCPOL1);
 
     //USART1 Baud Rate: 9600
     UBRR1H=0x00;
     UBRR1L=0x33;
+    DDRD |=(1<<PD3);  
+
+   UDR1=0;
 }
-/*
+
+ISR(USART1_TX_vect)
+{
+    unsigned char data=display_digits[curent_ind];
+    curent_ind++;
+    if (curent_ind>DISPLAY_NAMBER)
+    {
+        DISPLAY_LE_PORT |=(1<<DISPLAY_LE_PIN); //принимаем текущие данные
+        curent_ind=0;
+        DISPLAY_LE_PORT &=~(1<<DISPLAY_LE_PIN); //выключаем LE
+        UCSR1B &=~ (1<<TXEN1); // выключаем передачу
+    }
+    UDR1=data;
+}
+
+
+
 // USART1 Receiver interrupt service routine
 // может использоваться для контроля целостности цепи и
 //подсчета количества индикаторов в системе
+/*
 ISR(USART1_RX_vect)
 {
-
+    rx_buf[rx_buf_counter]=UDR1;
+    rx_buf_counter++;
+    if (rx_buf_counter>=32) rx_buf_counter=0;
 }
 */
 
@@ -82,24 +112,30 @@ ISR(USART1_RX_vect)
 ISR(USART1_UDRE_vect)
 {
     unsigned char data=display_digits[curent_ind];
-    UDR1= data;
     curent_ind++;
     if (curent_ind>DISPLAY_NAMBER)
     {
         DISPLAY_LE_PORT |=(1<<DISPLAY_LE_PIN); //принимаем текущие данные
-        curent_ind=1;
+        curent_ind=0;
         DISPLAY_LE_PORT &=~(1<<DISPLAY_LE_PIN); //выключаем LE
+        UCSR1B &=~ (1<<TXEN1); // выключаем передачу
     }
+    UDR1=data;
 }
 
 inline void display_on_off(char mode)
 {
-    if (mode)  DISPLAY_OE_DDR |=(1<<DISPLAY_OE_PIN);  // зажечь
+    if (mode) DISPLAY_OE_DDR |=(1<<DISPLAY_OE_PIN);  // зажечь
     else DISPLAY_OE_DDR &=~(1<<DISPLAY_OE_PIN);  // потушить
 }
 
 inline void display_LED_on_off(char mode)
 {
-    if (mode)  DISPLAY_LED_DDR &=~(1<<DISPLAY_LED_PIN);  // зажечь
-    else DISPLAY_LED_DDR |=(1<<DISPLAY_LED_PIN);  // потушить
+    if (mode) DISPLAY_LED_DDR |=(1<<DISPLAY_LED_PIN);   // зажечь
+    else   DISPLAY_LED_DDR &=~(1<<DISPLAY_LED_PIN); // потушить
+}
+
+inline void display_repaint(void)
+{
+    UCSR1B |= (1<<TXEN1); // включаем передачу
 }

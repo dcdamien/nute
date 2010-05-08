@@ -30,22 +30,31 @@ struct {
 } EMotor;
 
 int main(void) {
-    GeneralInit();
+    //GeneralInit();
     control_unit_init();
     // ******** Main cycle *********
+    sei();
     unsigned char i=0;
     while (1){
+        _delay_ms(200);
+        display_LED_on_off(0);
+       // display_on_off(0);
         i++;
         if (i>9) i=0;
         display_digits[0]=Dig[i];
         display_digits[1]=Dig[i];
         display_digits[2]=Dig[i];
         display_digits[3]=Dig[i];
+        display_repaint();
+        _delay_ms(1);
+        display_LED_on_off(1);
+        display_on_off(1);
+
 
         wdt_reset();    // Reset watchdog
-        CC_Task();
-        Motor_TASK();
-        Packet_TASK();
+       // CC_Task();
+        //Motor_TASK();
+        //Packet_TASK();
     } // while 1
 }
 
