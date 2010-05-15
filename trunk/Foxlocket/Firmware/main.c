@@ -10,6 +10,8 @@
 #include <inttypes.h>
 #include <avr/wdt.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
+
 
 #include "main.h"
 #include "cc1101.h"
@@ -61,7 +63,7 @@ int main(void) {
 FORCE_INLINE void GeneralInit(void){
     wdt_enable(WDTO_2S);
 
-    CC.Address = 1; //Never changes in CC itself
+    CC.Address = eeprom_read_byte((uint8_t*)4); //Never changes in CC itself
     CC.CycleCounter = 0;
 
     TimerInit();
@@ -72,13 +74,16 @@ FORCE_INLINE void GeneralInit(void){
     EMotor.State = M_Idle;
     TimerResetDelay(&EMotor.TimerUpdate);
     // Motor blink at power-on
-    MOTOR_ON();
-    _delay_ms(200);
-    MOTOR_OFF();
+    for (uint8_t i=0; i<CC.Address; i++){
+        MOTOR_ON();
+        _delay_ms(MOTOR_ON_TIME);
+        MOTOR_OFF();
+        _delay_ms(MOTOR_OFF_TIME);
+    }
 
     // Setup Timer1: cycle timings
     TCNT1 = 0;
-    OCR1A = 1<<TIMER_MULTI; // firstly, address=1
+    OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
     TCCR1A = 0;
     ICR1 = CYCLE_DURATION;
     TIMSK1 |= (1<<OCIE1A)|(1<<ICIE1);
@@ -125,28 +130,17 @@ void Packet_TASK(void){
     switch (CC.RX_Pkt->CommandID){
         case PKT_ID_CALL:
             ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-                // Modify our address if needed
-                if (AlienAddr == CC.Address) {
-                    TIMER_ADJUST(AlienAddr);    // Adjust our timer as alien address is lower
+                // Adjust our timer if alien address is lower, and do not otherwise
+                if (AlienAddr < CC.Address){
+                    TIMER_ADJUST(AlienAddr);                // Adjust our timer as alien address is lower
                     CC.CycleCounter = CC.RX_Pkt->Data[2];   // Adjust cycle counter
-                    CC.TransmitEnable = false;  // Next time just listen - if there is somebody else
-                    CC.Address++;               // Increase our address
-                    // Change our IRQ timestamp
-                    OCR1A = ((uint16_t)CC.Address) << TIMER_MULTI;
-                }// if equal
-                else { // not equal
-                    // Adjust our timer if alien address is lower, and do not otherwise
-                    if (AlienAddr < CC.Address){
-                        TIMER_ADJUST(AlienAddr);                // Adjust our timer as alien address is lower
-                        CC.CycleCounter = CC.RX_Pkt->Data[2];   // Adjust cycle counter
-                    }
-                    // Count this one if did not do it yet
-                    bool AlienIsCounted = false;
-                    for (uint8_t i=0; i<RcvdAddresses.Counter; i++)
-                        if (RcvdAddresses.Arr[i] == AlienAddr) AlienIsCounted = true;
-                    if (!AlienIsCounted)
-                        RcvdAddresses.Arr[RcvdAddresses.Counter++] = AlienAddr;
-                } // else not equal
+                }
+                // Count this one if did not do it yet
+                bool AlienIsCounted = false;
+                for (uint8_t i=0; i<RcvdAddresses.Counter; i++)
+                    if (RcvdAddresses.Arr[i] == AlienAddr) AlienIsCounted = true;
+                if (!AlienIsCounted)
+                    RcvdAddresses.Arr[RcvdAddresses.Counter++] = AlienAddr;
             } // Atomic
             break; // ID = CALL
 
@@ -176,13 +170,13 @@ ISR(TIMER1_COMPA_vect){
 ISR(TIMER1_CAPT_vect){ // Means overflow IRQ
     // Do things needed at end of RX cycle
     if (CC.CycleCounter == 0){
-        if (TimerDelayElapsed(&EMotor.TimerUpdate, 1000)){
+//        if (TimerDelayElapsed(&EMotor.TimerUpdate, 1000)){
 //        if (EMotor.State == M_Idle){ // Update only when show has completed
             EMotor.Count = RcvdAddresses.Counter;
             if (EMotor.Count > MAX_COUNT_TO_FLINCH) EMotor.Count = MAX_COUNT_TO_FLINCH; // Saturate count
             RcvdAddresses.Counter = 0;
         }
-    }
+//    }
     // Handle cycle counter
     if (++CC.CycleCounter >= CYCLE_NUMBER){
         CC.CycleCounter = 0;
