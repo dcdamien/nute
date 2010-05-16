@@ -8,8 +8,10 @@
 #include <inttypes.h>
 #include <util/atomic.h>
 #include "cc1101.h"
+#include "time_utils.h"
 
 struct CC_t CC;
+uint16_t CC_Timer;
 
 void CC_Task (void){
     CC_GET_STATE();
@@ -21,7 +23,9 @@ void CC_Task (void){
             CC_FLUSH_TX_FIFO();
             break;
         case CC_STB_IDLE:
-            if (!CC.NewPacketReceived) CC_ENTER_RX();
+            //if ((!CC.NewPacketReceived) && TimerDelayElapsed(&CC_Timer, CC_RX_PERIOD))
+            if (!CC.NewPacketReceived)
+                CC_ENTER_RX();
             break;
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
@@ -52,6 +56,7 @@ void CC_Init(void){
     SPSR = (1<<SPI2X);
 
     // ******* Firmware init section *******
+    TimerResetDelay(&CC_Timer);
     CC.RX_Pkt = (CC_Packet_p)&CC.RX_PktArray[0];  // treat array as structure
     CC.TX_Pkt = (CC_Packet_p)&CC.TX_PktArray[0];  // treat array as structure
     CC.NewPacketReceived = false;

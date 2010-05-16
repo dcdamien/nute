@@ -8,8 +8,11 @@
 #include <inttypes.h>
 #include <util/atomic.h>
 #include "cc1101.h"
+#include "time_utils.h"
 
 struct CC_t CC;
+
+uint16_t FTimer; // DEBUG
 
 void CC_Task (void){
     CC_GET_STATE();
@@ -21,7 +24,24 @@ void CC_Task (void){
             CC_FLUSH_TX_FIFO();
             break;
         case CC_STB_IDLE:
-            if (!CC.NewPacketReceived) CC_ENTER_RX();
+            PORTA &= ~(1<<PA1); // DEBUG
+            // DEBUG: do it not continuously
+            if (!TimerDelayElapsed(&FTimer, 100)) return;
+
+            
+
+            // Transmit at once if IDLE
+            // Prepare CALL packet
+            CC.TX_Pkt->Address = 0;     // Broadcast
+            CC.TX_Pkt->PacketID = 0;    // Current packet ID, to avoid repeative treatment
+            CC.TX_Pkt->CommandID = 0xCA;// }
+            CC.TX_Pkt->Data[0] = 0x11;  // } CALL packet
+
+            CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+            CC_ENTER_TX();
+
+
+            PORTA |= (1<<PA1); // DEBUG
             break;
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
@@ -29,6 +49,10 @@ void CC_Task (void){
 }
 
 void CC_Init(void){
+    // DEBUG
+    TimerResetDelay(&FTimer);
+
+    
     // ******** Hardware init section *******
     // Interrupts
     CC_GDO0_IRQ_DISABLE();
@@ -58,6 +82,8 @@ void CC_Init(void){
     CC_RESET();
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
+    // Change channel number in accordance with address
+    //CC_WriteRegister(CC_CHANNR, CC.Address);
 
     CC_GDO0_IRQ_ENABLE();
 }
@@ -179,11 +205,9 @@ uint8_t CC_ReadWriteByte(uint8_t AByte){
 // ============================ Interrupts =====================================
 ISR(INT2_vect){
     // Packet has been successfully recieved
-    PORTA |= (1<<PA1); // DEBUG
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
-    PORTA &= ~(1<<PA1); // DEBUG
 }

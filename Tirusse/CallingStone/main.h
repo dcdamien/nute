@@ -16,6 +16,7 @@
 #define LED_PORT  PORTC
 #define LED_P     PC6
 
+#define EE_ADDRESS  (uint8_t*)(4) 
 
 // ================================= Timings ===================================
 // Divider = 64
@@ -34,8 +35,6 @@
 
 // =============================== Prototypes ==================================
 void GeneralInit(void);
-
-void Packet_TASK(void);
 
 #endif	/* _MAIN_H */
 
