@@ -9,7 +9,7 @@
 #define	_MAIN_H
 
 #include <avr/io.h>
-#include "cc1101.h"
+#include "../cc_common/cc1101.h"
 
 // ================================= Defines ===================================
 #define LED_DDR   DDRC
