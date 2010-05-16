@@ -26,7 +26,7 @@ void CC_Task (void){
         case CC_STB_IDLE:
             PORTA &= ~(1<<PA1); // DEBUG
             // DEBUG: do it not continuously
-            if (!TimerDelayElapsed(&FTimer, 100)) return;
+            if (!TimerDelayElapsed(&FTimer, 200)) return;
 
             
 

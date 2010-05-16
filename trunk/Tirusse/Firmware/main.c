@@ -1,5 +1,5 @@
 /*
- * File:   main.c of CallingStone of Tirusse project
+ * File:   main.c of Tirusse of Tirusse project
  * Author: Kreyl Laurelindo
  *
  * Created on 2010.04.07
