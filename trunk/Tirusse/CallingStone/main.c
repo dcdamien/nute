@@ -13,7 +13,7 @@
 #include <avr/eeprom.h>
 
 #include "main.h"
-#include "cc1101.h"
+#include "../cc_common/cc1101.h"
 #include "time_utils.h"
 
 int main(void) {
