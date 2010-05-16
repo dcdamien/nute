@@ -32,8 +32,8 @@
 #define CC_MISO PB6
 #define CC_SCLK PB7
 
-// Cycle
-#define CYCLE_NUMBER    7
+// RX period
+#define CC_RX_PERIOD    11  // ms
 
 // =========================== Pseudo functions ================================
 #define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
@@ -116,6 +116,8 @@ uint8_t CC_ReadWriteByte(uint8_t AByte);
 #define CC_FLUSH_RX_FIFO()  CC_WriteStrobe(CC_SFRX)
 #define CC_FLUSH_TX_FIFO()  CC_WriteStrobe(CC_SFTX)
 #define CC_GET_STATE()      CC_WriteStrobe(CC_SNOP)
+
+#define CC_SET_CHANNEL(AChannel)    CC_WriteRegister(CC_CHANNR, AChannel);
 
 #endif	/* _CC1101_H */
 
