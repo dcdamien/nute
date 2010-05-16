@@ -35,6 +35,7 @@
 
 // =============================== Prototypes ==================================
 void GeneralInit(void);
+void CC_Task (void);
 
 #endif	/* _MAIN_H */
 

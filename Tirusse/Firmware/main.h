@@ -30,12 +30,15 @@
 #define PKT_ID_CALL     0xCA
 
 // ================================ Pseudo functions ===========================
-#define LED_ON()  LED_PORT &= ~(1<<LED_P)
-#define LED_OFF() LED_PORT |=  (1<<LED_P)
+#define LED_ON()  LED_PORT |=  (1<<LED_P)
+#define LED_OFF() LED_PORT &= ~(1<<LED_P)
 
 // =============================== Prototypes ==================================
 void GeneralInit(void);
 void Packet_TASK(void);
+void CC_Task (void);
+
+void LED_Task(void);
 
 #endif	/* _MAIN_H */
 

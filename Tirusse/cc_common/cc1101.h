@@ -32,9 +32,6 @@
 #define CC_MISO PB6
 #define CC_SCLK PB7
 
-// Cycle
-#define CYCLE_NUMBER    7
-
 // =========================== Pseudo functions ================================
 #define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
 #define CC_SCLK_LO  CC_PORT &= ~(1<<CC_SCLK)
@@ -82,10 +79,9 @@ extern struct CC_t CC;
 
 
 // ================================ Prototypes =================================
-void CC_Task (void);
+// High level
 void CC_Init(void);
-void CC_TransmitPacket(void);
-void CC_PreparePacket(void);
+void CC_SetChannel(uint8_t AChannel);
 
 // Middle level
 uint8_t CC_ReadRegister (uint8_t ARegAddr);
