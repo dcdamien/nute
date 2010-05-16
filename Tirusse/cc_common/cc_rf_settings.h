@@ -14,22 +14,23 @@
 #define CC_RX_FIFO_SIZE     32
 
 // ============================== Register values ==============================
-#define CC_FSCTRL1_VALUE    0x08        // Frequency synthesizer control: IF
+#define CC_FSCTRL1_VALUE    0x06        // Frequency synthesizer control: IF - RF studio
 #define CC_FSCTRL0_VALUE    0x00        // Frequency synthesizer control: freq offset
 
 #define CC_FREQ2_VALUE      0x0C        // Frequency control word, high byte.
 #define CC_FREQ1_VALUE      0x1D        // Frequency control word, middle byte.
 #define CC_FREQ0_VALUE      0x89        // Frequency control word, low byte.
 
-#define CC_MDMCFG4_VALUE    0x5B        // Modem configuration: channel bandwidth
-#define CC_MDMCFG3_VALUE    0xF8        // Modem configuration.
+#define CC_MDMCFG4_VALUE    0xC8        // Modem configuration: channel bandwidth
+#define CC_MDMCFG3_VALUE    0x93        // Modem configuration.
 #define CC_MDMCFG2_VALUE    0x03        // Filter, modulation format, Manchester coding, SYNC_MODE=011 => 30/32 sync word bits
 #define CC_MDMCFG1_VALUE    0b10100010  // FEC=1, Preamble length=010 => 4bytes, Ch spacing
+//#define CC_MDMCFG1_VALUE    0b11000010  // FEC=1, Preamble length=100 => 8bytes, Ch spacing=10=2
 #define CC_MDMCFG0_VALUE    0xF8        // Modem configuration.
 
 #define CC_CHANNR_VALUE     0x00        // Channel number.
-#define CC_DEVIATN_VALUE    0x47        // Modem deviation setting (when FSK modulation is enabled).
-#define CC_FREND1_VALUE     0xB6        // Front end RX configuration - RF studio
+#define CC_DEVIATN_VALUE    0x34        // Modem deviation setting - RF studio
+#define CC_FREND1_VALUE     0x56        // Front end RX configuration - RF studio
 #define CC_FREND0_VALUE     0x10        // Front end TX configuration.
 
 #define CC_MCSM2_VALUE      0b00000111
@@ -39,13 +40,13 @@
 #define CC_MCSM1_VALUE      0b00000000  // Channel is always clear, RX->IDLE, TX->IDLE
 //#define CC_MCSM1_VALUE      0b00000011  // Channel is always clear, RX->IDLE, TX->RX
 
-#define CC_FOCCFG_VALUE     0x1D        // Frequency Offset Compensation Configuration - RF studio
-#define CC_BSCFG_VALUE      0x1C        // Bit synchronization Configuration - RF studio
-#define CC_AGCCTRL2_VALUE   0xC7        // }
-#define CC_AGCCTRL1_VALUE   0x00        // }
-#define CC_AGCCTRL0_VALUE   0xB2        // } AGC control: RF studio
+#define CC_FOCCFG_VALUE     0x16        // Frequency Offset Compensation Configuration - RF studio
+#define CC_BSCFG_VALUE      0x6C        // Bit synchronization Configuration - RF studio
+#define CC_AGCCTRL2_VALUE   0x43        // }
+#define CC_AGCCTRL1_VALUE   0x40        // }
+#define CC_AGCCTRL0_VALUE   0x91        // } AGC control: RF studio
 
-#define CC_FSCAL3_VALUE     0xEA        // }
+#define CC_FSCAL3_VALUE     0xE9        // }
 #define CC_FSCAL2_VALUE     0x2A        // }
 #define CC_FSCAL1_VALUE     0x00        // }
 #define CC_FSCAL0_VALUE     0x1F        // } Frequency synthesizer calibration: RF studio
