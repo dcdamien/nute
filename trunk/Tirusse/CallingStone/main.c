@@ -1,6 +1,6 @@
 /*
- * File:   main.c of FoxLocket project
- * Author: Laurelindo
+ * File:   main.c of CallingStone of Tirusse project
+ * Author: Kreyl Laurelindo
  *
  * Created on 2010.04.07
  */
@@ -10,7 +10,6 @@
 #include <inttypes.h>
 #include <avr/wdt.h>
 #include <util/delay.h>
-#include <avr/eeprom.h>
 
 #include "main.h"
 #include "cc1101.h"
@@ -21,14 +20,15 @@ int main(void) {
 
     uint16_t Timer;
     TimerResetDelay(&Timer);
-    DDRC |= (1<<PC6); // DEBUG LED
-    //#define LED_ON()    PORTC
+
+    DDRC |= (1<<PC6);
+    #define LED_ON()    PORTC
 
     // ******** Main cycle *********
     sei();
     while (1){
         wdt_reset();    // Reset watchdog
-        if(TimerDelayElapsed(&Timer, 200)){
+        if(TimerDelayElapsed(&Timer, 100)){
             PORTC ^= (1<<PC6);
         }
         //CC_Task();
@@ -39,8 +39,9 @@ int main(void) {
 FORCE_INLINE void GeneralInit(void){
     wdt_enable(WDTO_2S);
 
+    LED_DDR |= (1<<LED_P);
+
     CC.Address = 4;     // Never changes as no need in it
-    CC.CycleCounter = 0;
 
     TimerInit();
     CC_Init();

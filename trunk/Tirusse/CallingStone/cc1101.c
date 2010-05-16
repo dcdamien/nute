@@ -66,7 +66,7 @@ void CC_Init(void){
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         CC_CS_LO;                                                   // Start transmission
-        while (CC_MISO_IS_HI());                                      // Wait for chip to become ready
+        while (CC_MISO_IS_HI());                                    // Wait for chip to become ready
         CC_WriteByte(ARegAddr|CC_WRITE_FLAG|CC_BURST_FLAG);         // Address with write & burst flags
         for (uint8_t i=0; i<ALength; i++) CC_WriteByte(*PData++);   // Write bytes themselves
         CC_CS_HI;                                                   // End transmission
@@ -75,7 +75,7 @@ void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
 void CC_WriteBurst_P(uint8_t ARegAddr, prog_uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
         CC_CS_LO;                                                   // Start transmission
-        while (CC_MISO_IS_HI());                                      // Wait for chip to become ready
+        while (CC_MISO_IS_HI());                                    // Wait for chip to become ready
         CC_WriteByte(ARegAddr|CC_WRITE_FLAG|CC_BURST_FLAG);         // Address with write & burst flags
         for (uint8_t i=0; i<ALength; i++) CC_WriteByte(pgm_read_byte (PData++));   // Write bytes themselves
         CC_CS_HI;                                                   // End transmission
@@ -87,7 +87,7 @@ void CC_WriteTX (uint8_t *PData, uint8_t ALength){
 }
 FORCE_INLINE void CC_ReadRX  (uint8_t *PData, uint8_t ALength){
     CC_CS_LO;                                                   // Start transmission
-    while (CC_MISO_IS_HI());                                      // Wait for chip to become ready
+    while (CC_MISO_IS_HI());                                    // Wait for chip to become ready
     CC_WriteByte(CC_FIFO|CC_READ_FLAG|CC_BURST_FLAG);           // Address with read & burst flags
     for (uint8_t i=0; i<ALength; i++) *PData++ = CC_ReadByte(); // Write bytes themselves
     CC_CS_HI;                                                   // End transmission
@@ -99,7 +99,7 @@ uint8_t CC_ReadRegister (uint8_t ARegAddr){
         CC_CS_LO;                               // Start transmission
         while (CC_MISO_IS_HI());                // Wait for chip to become ready
         CC_WriteByte(ARegAddr | CC_READ_FLAG);  // Transmit header byte: set READ bit and BURST flag
-        FReply = CC_ReadByte();         // Read reply
+        FReply = CC_ReadByte();                 // Read reply
         CC_CS_HI;                               // End transmission
     }//atomic
     return FReply;

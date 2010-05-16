@@ -76,7 +76,6 @@ struct CC_t {
     uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
     bool NewPacketReceived;
     bool TransmitEnable;
-    uint8_t CycleCounter;
 };
 
 extern struct CC_t CC;
