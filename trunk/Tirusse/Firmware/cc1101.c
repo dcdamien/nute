@@ -11,26 +11,6 @@
 #include "time_utils.h"
 
 struct CC_t CC;
-uint16_t CC_Timer;
-
-void CC_Task (void){
-    CC_GET_STATE();
-    switch (CC.State){
-        case CC_STB_RX_OVF:
-            CC_FLUSH_RX_FIFO();
-            break;
-        case CC_STB_TX_UNDF:
-            CC_FLUSH_TX_FIFO();
-            break;
-        case CC_STB_IDLE:
-            //if ((!CC.NewPacketReceived) && TimerDelayElapsed(&CC_Timer, CC_RX_PERIOD))
-            if (!CC.NewPacketReceived)
-                CC_ENTER_RX();
-            break;
-        default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
-            break;
-    }//Switch
-}
 
 void CC_Init(void){
     // ******** Hardware init section *******
@@ -56,7 +36,6 @@ void CC_Init(void){
     SPSR = (1<<SPI2X);
 
     // ******* Firmware init section *******
-    TimerResetDelay(&CC_Timer);
     CC.RX_Pkt = (CC_Packet_p)&CC.RX_PktArray[0];  // treat array as structure
     CC.TX_Pkt = (CC_Packet_p)&CC.TX_PktArray[0];  // treat array as structure
     CC.NewPacketReceived = false;
@@ -65,6 +44,13 @@ void CC_Init(void){
     CC_RfConfig();
 
     CC_GDO0_IRQ_ENABLE();
+}
+
+FORCE_INLINE void CC_SetChannel(uint8_t AChannel){
+    // CC must be in IDLE mode
+    while (CC.State != CC_STB_IDLE) CC_ENTER_IDLE();
+    // Now set channel
+    CC_WriteRegister(CC_CHANNR, AChannel);
 }
 
 // ============================= Inner use =====================================
