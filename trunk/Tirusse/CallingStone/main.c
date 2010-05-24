@@ -39,16 +39,15 @@ int main(void) {
 
 FORCE_INLINE void GeneralInit(void){
     wdt_enable(WDTO_2S);
-
     LED_DDR |= (1<<LED_P);
-
-    CC.Address = eeprom_read_byte(EE_ADDRESS); //Never changes in CC itself
 
     TimerInit();
 
     TimerResetDelay(&CC_Timer);
+    CC.Address = eeprom_read_byte(EE_ADDRESS); //Never changes in CC itself
     CC_Init();
-    CC_SetChannel(1);
+    CC_SetChannel(CC_CHANNEL_START);    // DEBUG
+    //CC_SetChannel(CC_CHANNEL_START + CC.Address);    // DEBUG
 }
 
 void CC_Task (void){
