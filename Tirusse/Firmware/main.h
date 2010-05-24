@@ -1,5 +1,5 @@
 /* 
- * File:   main.h
+ * File:   main.h of Tirusse
  * Author: Kreyl Laurelindo
  *
  * Created on 7 Апрель 2010 г., 19:44
@@ -19,12 +19,10 @@
 #define EE_ADDRESS  (uint8_t*)(4) 
 
 // ================================= Timings ===================================
-// Divider = 64
-#define TCCR1B_ON   (1<<WGM13)|(1<<WGM12)|(0<<CS02)|(1<<CS01)|(1<<CS00)
-#define TCCR1B_OFF  (1<<WGM13)|(1<<WGM12)|(0<<CS02)|(0<<CS01)|(0<<CS00)
+#define CC_CHANNEL_LISTEN_DELAY  15 // ms
+#define CC_RX_OFF_DELAY 72  // ms
 
-#define TIM1_STOP()     TCCR1B = TCCR1B_OFF
-#define TIM1_START()    TCCR1B = TCCR1B_ON
+#define CC_RX_CONTINUOUS    // For DEBUG
 
 // =============================== Packet info =================================
 #define PKT_ID_CALL     0xCA

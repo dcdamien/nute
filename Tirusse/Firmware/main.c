@@ -15,8 +15,6 @@
 #include "../cc_common/cc1101.h"
 #include "time_utils.h"
 
-uint16_t CC_Timer;
-
 struct {
     uint16_t Timer;
     bool IsOn;
@@ -46,11 +44,7 @@ void LED_Task(void){
 
 FORCE_INLINE void GeneralInit(void){
     wdt_enable(WDTO_2S);
-
     LED_DDR |= (1<<LED_P);
-
-    CC.Address = 4; //Never changes in CC itself
-
     TimerInit();
 
     // LED init
@@ -58,9 +52,13 @@ FORCE_INLINE void GeneralInit(void){
     ELED.IsOn = false;
 
     // CC init
-    TimerResetDelay(&CC_Timer);
+    CC.Address = 4; //Never changes in CC itself
+    CC.Channel = CC_CHANNEL_END;
+    CC.MayOperate = false;
+    TimerResetDelay(&CC.Timer);
     CC_Init();
-    CC_SetChannel(1);
+    CC_SetChannel(CC_CHANNEL_START);
+    //CC_SetChannel(12);
 }
 
 void Packet_TASK(void){
@@ -75,21 +73,47 @@ void Packet_TASK(void){
 
 // ================================= CC Task ===================================
 void CC_Task (void){
-    CC_GET_STATE();
-    switch (CC.State){
-        case CC_STB_RX_OVF:
-            CC_FLUSH_RX_FIFO();
-            break;
-        case CC_STB_TX_UNDF:
-            CC_FLUSH_TX_FIFO();
-            break;
-        case CC_STB_IDLE:
-            //if ((!CC.NewPacketReceived) && TimerDelayElapsed(&CC_Timer, CC_RX_PERIOD))
-            if (!CC.NewPacketReceived)
-                CC_ENTER_RX();
-            break;
-        default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
-            break;
-    }//Switch
+    // Do it not continuosly
+    #ifndef CC_RX_CONTINUOUS
+    if (CC.MayOperate) {
+    #endif
+        // Do with CC what needed
+        CC_GET_STATE();
+        switch (CC.State){
+            case CC_STB_RX_OVF:
+                CC_FLUSH_RX_FIFO();
+                break;
+            case CC_STB_TX_UNDF:
+                CC_FLUSH_TX_FIFO();
+                break;
+            case CC_STB_IDLE:
+                if (!CC.NewPacketReceived) {
+                    TimerResetDelay(&CC.Timer);
+                    CC_ENTER_RX();
+                }
+                break;
+            case CC_STB_RX:
+                if (TimerDelayElapsed(&CC.Timer, CC_CHANNEL_LISTEN_DELAY)) { // Time to switch channel
+                    PORTA |= (1<<PA2); // DEBUG
+                    // Catch next channel
+                    CC.Channel += CC_CHANNEL_SPACING;
+                    if (CC.Channel > CC_CHANNEL_END) CC.Channel = CC_CHANNEL_START;
+                    CC_SetChannel(CC.Channel);
+                    //CC_SetChannel(CC_CHANNEL_START);    // DEBUG
+                    //CC_SetChannel(12);    // DEBUG
+                    CC_ENTER_RX();
+                    PORTA &= ~(1<<PA2); // DEBUG
+                }// if timer
+            default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
+                break;
+        }//Switch
+    #ifndef CC_RX_CONTINUOUS
+        // Check if time has out
+        if (TimerDelayElapsed(&CC.Timer, CC_RX_ON_DELAY)) CC.MayOperate = false;
+    } // if may operate
+    else {
+        if (TimerDelayElapsed(&CC.Timer, CC_RX_OFF_DELAY)) CC.MayOperate = true;
+    } // if may not operate
+    #endif
 }
 
