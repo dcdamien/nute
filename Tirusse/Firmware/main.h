@@ -19,10 +19,10 @@
 #define EE_ADDRESS  (uint8_t*)(4) 
 
 // ================================= Timings ===================================
-#define CC_RX_ON_DELAY      15 // ms
-#define CC_RX_OFF_DELAY     72 // ms
+#define CC_RX_ON_DELAY      18 // ms
+#define CC_RX_OFF_DELAY     216 // ms
 
-#define DETECTOR_TIMEOUT    1000 // ms
+#define DETECTOR_TIMEOUT    2700 // ms
 
 #define CC_RX_CONTINUOUS    // For DEBUG
 
@@ -30,7 +30,7 @@
 #define PKT_ID_CALL     0xCA
 
 // ================================ Pseudo functions ===========================
-#define LED_ON()  LED_PORT |=  (1<<LED_P)
+#define LED_ON()  //LED_PORT |=  (1<<LED_P)
 #define LED_OFF() LED_PORT &= ~(1<<LED_P)
 
 // =============================== Prototypes ==================================

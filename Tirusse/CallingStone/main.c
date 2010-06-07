@@ -61,7 +61,7 @@ void CC_Task (void){
             CC_FLUSH_TX_FIFO();
             break;
         case CC_STB_IDLE:
-            PORTA &= ~(1<<PA1); // DEBUG
+            PORTA |= (1<<PA1); // DEBUG
             // Transmit at once if IDLE
             // Prepare CALL packet
             CC.TX_Pkt->Address = 0;     // Broadcast
@@ -72,7 +72,7 @@ void CC_Task (void){
             CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
             CC_ENTER_TX();
 
-            PORTA |= (1<<PA1); // DEBUG
+            PORTA &= ~(1<<PA1); // DEBUG
             break;
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
