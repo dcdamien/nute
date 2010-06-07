@@ -19,8 +19,10 @@
 #define EE_ADDRESS  (uint8_t*)(4) 
 
 // ================================= Timings ===================================
-#define CC_CHANNEL_LISTEN_DELAY  15 // ms
-#define CC_RX_OFF_DELAY 72  // ms
+#define CC_RX_ON_DELAY      15 // ms
+#define CC_RX_OFF_DELAY     72 // ms
+
+#define DETECTOR_TIMEOUT    1000 // ms
 
 #define CC_RX_CONTINUOUS    // For DEBUG
 
@@ -33,10 +35,13 @@
 
 // =============================== Prototypes ==================================
 void GeneralInit(void);
-void Packet_TASK(void);
 void CC_Task (void);
+void Stone_Task(void);
 
 void LED_Task(void);
+void EVENT_Detected(void);
+void EVENT_Hide(void);
+void EVENT_NewPacket(void);
 
 #endif	/* _MAIN_H */
 

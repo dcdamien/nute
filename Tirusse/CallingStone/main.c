@@ -44,10 +44,11 @@ FORCE_INLINE void GeneralInit(void){
     TimerInit();
 
     TimerResetDelay(&CC_Timer);
-    CC.Address = eeprom_read_byte(EE_ADDRESS); //Never changes in CC itself
+    uint8_t CCAddress = eeprom_read_byte(EE_ADDRESS); //Never changes in CC itself
     CC_Init();
+    CC_SetAddress(CCAddress);   // Just in case
     CC_SetChannel(CC_CHANNEL_START);    // DEBUG
-    //CC_SetChannel(CC_CHANNEL_START + CC.Address);    // DEBUG
+    //CC_SetChannel(CC_CHANNEL_START + CCAddress);
 }
 
 void CC_Task (void){
@@ -61,19 +62,15 @@ void CC_Task (void){
             break;
         case CC_STB_IDLE:
             PORTA &= ~(1<<PA1); // DEBUG
-            // DEBUG: do it not continuously
-            //if (!TimerDelayElapsed(&CC_Timer, 200)) return;
-
             // Transmit at once if IDLE
             // Prepare CALL packet
             CC.TX_Pkt->Address = 0;     // Broadcast
-            CC.TX_Pkt->PacketID = 0;    // Current packet ID, to avoid repeative treatment
+            CC.TX_Pkt->PacketID++;      // Current packet ID, to avoid repeative treatment
             CC.TX_Pkt->CommandID = 0xCA;// }
             CC.TX_Pkt->Data[0] = 0x11;  // } CALL packet
 
             CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
             CC_ENTER_TX();
-
 
             PORTA |= (1<<PA1); // DEBUG
             break;
@@ -81,5 +78,3 @@ void CC_Task (void){
             break;
     }//Switch
 }
-
-// ============================== Interrupts ===================================

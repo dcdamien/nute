@@ -20,8 +20,7 @@
 // Channels to use
 #define CC_CHANNEL_COUNT    30  // Number of channels to use
 #define CC_CHANNEL_START    11
-#define CC_CHANNEL_SPACING  1
-#define CC_CHANNEL_END      CC_CHANNEL_START + (CC_CHANNEL_COUNT * CC_CHANNEL_SPACING)
+#define CC_CHANNEL_END      (CC_CHANNEL_START + CC_CHANNEL_COUNT)
 
 // ================================== Defins ===================================
 #define FORCE_INLINE inline __attribute__ ((__always_inline__))
@@ -72,10 +71,6 @@ struct CC_Packet_t{
 typedef struct CC_Packet_t* CC_Packet_p;
 
 struct CC_t {
-    uint8_t Address;
-    uint8_t Channel;
-    uint16_t Timer;
-    bool MayOperate;
     uint8_t State;
     CC_Packet_p RX_Pkt, TX_Pkt;
     uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
@@ -91,6 +86,7 @@ extern struct CC_t CC;
 // High level
 void CC_Init(void);
 void CC_SetChannel(uint8_t AChannel);
+void CC_SetAddress(uint8_t AAdress);
 
 // Middle level
 uint8_t CC_ReadRegister (uint8_t ARegAddr);

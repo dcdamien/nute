@@ -53,6 +53,10 @@ FORCE_INLINE void CC_SetChannel(uint8_t AChannel){
     CC_WriteRegister(CC_CHANNR, AChannel);
 }
 
+FORCE_INLINE void CC_SetAddress(uint8_t AAddress) {
+    CC_WriteRegister(CC_ADDR, AAddress);
+}
+
 // ============================= Inner use =====================================
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
