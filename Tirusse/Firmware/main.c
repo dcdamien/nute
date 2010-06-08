@@ -19,13 +19,14 @@ struct {
     uint16_t Timer;
 } ELED;
 struct {
-    bool Detected;
-    bool IsHere;
+    bool Detected: 1;
+    bool IsHere: 1;
     uint16_t Timer;
 } CStone;
 struct {
     uint16_t Timer;
-    bool JustEnteredRX;
+    bool JustEnteredRX: 1;
+    bool DeepSleep: 1;
     uint8_t Channel;
 } CC_Srv;
 
@@ -46,7 +47,7 @@ int main(void) {
 }
 
 FORCE_INLINE void GeneralInit(void){
-    wdt_enable(WDTO_2S);
+    //wdt_enable(WDTO_2S);
     LED_DDR |= (1<<LED_P);
     TimerInit();
 
@@ -60,6 +61,7 @@ FORCE_INLINE void GeneralInit(void){
     // CC init
     CC_Srv.Channel = CC_CHANNEL_START;
     CC_Srv.JustEnteredRX = false;
+    CC_Srv.DeepSleep = false;
     TimerResetDelay(&CC_Srv.Timer);
     CC_Init();
     CC_SetAddress(4);   //Never changes in CC itself
@@ -87,6 +89,11 @@ void CC_Task (void){
         EVENT_NewPacket();
     }
 
+    if (CC_Srv.DeepSleep) {
+        if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
+        else return;
+    }
+    PORTA |= (1<<PA2); // DEBUG
     // Do with CC what needed
     CC_GET_STATE();
     switch (CC.State){
@@ -99,14 +106,14 @@ void CC_Task (void){
 
         case CC_STB_IDLE:
             // Set needed channel and enter RX if time has come
-            if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) {
+//            if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY-1)) {
                 CC_SetChannel(CC_Srv.Channel);
                 CC_ENTER_RX();
                 CC_Srv.JustEnteredRX = true;
                 // Calculate next channel
                 CC_Srv.Channel++;
                 if (CC_Srv.Channel > CC_CHANNEL_END) CC_Srv.Channel = CC_CHANNEL_START;
-            }
+  //          }
             break;
         
         case CC_STB_RX:
@@ -114,12 +121,14 @@ void CC_Task (void){
             if (CC_Srv.JustEnteredRX) {
                 CC_Srv.JustEnteredRX = false;
                 TimerResetDelay(&CC_Srv.Timer);
-                PORTA |= (1<<PA2); // DEBUG
+                
             }
             else {
                 // Check if CC_RX_ON_DELAY delay elapsed
                 if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_ON_DELAY)) { // Time to switch off
                     CC_ENTER_IDLE();
+                    CC_POWERDOWN();
+                    CC_Srv.DeepSleep = true;
                     PORTA &= ~(1<<PA2); // DEBUG
                 }// if timer
             }// if not RX
