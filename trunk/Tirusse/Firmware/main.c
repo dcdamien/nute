@@ -17,13 +17,9 @@
 #include "time_utils.h"
 
 // ================================= Types =====================================
-#define LED_PWM_MAX     150
-#define LED_STEP_DELAY  72  // ms
-enum LEDState_t {LED_Fade, LED_Brighten, LED_Off, LED_Full};
 struct {
     uint16_t Timer;
-    enum LEDState_t State;
-    uint8_t PWM;
+    uint8_t PWM, PWMDesired;
 } ELED;
 struct {
     bool Detected;
@@ -60,8 +56,8 @@ FORCE_INLINE void GeneralInit(void){
 
     // LED init
     PWM_Setup();
-    ELED.PWM = 0;
-    ELED.State = LED_Off;
+    ELED.PWMDesired = 0;
+    ELED.PWM = PWM_MAX; // Light-up at power-on
     TimerResetDelay(&ELED.Timer);
 
     // Stone init
@@ -80,20 +76,30 @@ FORCE_INLINE void GeneralInit(void){
 
 // ============================= PWM functions =================================
 FORCE_INLINE void PWM_Setup(void) {
-    // Fast PWM, 8 bit, no prescaling, OC1A disconnected, OC1B inverted
-    //TCCR1A = (0<<COM1A1)|(0<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(0<<WGM11)|(1<<WGM10);
-    //TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);
     // Fast PWM, 10 bit, no prescaling, OC1A disconnected, OC1B inverted
     TCCR1A = (0<<COM1A1)|(0<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(1<<WGM11)|(1<<WGM10);
-    TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);
-    PWM_Set(0);
-    DDRD |= (1<<PD4);
+    TIMER1_ENABLE();
+    DDRD  |= (1<<PD4);
+    PORTD |= (1<<PD4);
 }
 
 FORCE_INLINE void PWM_Set(uint8_t APWM) {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         OCR1B = APWM;
     }
+}
+
+bool MayChangePWM(void) {
+    if (ELED.PWM <= PWMStepOver1) {
+        return TimerDelayElapsed(&ELED.Timer, PWMDelayLong);        // Low speed
+    }
+    else if (ELED.PWM > PWMStepOver1 && ELED.PWM <= PWMStepOver2) {
+        return TimerDelayElapsed(&ELED.Timer, PWMDelayMid);         // Mid-speed
+    }
+    else if (ELED.PWM > PWMStepOver2) {
+        return TimerDelayElapsed(&ELED.Timer, PWMDelayFast);        // High-speed
+    }
+    return false;
 }
 
 // ================================ Tasks ======================================
@@ -108,18 +114,23 @@ void Stone_Task(void) {
 }
 
 void LED_Task(void) {
-    if ((ELED.State == LED_Full) || (ELED.State == LED_Off)) return;    // Nothing to do if at top or at bottom
-    if (!TimerDelayElapsed(&ELED.Timer, LED_STEP_DELAY)) return;
-    if (ELED.State == LED_Brighten) {
-        ELED.PWM++;
-        PWM_Set(ELED.PWM);
-        if (ELED.PWM >= LED_PWM_MAX) ELED.State = LED_Full;
-    }
-    else if (ELED.State == LED_Fade) {
-        ELED.PWM--;
-        PWM_Set(ELED.PWM);
-        if (ELED.PWM == 0) ELED.State = LED_Off;
-    }
+    if (ELED.PWM != ELED.PWMDesired) {
+        if (ELED.PWMDesired < ELED.PWM) {   // Lower PWM
+            if (MayChangePWM()) {
+                ELED.PWM--;
+                PWM_Set(ELED.PWM);
+            }
+            // Workaround hardware PWM bug: LED does not switches off totally
+            if (ELED.PWM == 0) TIMER1_DISABLE();
+        }
+        else {
+            if (ELED.PWM == 0) TIMER1_ENABLE();
+            if (MayChangePWM()) {
+                ELED.PWM++;
+                PWM_Set(ELED.PWM);
+            } // if maychange
+        } // Fade or brighten
+    } // if not desired
 }
 
 void CC_Task (void){
@@ -182,11 +193,11 @@ void CC_Task (void){
 // =============================== Events ======================================
 void EVENT_Detected(void) {
     //LED_ON();
-    ELED.State = LED_Brighten;
+    ELED.PWMDesired = PWM_MAX;
 }
 void EVENT_Hide(void) {
     //LED_OFF();
-    ELED.State = LED_Fade;
+    ELED.PWMDesired = 0;
 }
 
 void EVENT_NewPacket(void) {
