@@ -8,24 +8,18 @@
 #include <stdbool.h>
 #include "calma3c.h"
 #include "time_utils.h"
+#include "common.h"
 
+// ============================= Types =========================================
 struct {
+    bool ColorUpIsDown, ColorDownIsDown, HandleIsDown;
     uint16_t Timer;//, DurationTimer;
-    bool IsDown;
     //bool IsMeasuringDelay;
 } EKey;
 
+// ============================== General ======================================
 int main(void) {
-    // Setup hardware
-    ACSR = 1<<ACD;  // Disable analog comparator
-    // Setup pins
-    DDRD  = (1<<PWM_RED)|(1<<PWM_GREEN)|(1<<PWM_BLUE)|(0<<SENSOR_OUT);
-    PORTD = (0<<PWM_RED)|(0<<PWM_GREEN)|(0<<PWM_BLUE)|(1<<SENSOR_OUT);
-    // Setup timer
-    TimerInit();    // Time counter
-    // Init key
-    EKey.IsDown = false;
-    TimerResetDelay (&EKey.Timer);
+    GeneralInit();
 
     sei(); 
 
@@ -36,6 +30,25 @@ int main(void) {
     } // while
 }
 
+FORCE_INLINE void GeneralInit(void) {
+    // Setup hardware
+    ACSR = 1<<ACD;  // Disable analog comparator
+    // Setup pins
+    DDRD  = (1<<PWM_RED)|(1<<PWM_GREEN)|(1<<PWM_BLUE)|(0<<SENSOR_OUT);
+    PORTD = (0<<PWM_RED)|(0<<PWM_GREEN)|(0<<PWM_BLUE)|(1<<SENSOR_OUT);
+    // Setup timer
+    TimerInit();    // Time counter
+
+    // Keys
+    EKey.ColorDownIsDown = false;
+    EKey.ColorUpIsDown = false;
+    EKey.HandleIsDown = false;
+    TimerResetDelay (&EKey.Timer);
+    
+
+}
+
+// ============================== Tasks ========================================
 void Key_Task (void) {
     // ====== Check button when needed ======
     if (TimerDelayElapsed (&EKey.Timer, KEY_POLL_T)) {
@@ -51,6 +64,7 @@ void Key_Task (void) {
     } // if timeout
 }
 
+// ============================== Events =======================================
 
 void KeyPress_Event (void) {
     LED_TOGGLE;

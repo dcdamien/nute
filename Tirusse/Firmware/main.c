@@ -10,23 +10,30 @@
 #include <inttypes.h>
 #include <avr/wdt.h>
 #include <util/delay.h>
+#include <util/atomic.h>
 
 #include "main.h"
 #include "../cc_common/cc1101.h"
 #include "time_utils.h"
 
+// ================================= Types =====================================
+#define LED_PWM_MAX     150
+#define LED_STEP_DELAY  72  // ms
+enum LEDState_t {LED_Fade, LED_Brighten, LED_Off, LED_Full};
 struct {
     uint16_t Timer;
+    enum LEDState_t State;
+    uint8_t PWM;
 } ELED;
 struct {
-    bool Detected: 1;
-    bool IsHere: 1;
+    bool Detected;
+    bool IsHere;
     uint16_t Timer;
 } CStone;
 struct {
     uint16_t Timer;
-    bool JustEnteredRX: 1;
-    bool DeepSleep: 1;
+    bool JustEnteredRX;
+    bool DeepSleep;
     uint8_t Channel;
 } CC_Srv;
 
@@ -52,6 +59,10 @@ FORCE_INLINE void GeneralInit(void){
     TimerInit();
 
     // LED init
+    PWM_Setup();
+    ELED.PWM = 0;
+    ELED.State = LED_Off;
+    TimerResetDelay(&ELED.Timer);
 
     // Stone init
     CStone.Detected = false;
@@ -67,6 +78,24 @@ FORCE_INLINE void GeneralInit(void){
     CC_SetAddress(4);   //Never changes in CC itself
 }
 
+// ============================= PWM functions =================================
+FORCE_INLINE void PWM_Setup(void) {
+    // Fast PWM, 8 bit, no prescaling, OC1A disconnected, OC1B inverted
+    //TCCR1A = (0<<COM1A1)|(0<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(0<<WGM11)|(1<<WGM10);
+    //TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);
+    // Fast PWM, 10 bit, no prescaling, OC1A disconnected, OC1B inverted
+    TCCR1A = (0<<COM1A1)|(0<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(1<<WGM11)|(1<<WGM10);
+    TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);
+    PWM_Set(0);
+    DDRD |= (1<<PD4);
+}
+
+FORCE_INLINE void PWM_Set(uint8_t APWM) {
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        OCR1B = APWM;
+    }
+}
+
 // ================================ Tasks ======================================
 void Stone_Task(void) {
     if (!TimerDelayElapsed(&CStone.Timer, DETECTOR_TIMEOUT)) return;
@@ -79,7 +108,18 @@ void Stone_Task(void) {
 }
 
 void LED_Task(void) {
-
+    if ((ELED.State == LED_Full) || (ELED.State == LED_Off)) return;    // Nothing to do if at top or at bottom
+    if (!TimerDelayElapsed(&ELED.Timer, LED_STEP_DELAY)) return;
+    if (ELED.State == LED_Brighten) {
+        ELED.PWM++;
+        PWM_Set(ELED.PWM);
+        if (ELED.PWM >= LED_PWM_MAX) ELED.State = LED_Full;
+    }
+    else if (ELED.State == LED_Fade) {
+        ELED.PWM--;
+        PWM_Set(ELED.PWM);
+        if (ELED.PWM == 0) ELED.State = LED_Off;
+    }
 }
 
 void CC_Task (void){
@@ -139,13 +179,14 @@ void CC_Task (void){
     }//Switch
 }
 
-
 // =============================== Events ======================================
 void EVENT_Detected(void) {
-    LED_ON();
+    //LED_ON();
+    ELED.State = LED_Brighten;
 }
 void EVENT_Hide(void) {
-    LED_OFF();
+    //LED_OFF();
+    ELED.State = LED_Fade;
 }
 
 void EVENT_NewPacket(void) {
