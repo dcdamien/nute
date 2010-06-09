@@ -28,6 +28,8 @@
 #define KEY_IS_DOWN     bit_is_clear (PIND, SENSOR_OUT)
 
 // =============================== Prototypes ==================================
+void GeneralInit(void);
+
 void Key_Task (void);
 void KeyPress_Event (void);
 //void KeyDepress_Event (void);

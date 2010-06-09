@@ -33,10 +33,14 @@
 
 // =============================== Prototypes ==================================
 void GeneralInit(void);
+
+void PWM_Setup(void);
+void PWM_Set(uint8_t APWM);
+
 void CC_Task (void);
 void Stone_Task(void);
-
 void LED_Task(void);
+
 void EVENT_Detected(void);
 void EVENT_Hide(void);
 void EVENT_NewPacket(void);
