@@ -44,6 +44,11 @@
 #define GREEN_P     PD5
 #define BLUE_P      PD3
 
+#define LED_PWR_P       PB7
+#define LED_PWR_DDR     DDRB
+#define LED_PWR_PORT    PORTB
+#define LED_PWR_ON()    LED_PWR_PORT &= ~(1<<LED_PWR_P)
+#define LED_PWR_OFF()   LED_PWR_PORT |=  (1<<LED_PWR_P)
 
 // =============================== Prototypes ==================================
 // General
@@ -52,6 +57,7 @@ void GeneralInit(void);
 // Tasks
 void SENS_Task (void);
 void Light_Task(void);
+void CC_Task (void);
 
 // Events
 void EVENT_ColorUpTouched(void);
@@ -60,7 +66,6 @@ void EVENT_ColorDownTouched(void);
 void EVENT_ColorDownDetouched(void);
 void EVENT_HandleTouched(void);
 void EVENT_HandleDetouched(void);
-
 
 
 #endif	/* _CALMA3C_H */

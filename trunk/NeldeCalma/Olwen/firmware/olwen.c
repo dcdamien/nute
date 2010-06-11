@@ -2,13 +2,15 @@
  * File:   calma3c.c
  * Author: Laurelindo
  *
- * Created on 20 Декабрь 2009 г., 0:16
+ * Created on 20 Р”РµРєР°Р±СЂСЊ 2009 Рі., 0:16
  */
 #include <avr/io.h>
 #include <stdbool.h>
+#include <avr/wdt.h>
 #include "olwen.h"
 #include "time_utils.h"
 #include "common.h"
+#include "../../cc_common/cc2500.h"
 
 // ============================= Types =========================================
 struct {
@@ -31,33 +33,43 @@ struct {
 int main(void) {
     GeneralInit();
 
-    sei(); 
+    LED_PWR_ON();
 
+    ELight.DesiredColor.Red = 50;
+    ELight.DesiredColor.Green = 50;
+    ELight.DesiredColor.Blue = 50;
+
+    sei(); 
     while (1) {
+        wdt_reset();    // Reset watchdog
+        CC_Task();
         SENS_Task ();
         Light_Task ();
+
         //Sleep_Task ();
     } // while
 }
 
 FORCE_INLINE void GeneralInit(void) {
-    // Setup hardware
+    wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
-    
+    // Setup timer
+    TimerInit();    // Time counter
+
     // Light
-    L_DDR  = (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
+    L_DDR  |= (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
+    LED_PWR_DDR |= (1<<LED_PWR_P);
+    LED_PWR_OFF();
+
     TCCR0A = (1<<COM0A1)|(0<<COM0A0)|(1<<COM0B1)|(0<<COM0B0)|(1<<WGM01)|(1<<WGM00);
     TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
     TCCR2A = (0<<COM2A1)|(0<<COM2A0)|(1<<COM2B1)|(0<<COM2B0)|(1<<WGM21)|(1<<WGM20);
     TCCR2B = (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
     ELight.DesiredColor.Red = 0;
-    ELight.DesiredColor.Green = 108;
+    ELight.DesiredColor.Green = 0;
     ELight.DesiredColor.Blue = 0;
     TimerResetDelay(&ELight.Timer);
     
-    // Setup timer
-    TimerInit();    // Time counter
-
     // Sensors
     SENS_DDR  &= ~((1<<SENS_COLORDOWN)|(1<<SENS_COLORUP)|(1<<SENS_HANDLE));
     SENS_DDR  |= 1<<SENS_PWR;
@@ -67,6 +79,14 @@ FORCE_INLINE void GeneralInit(void) {
     ESens.ColorUpIsOn = false;
     ESens.HandleIsOn = false;
     TimerResetDelay (&ESens.Timer);
+
+    // CC init
+    //CC_Srv.Channel = CC_CHANNEL_START;
+    //CC_Srv.JustEnteredRX = false;
+    //CC_Srv.DeepSleep = false;
+    //TimerResetDelay(&CC_Srv.Timer);
+    CC_Init();
+    CC_SetAddress(4);   //Never changes in CC itself
 }
 
 // ============================== Tasks ========================================
@@ -123,6 +143,37 @@ void Light_Task(void) {
     }
 }
 
+void CC_Task (void){
+    // Do with CC what needed
+    CC_GET_STATE();
+    switch (CC.State) {
+        case CC_STB_RX_OVF:
+            CC_FLUSH_RX_FIFO();
+            break;
+        case CC_STB_TX_UNDF:
+            CC_FLUSH_TX_FIFO();
+            break;
+
+        case CC_STB_IDLE:
+            // Transmit at once if IDLE
+            // Prepare CALL packet
+            CC.TX_Pkt->Address = 0;     // Broadcast
+            CC.TX_Pkt->PacketID = 0;    // Current packet ID, to avoid repeative treatment
+            CC.TX_Pkt->CommandID = 0xC0;// SetColor packet
+            CC.TX_Pkt->Data[0] = ELight.DesiredColor.Red;   // }
+            CC.TX_Pkt->Data[1] = ELight.DesiredColor.Green; // }
+            CC.TX_Pkt->Data[2] = ELight.DesiredColor.Blue;  // } components of color
+
+            CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+            CC_ENTER_TX();
+            break;
+
+        default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
+            break;
+    }//Switch
+}
+
+
 // ============================== Events =======================================
 void EVENT_ColorUpTouched(void) {
 
@@ -143,11 +194,3 @@ void EVENT_HandleTouched(void) {
 void EVENT_HandleDetouched(void) {
     SENS_PWR_OFF();
 }
-
-
-
-
-
-/* void KeyDepress_Event (void) {
-}
-*/
