@@ -15,6 +15,7 @@
 #include <avr/interrupt.h>
 #include "cc1101defins.h"
 #include "cc_rf_settings.h"
+#include "../Firmware/common.h"
 
 // ==================== Application-specific defins ============================
 // Channels to use
@@ -23,8 +24,6 @@
 #define CC_CHANNEL_END      (CC_CHANNEL_START + CC_CHANNEL_COUNT)
 
 // ================================== Defins ===================================
-#define FORCE_INLINE inline __attribute__ ((__always_inline__))
-
 // Ports
 #define CC_DDR  DDRB
 #define CC_PORT PORTB

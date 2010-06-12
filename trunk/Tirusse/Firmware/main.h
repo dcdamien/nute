@@ -16,8 +16,6 @@
 #define LED_PORT  PORTC
 #define LED_P     PC6
 
-#define EE_ADDRESS  (uint8_t*)(4) 
-
 // ================================= Timings ===================================
 #define CC_RX_ON_DELAY      18 // ms
 #define CC_RX_OFF_DELAY     108 // ms
@@ -45,8 +43,6 @@
 #define PWMStepOver2    54
 #define	PWMMin          0
 #define PWM_MAX         150
-
-
 
 // =============================== Prototypes ==================================
 void GeneralInit(void);

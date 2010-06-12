@@ -8,33 +8,45 @@
 #ifndef _CALMA3C_H
 #define	_CALMA3C_H
 
-// =============================== Constants ===================================
-// Timings, mS
-#define KEY_POLL_T  99 
+// =============================== General =====================================
+#define PKT_ID_COLOR    0xC0
 
-// ============================== Ports & pins =================================
-#define PWM_RED     PD3
-#define PWM_GREEN   PD5
-#define PWM_BLUE    PD6
-#define SENSOR_OUT  PD2
+// ============================== CC timings ===================================
+#define CC_RX_ON_DELAY      54 // ms
+#define CC_RX_OFF_DELAY     216 // ms
 
-// ============================= Pseudo functions ==============================
-// LEDs
-#define LED_ON      PORTD |=  (1<<PWM_GREEN)
-#define LED_OFF     PORTD &= ~(1<<PWM_GREEN)
-#define LED_TOGGLE  PORTD ^=  (1<<PWM_GREEN)
+// ================================== Light ====================================
+// Timings
+#define LED_STEP_DELAY  72  // ms
+// PWM
+#define RED_PWM_MAX     150
+#define GREEN_PWM_MAX   150
+#define BLUE_PWM_MAX    150
 
-// Button
-#define KEY_IS_DOWN     bit_is_clear (PIND, SENSOR_OUT)
+// Ports & pins
+#define L_DDR       DDRD
+#define RED_P       PD6
+#define GREEN_P     PD5
+#define BLUE_P      PD3
+
+#define LED_PWR_P       PB7
+#define LED_PWR_DDR     DDRB
+#define LED_PWR_PORT    PORTB
+#define LED_PWR_ON()    LED_PWR_PORT &= ~(1<<LED_PWR_P)
+#define LED_PWR_OFF()   LED_PWR_PORT |=  (1<<LED_PWR_P)
 
 // =============================== Prototypes ==================================
+// General
 void GeneralInit(void);
 
-void Key_Task (void);
-void KeyPress_Event (void);
-//void KeyDepress_Event (void);
+void SetDesiredColor (uint8_t ARed, uint8_t AGreen, uint8_t ABlue);
 
+// Tasks
+void Light_Task(void);
+void CC_Task (void);
 
+// Events
+void EVENT_NewPacket(void);
 
 #endif	/* _CALMA3C_H */
 

@@ -54,6 +54,8 @@
 // General
 void GeneralInit(void);
 
+void SetDesiredColor (uint8_t ARed, uint8_t AGreen, uint8_t ABlue);
+
 // Tasks
 void SENS_Task (void);
 void Light_Task(void);

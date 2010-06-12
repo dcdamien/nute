@@ -42,7 +42,7 @@ void CC_Init(void){
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
 
-    //CC_GDO0_IRQ_ENABLE();
+    CC_GDO0_IRQ_ENABLE();
 }
 
 FORCE_INLINE void CC_SetChannel(uint8_t AChannel){
@@ -173,10 +173,12 @@ uint8_t CC_ReadWriteByte(uint8_t AByte){
 
 // ============================ Interrupts =====================================
 ISR(INT0_vect) {
+    PORTC |= (1<<PC0);
     // Packet has been successfully recieved
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
+    PORTC &= ~(1<<PC0);
 }

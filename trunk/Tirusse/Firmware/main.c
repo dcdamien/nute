@@ -15,6 +15,8 @@
 #include "main.h"
 #include "../cc_common/cc1101.h"
 #include "time_utils.h"
+#include "battery.h"
+#include "common.h"
 
 // ================================= Types =====================================
 struct {
@@ -37,8 +39,7 @@ struct {
 int main(void) {
     GeneralInit();
     sei();
-
-    DDRA = 0xFF;    //DEBUG
+//    DDRA = 0xFF;    //DEBUG
 
     // ******** Main cycle *********
     while (1){
@@ -46,12 +47,14 @@ int main(void) {
         CC_Task();
         Stone_Task();
         LED_Task();
+        Battery_Task();
     } // while 1
 }
 
 FORCE_INLINE void GeneralInit(void){
-    //wdt_enable(WDTO_2S);
+    wdt_enable(WDTO_2S);
     LED_DDR |= (1<<LED_P);
+    ACSR = 1<<ACD;  // Disable analog comparator
     TimerInit();
 
     // LED init
@@ -72,6 +75,9 @@ FORCE_INLINE void GeneralInit(void){
     TimerResetDelay(&CC_Srv.Timer);
     CC_Init();
     CC_SetAddress(4);   //Never changes in CC itself
+
+    // Battery
+    BatteryInit();
 }
 
 // ============================= PWM functions =================================
@@ -114,6 +120,9 @@ void Stone_Task(void) {
 }
 
 void LED_Task(void) {
+    // Disable LED during charging
+    if (BAT_IS_CHARGING()) ELED.PWMDesired = 0;
+
     if (ELED.PWM != ELED.PWMDesired) {
         if (ELED.PWMDesired < ELED.PWM) {   // Lower PWM
             if (MayChangePWM()) {
@@ -128,7 +137,7 @@ void LED_Task(void) {
             if (MayChangePWM()) {
                 ELED.PWM++;
                 PWM_Set(ELED.PWM);
-            } // if maychange
+            } // if may change
         } // Fade or brighten
     } // if not desired
 }
@@ -144,7 +153,7 @@ void CC_Task (void){
         if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
         else return;
     }
-    PORTA |= (1<<PA2); // DEBUG
+    //PORTA |= (1<<PA2); // DEBUG
     // Do with CC what needed
     CC_GET_STATE();
     switch (CC.State){
@@ -157,14 +166,12 @@ void CC_Task (void){
 
         case CC_STB_IDLE:
             // Set needed channel and enter RX if time has come
-//            if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY-1)) {
-                CC_SetChannel(CC_Srv.Channel);
-                CC_ENTER_RX();
-                CC_Srv.JustEnteredRX = true;
-                // Calculate next channel
-                CC_Srv.Channel++;
-                if (CC_Srv.Channel > CC_CHANNEL_END) CC_Srv.Channel = CC_CHANNEL_START;
-  //          }
+            CC_SetChannel(CC_Srv.Channel);
+            CC_ENTER_RX();
+            CC_Srv.JustEnteredRX = true;
+            // Calculate next channel
+            CC_Srv.Channel++;
+            if (CC_Srv.Channel > CC_CHANNEL_END) CC_Srv.Channel = CC_CHANNEL_START;
             break;
         
         case CC_STB_RX:
@@ -172,7 +179,6 @@ void CC_Task (void){
             if (CC_Srv.JustEnteredRX) {
                 CC_Srv.JustEnteredRX = false;
                 TimerResetDelay(&CC_Srv.Timer);
-                
             }
             else {
                 // Check if CC_RX_ON_DELAY delay elapsed
@@ -180,7 +186,7 @@ void CC_Task (void){
                     CC_ENTER_IDLE();
                     CC_POWERDOWN();
                     CC_Srv.DeepSleep = true;
-                    PORTA &= ~(1<<PA2); // DEBUG
+                    //PORTA &= ~(1<<PA2); // DEBUG
                 }// if timer
             }// if not RX
             break;
@@ -192,11 +198,9 @@ void CC_Task (void){
 
 // =============================== Events ======================================
 void EVENT_Detected(void) {
-    //LED_ON();
     ELED.PWMDesired = PWM_MAX;
 }
 void EVENT_Hide(void) {
-    //LED_OFF();
     ELED.PWMDesired = 0;
 }
 
