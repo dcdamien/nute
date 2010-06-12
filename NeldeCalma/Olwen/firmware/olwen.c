@@ -35,10 +35,7 @@ int main(void) {
 
     LED_PWR_ON();
 
-    ELight.DesiredColor.Red = 50;
-    ELight.DesiredColor.Green = 50;
-    ELight.DesiredColor.Blue = 50;
-
+    SetDesiredColor (50, 50, 50);
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
@@ -65,9 +62,7 @@ FORCE_INLINE void GeneralInit(void) {
     TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
     TCCR2A = (0<<COM2A1)|(0<<COM2A0)|(1<<COM2B1)|(0<<COM2B0)|(1<<WGM21)|(1<<WGM20);
     TCCR2B = (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
-    ELight.DesiredColor.Red = 0;
-    ELight.DesiredColor.Green = 0;
-    ELight.DesiredColor.Blue = 0;
+    SetDesiredColor (0, 0, 0);
     TimerResetDelay(&ELight.Timer);
     
     // Sensors
@@ -86,7 +81,13 @@ FORCE_INLINE void GeneralInit(void) {
     //CC_Srv.DeepSleep = false;
     //TimerResetDelay(&CC_Srv.Timer);
     CC_Init();
-    CC_SetAddress(4);   //Never changes in CC itself
+    //CC_SetAddress(4);   //Never changes in CC itself
+}
+
+FORCE_INLINE void SetDesiredColor (uint8_t ARed, uint8_t AGreen, uint8_t ABlue) {
+    ELight.DesiredColor.Red   = ARed;
+    ELight.DesiredColor.Green = AGreen;
+    ELight.DesiredColor.Blue  = ABlue;
 }
 
 // ============================== Tasks ========================================
@@ -155,6 +156,7 @@ void CC_Task (void){
             break;
 
         case CC_STB_IDLE:
+            SetDesiredColor (0, 50, 0);
             // Transmit at once if IDLE
             // Prepare CALL packet
             CC.TX_Pkt->Address = 0;     // Broadcast
