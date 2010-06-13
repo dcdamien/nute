@@ -11,6 +11,7 @@
 #include "time_utils.h"
 #include "common.h"
 #include "../../cc_common/cc2500.h"
+#include "color_table.h"
 
 // ============================= Types =========================================
 struct {
@@ -35,7 +36,14 @@ int main(void) {
 
     LED_PWR_ON();
 
-    SetDesiredColor (50, 50, 50);
+    SetDesiredColor (0, 0, 0);
+
+    // DEBUG
+    uint16_t FTimer;
+    uint8_t ColorIndx=0;
+    bool IsOff=false, IsEnd=false;
+    TimerResetDelay(&FTimer);
+
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
@@ -43,6 +51,28 @@ int main(void) {
         SENS_Task ();
         Light_Task ();
 
+        if (!IsEnd) {
+            if (IsOff) {
+                if (TimerDelayElapsed(&FTimer, 299)) {
+                    LED_PWR_ON();
+                    if (ColorIndx >= COLOR_COUNT) {
+                        ColorIndx = 0;
+                        //IsEnd = true;
+                    }
+                    else {
+                        IsOff = false;
+                        
+                    }
+                }
+            }
+            else {
+                if (TimerDelayElapsed(&FTimer, 999)) {
+                    IsOff = true;
+                    //LED_PWR_OFF();
+                    SetTableColor(ColorIndx++);
+                }
+            }
+        }
         //Sleep_Task ();
     } // while
 }
@@ -54,15 +84,15 @@ FORCE_INLINE void GeneralInit(void) {
     TimerInit();    // Time counter
 
     // Light
-    L_DDR  |= (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
+    LED_DDR  |= (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
+    LED_PORT &= ~((1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P));
     LED_PWR_DDR |= (1<<LED_PWR_P);
     LED_PWR_OFF();
 
-    TCCR0A = (1<<COM0A1)|(0<<COM0A0)|(1<<COM0B1)|(0<<COM0B0)|(1<<WGM01)|(1<<WGM00);
+    TCCR0A = (1<<WGM01)|(1<<WGM00);
     TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
-    TCCR2A = (0<<COM2A1)|(0<<COM2A0)|(1<<COM2B1)|(0<<COM2B0)|(1<<WGM21)|(1<<WGM20);
+    TCCR2A = (1<<WGM21)|(1<<WGM20);
     TCCR2B = (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
-    SetDesiredColor (0, 0, 0);
     TimerResetDelay(&ELight.Timer);
     
     // Sensors
@@ -76,10 +106,6 @@ FORCE_INLINE void GeneralInit(void) {
     TimerResetDelay (&ESens.Timer);
 
     // CC init
-    //CC_Srv.Channel = CC_CHANNEL_START;
-    //CC_Srv.JustEnteredRX = false;
-    //CC_Srv.DeepSleep = false;
-    //TimerResetDelay(&CC_Srv.Timer);
     CC_Init();
     //CC_SetAddress(4);   //Never changes in CC itself
 }
@@ -89,6 +115,12 @@ FORCE_INLINE void SetDesiredColor (uint8_t ARed, uint8_t AGreen, uint8_t ABlue) 
     ELight.DesiredColor.Green = AGreen;
     ELight.DesiredColor.Blue  = ABlue;
 }
+void SetTableColor (uint8_t AIndx) {
+    ELight.DesiredColor.Red   = pgm_read_byte(&ColorTable[AIndx][0]);
+    ELight.DesiredColor.Green = pgm_read_byte(&ColorTable[AIndx][1]);
+    ELight.DesiredColor.Blue  = pgm_read_byte(&ColorTable[AIndx][2]);
+}
+
 
 // ============================== Tasks ========================================
 void SENS_Task (void) {
@@ -123,23 +155,41 @@ void SENS_Task (void) {
 }
 
 void Light_Task(void) {
-    if (!TimerDelayElapsed(&ELight.Timer, LED_STEP_DELAY)) return;
+//    if (!TimerDelayElapsed(&ELight.Timer, LED_STEP_DELAY)) return;
     // Red channel
     if (ELight.CurrentColor.Red != ELight.DesiredColor.Red) {
-        if (ELight.DesiredColor.Red < ELight.CurrentColor.Red) ELight.CurrentColor.Red--;
-        else                                                   ELight.CurrentColor.Red++;
+        if (ELight.DesiredColor.Red < ELight.CurrentColor.Red) {
+            ELight.CurrentColor.Red--;
+            if (ELight.CurrentColor.Red == 0) LED_RED_DISABLE();
+        }
+        else {
+            if (ELight.CurrentColor.Red == 0) LED_RED_ENABLE();
+            ELight.CurrentColor.Red++;
+        }
         OCR0A = ELight.CurrentColor.Red;
     }
     // Green channel
     if (ELight.CurrentColor.Green != ELight.DesiredColor.Green) {
-        if (ELight.DesiredColor.Green < ELight.CurrentColor.Green) ELight.CurrentColor.Green--;
-        else                                                       ELight.CurrentColor.Green++;
+        if (ELight.DesiredColor.Green < ELight.CurrentColor.Green) {
+            ELight.CurrentColor.Green--;
+            if (ELight.CurrentColor.Green == 0) LED_GREEN_DISABLE();
+        }
+        else {
+            if (ELight.CurrentColor.Green == 0) LED_GREEN_ENABLE();
+            ELight.CurrentColor.Green++;
+        }
         OCR0B = ELight.CurrentColor.Green;
     }
     // Blue channel
     if (ELight.CurrentColor.Blue != ELight.DesiredColor.Blue) {
-        if (ELight.DesiredColor.Blue < ELight.CurrentColor.Blue) ELight.CurrentColor.Blue--;
-        else                                                     ELight.CurrentColor.Blue++;
+        if (ELight.DesiredColor.Blue < ELight.CurrentColor.Blue) {
+            ELight.CurrentColor.Blue--;
+            if (ELight.CurrentColor.Blue == 0) LED_BLUE_DISABLE();
+        }
+        else {
+            if (ELight.CurrentColor.Blue == 0) LED_BLUE_ENABLE();
+            ELight.CurrentColor.Blue++;
+        }
         OCR2B = ELight.CurrentColor.Blue;
     }
 }
@@ -156,15 +206,14 @@ void CC_Task (void){
             break;
 
         case CC_STB_IDLE:
-            SetDesiredColor (0, 50, 0);
             // Transmit at once if IDLE
             // Prepare CALL packet
-            CC.TX_Pkt->Address = 0;     // Broadcast
-            CC.TX_Pkt->PacketID = 0;    // Current packet ID, to avoid repeative treatment
-            CC.TX_Pkt->CommandID = 0xC0;// SetColor packet
-            CC.TX_Pkt->Data[0] = ELight.DesiredColor.Red;   // }
-            CC.TX_Pkt->Data[1] = ELight.DesiredColor.Green; // }
-            CC.TX_Pkt->Data[2] = ELight.DesiredColor.Blue;  // } components of color
+            CC.TX_Pkt.Address = 0;     // Broadcast
+            CC.TX_Pkt.PacketID = 0;    // Current packet ID, to avoid repeative treatment
+            CC.TX_Pkt.CommandID = 0xC0;// SetColor packet
+            CC.TX_Pkt.Data[0] = ELight.DesiredColor.Red;   // }
+            CC.TX_Pkt.Data[1] = ELight.DesiredColor.Green; // }
+            CC.TX_Pkt.Data[2] = ELight.DesiredColor.Blue;  // } components of color
 
             CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
             CC_ENTER_TX();

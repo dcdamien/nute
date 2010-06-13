@@ -35,8 +35,6 @@ void CC_Init(void){
     UBRR0 = 1;
 
     // ******* Firmware init section *******
-    CC.RX_Pkt = (CC_Packet_p)&CC.RX_PktArray[0];  // treat array as structure
-    CC.TX_Pkt = (CC_Packet_p)&CC.TX_PktArray[0];  // treat array as structure
     CC.NewPacketReceived = false;
     CC_RESET();
     CC_FLUSH_RX_FIFO();
