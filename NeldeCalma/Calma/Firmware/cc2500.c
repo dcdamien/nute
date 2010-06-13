@@ -35,8 +35,6 @@ void CC_Init(void){
     UBRR0 = 1;
 
     // ******* Firmware init section *******
-    CC.RX_Pkt = (CC_Packet_p)&CC.RX_PktArray[0];  // treat array as structure
-    CC.TX_Pkt = (CC_Packet_p)&CC.TX_PktArray[0];  // treat array as structure
     CC.NewPacketReceived = false;
     CC_RESET();
     CC_FLUSH_RX_FIFO();
@@ -173,12 +171,12 @@ uint8_t CC_ReadWriteByte(uint8_t AByte){
 
 // ============================ Interrupts =====================================
 ISR(INT0_vect) {
-    PORTC |= (1<<PC0);
+    //PORTC |= (1<<PC0); // DEBUG
     // Packet has been successfully recieved
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
-    PORTC &= ~(1<<PC0);
+    //PORTC &= ~(1<<PC0);
 }

@@ -57,13 +57,17 @@ struct CC_Packet_t{
     uint8_t RSSI;
     uint8_t LQI;
 };
-typedef struct CC_Packet_t* CC_Packet_p;
 
 struct CC_t {
     uint8_t State;
-    CC_Packet_p RX_Pkt, TX_Pkt;
-    uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
-    uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
+    union { // RX packet
+        uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
+        struct CC_Packet_t RX_Pkt;
+    };
+    union { // TX packet
+        uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
+        struct CC_Packet_t TX_Pkt;
+    };
     bool NewPacketReceived;
     bool TransmitEnable;
 };

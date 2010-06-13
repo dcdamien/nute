@@ -58,7 +58,6 @@ FORCE_INLINE void GeneralInit(void) {
     TCCR0B = (0<<WGM02)|(0<<CS02)|(1<<CS01)|(0<<CS00);  // 1 MHz/8 = 125 kHz of timer infut freq. 125 kHz/255 = 490 Hz of PWM freq.
     TCCR2A = (0<<COM2A1)|(0<<COM2A0)|(1<<COM2B1)|(0<<COM2B0)|(1<<WGM21)|(1<<WGM20);
     TCCR2B = (0<<WGM22)|(0<<CS22)|(1<<CS21)|(0<<CS20);
-    SetDesiredColor (0, 0, 0);
     TimerResetDelay(&ELight.Timer);
 
     // CC init
@@ -109,7 +108,6 @@ void CC_Task (void) {
         if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
         else return;
     }
-    //PORTA |= (1<<PA2); // DEBUG
     // Do with CC what needed
     CC_GET_STATE();
     switch (CC.State){
@@ -149,9 +147,8 @@ void CC_Task (void) {
 
 // ============================== Events =======================================
 FORCE_INLINE void EVENT_NewPacket(void) {
-    if (CC.RX_Pkt->CommandID == PKT_ID_COLOR) {
-        //SetDesiredColor(CC.RX_Pkt->Data[0], CC.RX_Pkt->Data[1], CC.RX_Pkt->Data[2]);
-        SetDesiredColor(0, 0, 50);
+    if (CC.RX_Pkt.CommandID == PKT_ID_COLOR) {
+        SetDesiredColor(CC.RX_Pkt.Data[0], CC.RX_Pkt.Data[1], CC.RX_Pkt.Data[2]);
     } // if PKT_ID_CALL
 }
 
