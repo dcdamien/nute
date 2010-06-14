@@ -11,21 +11,22 @@
 // ================================= Sensors ===================================
 // Timings
 #define SENS_POLL_T  99 // ms
+#define SENS_HOLD_TICK_TIMEOUT  999 //ms
 // Ports & pins
-#define SENS_COLORUP      PC1
-#define SENS_COLORDOWN    PC2
-#define SENS_HANDLE       PC0
-#define SENS_PWR          PC5
-#define SENS_DDR          DDRC
-#define SENS_PORT         PORTC
-#define SENS_PIN          PINC
+#define SENS_UP     PC1
+#define SENS_DOWN   PC2
+#define SENS_HANDLE PC0
+#define SENS_PWR    PC5
+#define SENS_DDR    DDRC
+#define SENS_PORT   PORTC
+#define SENS_PIN    PINC
 
 // Pseudo-functions
-#define SENS_COLORUP_IS_ON()    bit_is_set (SENS_PIN, SENS_COLORUP)
-#define SENS_COLORDOWN_IS_ON()  bit_is_set (SENS_PIN, SENS_COLORDOWN)
-#define SENS_HANDLE_IS_ON()     bit_is_set (SENS_PIN, SENS_HANDLE)
-#define SENS_PWR_OFF()  SENS_PORT &= ~(1<<SENS_PWR);
-#define SENS_PWR_ON()   SENS_PORT |=  (1<<SENS_PWR);
+#define SENS_UP_IS_ON()     bit_is_set (SENS_PIN, SENS_UP)
+#define SENS_DOWN_IS_ON()   bit_is_set (SENS_PIN, SENS_DOWN)
+#define SENS_HANDLE_IS_ON() bit_is_set (SENS_PIN, SENS_HANDLE)
+#define SENS_PWR_OFF()      SENS_PORT &= ~(1<<SENS_PWR);
+#define SENS_PWR_ON()       SENS_PORT |=  (1<<SENS_PWR);
 
 // ================================== Light ====================================
 // Timings
@@ -68,13 +69,13 @@ void Light_Task(void);
 void CC_Task (void);
 
 // Events
-void EVENT_ColorUpTouched(void);
-void EVENT_ColorUpDetouched(void);
-void EVENT_ColorDownTouched(void);
-void EVENT_ColorDownDetouched(void);
+void EVENT_UpTouched(void);
+void EVENT_DownTouched(void);
+void EVENT_BothTouched(void);
 void EVENT_HandleTouched(void);
-void EVENT_HandleDetouched(void);
 
+void EVENT_DownHoldTick(void);
+void EVENT_UpHoldTick(void);
 
 #endif	/* _CALMA3C_H */
 
