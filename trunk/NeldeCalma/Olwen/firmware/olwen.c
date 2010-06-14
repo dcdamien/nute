@@ -2,9 +2,10 @@
  * File:   calma3c.c
  * Author: Laurelindo
  *
- * Created on 20 Р”РµРєР°Р±СЂСЊ 2009 Рі., 0:16
+ * Created on 20 2009 Рі., 0:16
  */
 #include <avr/io.h>
+#include <inttypes.h>
 #include <stdbool.h>
 #include <avr/wdt.h>
 #include "olwen.h"
@@ -15,10 +16,8 @@
 
 // ============================= Types =========================================
 struct {
-    bool ColorUpIsOn, ColorDownIsOn, HandleIsOn;
-    uint16_t Timer;//, DurationTimer;
-    //bool IsMeasuringDelay;
-    
+    bool UpIsOn, DownIsOn, HandleIsOn, BothIsOn;
+    uint16_t Timer, HoldTimer;
 } ESens;
 
 struct Color_t {
@@ -26,23 +25,16 @@ struct Color_t {
 };
 struct {
     uint16_t Timer;
-    struct Color_t DesiredColor, CurrentColor, SavedColor;
+    struct Color_t DesiredColor, CurrentColor;
+    uint8_t Indx;
 } ELight;
 
+bool MustShutdown;
 
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
-
-    LED_PWR_ON();
-
-    SetDesiredColor (0, 0, 0);
-
-    // DEBUG
-    uint16_t FTimer;
-    uint8_t ColorIndx=0;
-    bool IsOff=false, IsEnd=false;
-    TimerResetDelay(&FTimer);
+    MustShutdown = false;
 
     sei(); 
     while (1) {
@@ -50,29 +42,6 @@ int main(void) {
         CC_Task();
         SENS_Task ();
         Light_Task ();
-
-        if (!IsEnd) {
-            if (IsOff) {
-                if (TimerDelayElapsed(&FTimer, 299)) {
-                    LED_PWR_ON();
-                    if (ColorIndx >= COLOR_COUNT) {
-                        ColorIndx = 0;
-                        //IsEnd = true;
-                    }
-                    else {
-                        IsOff = false;
-                        
-                    }
-                }
-            }
-            else {
-                if (TimerDelayElapsed(&FTimer, 999)) {
-                    IsOff = true;
-                    //LED_PWR_OFF();
-                    SetTableColor(ColorIndx++);
-                }
-            }
-        }
         //Sleep_Task ();
     } // while
 }
@@ -94,15 +63,17 @@ FORCE_INLINE void GeneralInit(void) {
     TCCR2A = (1<<WGM21)|(1<<WGM20);
     TCCR2B = (0<<WGM22)|(0<<CS22)|(0<<CS21)|(1<<CS20);
     TimerResetDelay(&ELight.Timer);
+    ELight.Indx = 0;
     
     // Sensors
-    SENS_DDR  &= ~((1<<SENS_COLORDOWN)|(1<<SENS_COLORUP)|(1<<SENS_HANDLE));
+    SENS_DDR  &= ~((1<<SENS_DOWN)|(1<<SENS_UP)|(1<<SENS_HANDLE));
     SENS_DDR  |= 1<<SENS_PWR;
-    SENS_PORT &= ~((1<<SENS_COLORDOWN)|(1<<SENS_COLORUP)|(1<<SENS_HANDLE)); // No pull-ups
+    SENS_PORT &= ~((1<<SENS_DOWN)|(1<<SENS_UP)|(1<<SENS_HANDLE)); // No pull-ups
     SENS_PWR_OFF();
-    ESens.ColorDownIsOn = false;
-    ESens.ColorUpIsOn = false;
+    ESens.DownIsOn   = false;
+    ESens.UpIsOn     = false;
     ESens.HandleIsOn = false;
+    ESens.BothIsOn   = false;
     TimerResetDelay (&ESens.Timer);
 
     // CC init
@@ -125,33 +96,46 @@ void SetTableColor (uint8_t AIndx) {
 // ============================== Tasks ========================================
 void SENS_Task (void) {
     if (!TimerDelayElapsed (&ESens.Timer, SENS_POLL_T)) return;
-    
-    if (!ESens.ColorUpIsOn && SENS_COLORUP_IS_ON()) {
-        ESens.ColorUpIsOn = true;
-        EVENT_ColorUpTouched();
+    // Up sensor
+    if (!ESens.UpIsOn && SENS_UP_IS_ON()) {     // Touch occured
+        ESens.UpIsOn = true;
+        if (ESens.DownIsOn) {                   // DOWN is on hold
+            ESens.BothIsOn = true;
+            EVENT_BothTouched();
+        }
+        else EVENT_UpTouched();
     }
-    else if (ESens.ColorUpIsOn && !SENS_COLORUP_IS_ON()) {
-        ESens.ColorUpIsOn = false;
-        EVENT_ColorUpDetouched();
+    else if (ESens.UpIsOn && !SENS_UP_IS_ON()) {// Detouch occured
+        ESens.UpIsOn   = false;
+        ESens.BothIsOn = false;
     }
-
-    if (!ESens.ColorDownIsOn && SENS_COLORDOWN_IS_ON()) {
-        ESens.ColorDownIsOn = true;
-        EVENT_ColorDownTouched();
+    // Down sensor
+    if (!ESens.DownIsOn && SENS_DOWN_IS_ON()) { // Touch occured
+        ESens.DownIsOn = true;
+        if (ESens.UpIsOn) {                     // UP is on hold
+            ESens.BothIsOn = true;
+            EVENT_BothTouched();
+        }
+        else EVENT_DownTouched();
     }
-    else if (ESens.ColorDownIsOn && !SENS_COLORDOWN_IS_ON()) {
-        ESens.ColorDownIsOn = false;
-        EVENT_ColorDownDetouched();
+    else if (ESens.DownIsOn && !SENS_DOWN_IS_ON()) {    // Detouch occured
+        ESens.DownIsOn = false;
+        ESens.BothIsOn = false;
     }
-
+    // Handle sensor
     if (!ESens.HandleIsOn && SENS_HANDLE_IS_ON()) {
         ESens.HandleIsOn = true;
         EVENT_HandleTouched();
     }
     else if (ESens.HandleIsOn && !SENS_HANDLE_IS_ON()) {
         ESens.HandleIsOn = false;
-        EVENT_HandleDetouched();
     }
+
+    // Holding handlers
+    if (ESens.DownIsOn && !ESens.BothIsOn)
+        if (TimerDelayElapsed(&ESens.HoldTimer, SENS_HOLD_TICK_TIMEOUT)) EVENT_DownHoldTick();
+    if (ESens.UpIsOn && !ESens.BothIsOn)
+        if (TimerDelayElapsed(&ESens.HoldTimer, SENS_HOLD_TICK_TIMEOUT)) EVENT_UpHoldTick();
 }
 
 void Light_Task(void) {
@@ -226,17 +210,20 @@ void CC_Task (void){
 
 
 // ============================== Events =======================================
-void EVENT_ColorUpTouched(void) {
+void EVENT_UpTouched(void) {
+    SetTableColor(ELight.Indx++);
+    if (ELight.Indx >= COLOR_COUNT) ELight.Indx = 0;
+    // Reset hold timer
+    TimerResetDelay(&ESens.HoldTimer);
+}
+void EVENT_UpDetouched(void) {
+    
+}
+void EVENT_DownTouched(void) {
 
 }
-void EVENT_ColorUpDetouched(void) {
-
-}
-void EVENT_ColorDownTouched(void) {
-
-}
-void EVENT_ColorDownDetouched(void) {
-
+void EVENT_DownDetouched(void) {
+     
 }
 
 void EVENT_HandleTouched(void) {
@@ -244,4 +231,14 @@ void EVENT_HandleTouched(void) {
 }
 void EVENT_HandleDetouched(void) {
     SENS_PWR_OFF();
+}
+
+void EVENT_DownHoldTick(void) { // Fires every N ms when Down is holded
+    // Check if both sensors are holded
+    if (ESens.UpIsOn && ESens.DownIsOn) {
+
+    }
+}
+void EVENT_UpHoldTick(void) { // Fires every N ms when Up is holded
+    
 }
