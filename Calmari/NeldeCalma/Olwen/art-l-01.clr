@@ -1,0 +1,491 @@
+<?xml version="1.0"?>
+<ColorList>
+  <ColorCount>97</ColorCount>
+  <Colors>
+    <Color Name="ffffffcc">
+      <R>255</R>
+      <G>255</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffffff99">
+      <R>255</R>
+      <G>255</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffffff66">
+      <R>255</R>
+      <G>255</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffffff00">
+      <R>255</R>
+      <G>255</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffcccc00">
+      <R>204</R>
+      <G>204</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffffcc66">
+      <R>255</R>
+      <G>204</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffffcc00">
+      <R>255</R>
+      <G>204</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffffcc99">
+      <R>255</R>
+      <G>204</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffcc9900">
+      <R>204</R>
+      <G>153</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffcc9966">
+      <R>204</R>
+      <G>153</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffcc6600">
+      <R>204</R>
+      <G>102</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffcc0000">
+      <R>204</R>
+      <G>0</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffffcccc">
+      <R>255</R>
+      <G>204</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffff9999">
+      <R>255</R>
+      <G>153</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffff6699">
+      <R>255</R>
+      <G>102</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffff6666">
+      <R>255</R>
+      <G>102</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffff9966">
+      <R>255</R>
+      <G>153</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffff9900">
+      <R>255</R>
+      <G>153</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffff6600">
+      <R>255</R>
+      <G>102</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffff0000">
+      <R>255</R>
+      <G>0</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffcc9999">
+      <R>204</R>
+      <G>153</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffcc6666">
+      <R>204</R>
+      <G>102</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffff99cc">
+      <R>255</R>
+      <G>153</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffff0099">
+      <R>255</R>
+      <G>0</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffcc0066">
+      <R>204</R>
+      <G>0</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffff66cc">
+      <R>255</R>
+      <G>102</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffcc6699">
+      <R>204</R>
+      <G>102</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffcc0099">
+      <R>204</R>
+      <G>0</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffffccff">
+      <R>255</R>
+      <G>204</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ffff99ff">
+      <R>255</R>
+      <G>153</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ffff66ff">
+      <R>255</R>
+      <G>102</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ffff00ff">
+      <R>255</R>
+      <G>0</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ffff00cc">
+      <R>255</R>
+      <G>0</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffcc99cc">
+      <R>204</R>
+      <G>153</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffcc66cc">
+      <R>204</R>
+      <G>102</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffcc00cc">
+      <R>204</R>
+      <G>0</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffcc66ff">
+      <R>204</R>
+      <G>102</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ffcc00ff">
+      <R>204</R>
+      <G>0</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff9900cc">
+      <R>153</R>
+      <G>0</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffcc99ff">
+      <R>204</R>
+      <G>153</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff9966cc">
+      <R>153</R>
+      <G>102</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff9966ff">
+      <R>153</R>
+      <G>102</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff9900ff">
+      <R>153</R>
+      <G>0</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff6600ff">
+      <R>102</R>
+      <G>0</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff6600cc">
+      <R>102</R>
+      <G>0</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffccccff">
+      <R>204</R>
+      <G>204</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff9999ff">
+      <R>153</R>
+      <G>153</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff9999cc">
+      <R>153</R>
+      <G>153</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff6666ff">
+      <R>102</R>
+      <G>102</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff6666cc">
+      <R>102</R>
+      <G>102</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff6699ff">
+      <R>102</R>
+      <G>153</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff99ccff">
+      <R>153</R>
+      <G>204</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff0099ff">
+      <R>0</R>
+      <G>153</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff0066cc">
+      <R>0</R>
+      <G>102</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff0000cc">
+      <R>0</R>
+      <G>0</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff0000ff">
+      <R>0</R>
+      <G>0</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff0066ff">
+      <R>0</R>
+      <G>102</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff6699cc">
+      <R>102</R>
+      <G>153</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff0099cc">
+      <R>0</R>
+      <G>153</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff99cccc">
+      <R>153</R>
+      <G>204</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff66cccc">
+      <R>102</R>
+      <G>204</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffccffff">
+      <R>204</R>
+      <G>255</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff99ffff">
+      <R>153</R>
+      <G>255</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff66ffff">
+      <R>102</R>
+      <G>255</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff00ffff">
+      <R>0</R>
+      <G>255</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff66ccff">
+      <R>102</R>
+      <G>204</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff00ccff">
+      <R>0</R>
+      <G>204</G>
+      <B>255</B>
+    </Color>
+    <Color Name="ff00cccc">
+      <R>0</R>
+      <G>204</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffccffcc">
+      <R>204</R>
+      <G>255</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff99ffcc">
+      <R>153</R>
+      <G>255</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff66ffcc">
+      <R>102</R>
+      <G>255</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff00ffcc">
+      <R>0</R>
+      <G>255</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ff66ff99">
+      <R>102</R>
+      <G>255</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ff99ff99">
+      <R>153</R>
+      <G>255</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ff99ff66">
+      <R>153</R>
+      <G>255</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ff66ff66">
+      <R>102</R>
+      <G>255</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ff00ff99">
+      <R>0</R>
+      <G>255</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ff00ff66">
+      <R>0</R>
+      <G>255</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ff00ff00">
+      <R>0</R>
+      <G>255</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ff66ff00">
+      <R>102</R>
+      <G>255</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ff99ff00">
+      <R>153</R>
+      <G>255</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ff99cc99">
+      <R>153</R>
+      <G>204</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ff66cc66">
+      <R>102</R>
+      <G>204</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ff00cc00">
+      <R>0</R>
+      <G>204</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ff00cc66">
+      <R>0</R>
+      <G>204</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ff00cc99">
+      <R>0</R>
+      <G>204</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ff66cc99">
+      <R>102</R>
+      <G>204</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffccff99">
+      <R>204</R>
+      <G>255</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffccff66">
+      <R>204</R>
+      <G>255</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffccff00">
+      <R>204</R>
+      <G>255</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ff99cc00">
+      <R>153</R>
+      <G>204</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ff99cc66">
+      <R>153</R>
+      <G>204</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ff66cc00">
+      <R>102</R>
+      <G>204</G>
+      <B>0</B>
+    </Color>
+    <Color Name="ffcccc66">
+      <R>204</R>
+      <G>204</G>
+      <B>102</B>
+    </Color>
+    <Color Name="ffcccc99">
+      <R>204</R>
+      <G>204</G>
+      <B>153</B>
+    </Color>
+    <Color Name="ffcccccc">
+      <R>204</R>
+      <G>204</G>
+      <B>204</B>
+    </Color>
+    <Color Name="ffffffff">
+      <R>255</R>
+      <G>255</G>
+      <B>255</B>
+    </Color>
+  </Colors>
+</ColorList>
