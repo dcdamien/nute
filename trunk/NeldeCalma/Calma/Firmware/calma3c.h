@@ -9,7 +9,8 @@
 #define	_CALMA3C_H
 
 // =============================== General =====================================
-#define PKT_ID_COLOR    0xC0
+#define PKT_ID0_CALE    0xCA
+#define PKT_ID1_CALE    0x1E
 
 // ============================== CC timings ===================================
 #define CC_RX_ON_DELAY      54 // ms
@@ -18,22 +19,21 @@
 // ================================== Light ====================================
 // Timings
 #define LED_STEP_DELAY  72  // ms
-// PWM
-#define RED_PWM_MAX     150
-#define GREEN_PWM_MAX   150
-#define BLUE_PWM_MAX    150
 
 // Ports & pins
-#define L_DDR       DDRD
+#define LED_DDR     DDRD
+#define LED_PORT    PORTD
 #define RED_P       PD6
 #define GREEN_P     PD5
 #define BLUE_P      PD3
 
-#define LED_PWR_P       PB7
-#define LED_PWR_DDR     DDRB
-#define LED_PWR_PORT    PORTB
-#define LED_PWR_ON()    LED_PWR_PORT &= ~(1<<LED_PWR_P)
-#define LED_PWR_OFF()   LED_PWR_PORT |=  (1<<LED_PWR_P)
+#define LED_RED_DISABLE()   TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
+#define LED_RED_ENABLE()    TCCR0A |=  ((1<<COM0A1)|(0<<COM0A0));
+#define LED_GREEN_DISABLE() TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));
+#define LED_GREEN_ENABLE()  TCCR0A |=  ((1<<COM0B1)|(0<<COM0B0));
+#define LED_BLUE_DISABLE()  TCCR2A &= ~((1<<COM2B1)|(1<<COM2B0));
+#define LED_BLUE_ENABLE()   TCCR2A |=  ((1<<COM2B1)|(0<<COM2B0));
+
 
 // =============================== Prototypes ==================================
 // General

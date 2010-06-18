@@ -1,5 +1,5 @@
 /* 
- * File:   cc2500.h
+ * File:   cc2500.h of NeldeCalma
  * Author: Laurelindo
  *
  * Created on 11 Декабрь 2009 г., 2:08
