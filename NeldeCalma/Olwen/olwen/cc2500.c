@@ -1,5 +1,5 @@
 /* 
- * File:   cc1101.c of NeldeCalma
+ * File:   cc1101.c
  * Author: Laurelindo
  *
  * Created on 06/03/2010 г., 2:08
@@ -10,14 +10,20 @@
 #include "../../cc_common/cc2500.h"
 #include "time_utils.h"
 
+#ifdef CC_IOCFG0_VALUE
+#undef CC_IOCFG0_VALUE
+#define CC_IOCFG0_VALUE     0x06        // GDO0 - Asserts when sync word has been sent / received, and de-asserts at the end of the packet.
+#endif
+
 struct CC_t CC;
 
 void CC_Init(void){
     // ******** Hardware init section *******
     // Interrupts
     CC_GDO0_IRQ_DISABLE();
-    EICRA |= (1<<ISC01)|(0<<ISC00); // Falling edge generates an interrupt
+    EICRA |= (1<<ISC01)|(1<<ISC00); // Rising edge generates an interrupt
     EIFR  |= (1<<INTF0);            // Clear IRQ flag
+
     // Setup ports
     CC_DDR  &= ~((1<<CC_GDO0)|(1<<CC_MISO));
     CC_DDR  |=   (1<<CC_CS)|(1<<CC_MOSI)|(1<<CC_SCLK);
@@ -39,7 +45,7 @@ void CC_Init(void){
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
 
-    CC_GDO0_IRQ_ENABLE();
+    //CC_GDO0_IRQ_ENABLE();
 }
 
 FORCE_INLINE void CC_SetChannel(uint8_t AChannel){
@@ -170,12 +176,10 @@ uint8_t CC_ReadWriteByte(uint8_t AByte){
 
 // ============================ Interrupts =====================================
 ISR(INT0_vect) {
-    //PORTC |= (1<<PC0); // DEBUG
     // Packet has been successfully recieved
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
-    //PORTC &= ~(1<<PC0);
 }

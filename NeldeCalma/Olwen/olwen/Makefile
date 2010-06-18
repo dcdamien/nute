@@ -15,7 +15,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = calma3c
+TARGET = olwen
 
 
 # Object files directory
@@ -28,7 +28,6 @@ OBJDIR = obj
 SRC = $(TARGET).c \
 time_utils.c \
 cc2500.c \
-uart_soft.c \
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
