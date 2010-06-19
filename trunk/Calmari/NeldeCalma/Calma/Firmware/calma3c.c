@@ -9,8 +9,8 @@
 #include <avr/wdt.h>
 #include "calma3c.h"
 #include "time_utils.h"
-#include "common.h"
-#include "cc2500.h"
+#include "../../cc_common/common.h"
+#include "../../cc_common/cc2500.h"
 
 #include "uart_soft.h"
 
@@ -41,7 +41,7 @@ int main(void) {
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
-        //Light_Task ();
+        Light_Task ();
         CC_Task();
     } // while
 }
@@ -123,12 +123,11 @@ void CC_Task (void) {
         EVENT_NewPacket();
     }
 
-/*
+    // If in sleep mode, check if it is time to wake-up; otherwise return
     if (CC_Srv.DeepSleep) {
         if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
         else return;
     }
-*/
     // Do with CC what needed
     CC_GET_STATE();
     switch (CC.State){
@@ -148,17 +147,15 @@ void CC_Task (void) {
             // Reset timer if just entered RX
             if (CC_Srv.JustEnteredRX) {
                 CC_Srv.JustEnteredRX = false;
-//                TimerResetDelay(&CC_Srv.Timer);
+                TimerResetDelay(&CC_Srv.Timer);
             }
             else {
                 // Check if CC_RX_ON_DELAY delay elapsed
-/*
                 if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_ON_DELAY)) { // Time to switch off
                     CC_ENTER_IDLE();
                     CC_POWERDOWN();
                     CC_Srv.DeepSleep = true;
                 }// if timer
-*/
             }// if not RX
             break;
 
@@ -186,7 +183,6 @@ FORCE_INLINE void EVENT_NewPacket(void) {
     UARTSendUint(CC.RX_Pkt.RSSI);
     UARTSend(' ');
     UARTSendAsHex(CC.RX_Pkt.LQI);
-    if (!(CC.RX_Pkt.LQI & 0b10000000)) UARTSendString(" CRC");
     UARTNewLine();
 
 
