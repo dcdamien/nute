@@ -12,7 +12,10 @@
 #include "../../cc_common/common.h"
 #include "../../cc_common/cc2500.h"
 
+//#define DEBUG_UART
+#ifdef DEBUG_UART
 #include "uart_soft.h"
+#endif
 
 // ============================= Types =========================================
 struct Color_t {
@@ -32,11 +35,11 @@ struct {
 int main(void) {
     GeneralInit();
 
+    #ifdef DEBUG_UART
     UARTInit();
-
     UARTSendString_P(PSTR("Calma is here\r"));
-
-    //SetDesiredColor (50, 50, 50);
+    SetDesiredColor (50, 50, 50);
+    #endif
 
     sei(); 
     while (1) {
@@ -170,6 +173,7 @@ FORCE_INLINE void EVENT_NewPacket(void) {
     if ((CC.RX_Pkt.CommandID == PKT_ID0_CALE) && (CC.RX_Pkt.Data[0] == PKT_ID1_CALE)) {
         SetDesiredColor(CC.RX_Pkt.Data[1], CC.RX_Pkt.Data[2], CC.RX_Pkt.Data[3]);
     } // if PKT_ID_Color
+    #ifdef DEBUG_UART
     UARTSendUint(CC.RX_Pkt.PacketID);
     UARTSend(' ');
     UARTSendAsHex(CC.RX_Pkt.Data[1]);
@@ -184,7 +188,6 @@ FORCE_INLINE void EVENT_NewPacket(void) {
     UARTSend(' ');
     UARTSendAsHex(CC.RX_Pkt.LQI);
     UARTNewLine();
-
-
+    #endif
 }
 
