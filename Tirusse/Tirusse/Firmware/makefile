@@ -15,7 +15,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = main
+TARGET = tirusse
 
 
 # Object files directory
