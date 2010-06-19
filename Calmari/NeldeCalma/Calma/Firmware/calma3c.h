@@ -14,11 +14,11 @@
 
 // ============================== CC timings ===================================
 #define CC_RX_ON_DELAY      54 // ms
-#define CC_RX_OFF_DELAY     216 // ms
+#define CC_RX_OFF_DELAY     504 // ms
 
 // ================================== Light ====================================
 // Timings
-#define LED_STEP_DELAY  4  // ms
+#define LED_STEP_DELAY  36  // ms
 
 // Ports & pins
 #define LED_DDR     DDRD
