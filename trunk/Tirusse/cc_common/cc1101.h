@@ -15,7 +15,7 @@
 #include <avr/interrupt.h>
 #include "cc1101defins.h"
 #include "cc_rf_settings.h"
-#include "../Firmware/common.h"
+#include "common.h"
 
 // ==================== Application-specific defins ============================
 // Channels to use

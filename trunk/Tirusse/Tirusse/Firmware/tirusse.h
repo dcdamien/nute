@@ -9,12 +9,19 @@
 #define	_MAIN_H
 
 #include <avr/io.h>
-#include "../cc_common/cc1101.h"
+#include <inttypes.h>
+#include <stdbool.h>
 
-// ================================= Defines ===================================
+// ================================= LED =======================================
+//#define LED_DEBUG
+
+#ifdef LED_DEBUG
 #define LED_DDR   DDRC
 #define LED_PORT  PORTC
 #define LED_P     PC6
+#define LED_ON()  LED_PORT |=  (1<<LED_P)
+#define LED_OFF() LED_PORT &= ~(1<<LED_P)
+#endif
 
 // ================================= Timings ===================================
 #define CC_RX_ON_DELAY      18 // ms
@@ -24,13 +31,6 @@
 
 // =============================== Packet info =================================
 #define PKT_ID_CALL     0xCA
-
-// ================================ Pseudo functions ===========================
-#define LED_ON()  LED_PORT |=  (1<<LED_P)
-#define LED_OFF() LED_PORT &= ~(1<<LED_P)
-
-#define TIMER1_ENABLE()     TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10)
-#define TIMER1_DISABLE()    TCCR1B = 0
 
 // =============================== LED defins ==================================
 // Timings
@@ -44,16 +44,24 @@
 #define	PWMMin          0
 #define PWM_MAX         150
 
+// Charge indicating brightness
+#define CHARGING_PWM_MAX    18
+#define CHARGING_PWM_MIN    0
+
+// On/off russe
+#define TIMER1_ENABLE()     TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10)
+#define TIMER1_DISABLE()    TCCR1B = 0
+
 // =============================== Prototypes ==================================
 void GeneralInit(void);
 
 void PWM_Setup(void);
-void PWM_Set(uint8_t APWM);
 bool MayChangePWM(void);
 
 void CC_Task (void);
 void Stone_Task(void);
 void LED_Task(void);
+void IndicateCharging_TASK(void);
 
 void EVENT_Detected(void);
 void EVENT_Hide(void);

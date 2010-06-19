@@ -7,7 +7,7 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include <util/atomic.h>
-#include "../cc_common/cc1101.h"
+#include "../../cc_common/cc1101.h"
 #include "time_utils.h"
 
 struct CC_t CC;

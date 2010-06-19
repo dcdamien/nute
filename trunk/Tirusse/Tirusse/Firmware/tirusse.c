@@ -12,11 +12,11 @@
 #include <util/delay.h>
 #include <util/atomic.h>
 
-#include "main.h"
-#include "../cc_common/cc1101.h"
+#include "tirusse.h"
+#include "../../cc_common/cc1101.h"
 #include "time_utils.h"
 #include "battery.h"
-#include "common.h"
+#include "../../cc_common/common.h"
 
 // ================================= Types =====================================
 struct {
@@ -48,12 +48,15 @@ int main(void) {
         Stone_Task();
         LED_Task();
         Battery_Task();
+        IndicateCharging_TASK();
     } // while 1
 }
 
 FORCE_INLINE void GeneralInit(void){
     wdt_enable(WDTO_2S);
+    #ifdef LED_DEBUG
     LED_DDR |= (1<<LED_P);
+    #endif
     ACSR = 1<<ACD;  // Disable analog comparator
     TimerInit();
 
@@ -85,14 +88,9 @@ FORCE_INLINE void PWM_Setup(void) {
     // Fast PWM, 10 bit, no prescaling, OC1A disconnected, OC1B inverted
     TCCR1A = (0<<COM1A1)|(0<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(1<<WGM11)|(1<<WGM10);
     TIMER1_ENABLE();
+    // Setup russe LED
     DDRD  |= (1<<PD4);
     PORTD |= (1<<PD4);
-}
-
-FORCE_INLINE void PWM_Set(uint8_t APWM) {
-    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-        OCR1B = APWM;
-    }
 }
 
 bool MayChangePWM(void) {
@@ -109,7 +107,7 @@ bool MayChangePWM(void) {
 }
 
 // ================================ Tasks ======================================
-void Stone_Task(void) {
+FORCE_INLINE void Stone_Task(void) {
     if (!TimerDelayElapsed(&CStone.Timer, DETECTOR_TIMEOUT)) return;
     // Here is only hide event. Detected event fires within packet handler.
     if (CStone.IsHere && !CStone.Detected) {
@@ -119,15 +117,12 @@ void Stone_Task(void) {
     CStone.Detected = false;         // reset detecor
 }
 
-void LED_Task(void) {
-    // Disable LED during charging
-    if (BAT_IS_CHARGING()) ELED.PWMDesired = 0;
-
+FORCE_INLINE void LED_Task(void) {
     if (ELED.PWM != ELED.PWMDesired) {
         if (ELED.PWMDesired < ELED.PWM) {   // Lower PWM
             if (MayChangePWM()) {
                 ELED.PWM--;
-                PWM_Set(ELED.PWM);
+                OCR1BL = ELED.PWM;
             }
             // Workaround hardware PWM bug: LED does not switches off totally
             if (ELED.PWM == 0) TIMER1_DISABLE();
@@ -136,13 +131,15 @@ void LED_Task(void) {
             if (ELED.PWM == 0) TIMER1_ENABLE();
             if (MayChangePWM()) {
                 ELED.PWM++;
-                PWM_Set(ELED.PWM);
+                OCR1BL = ELED.PWM;
             } // if may change
         } // Fade or brighten
     } // if not desired
 }
 
-void CC_Task (void){
+FORCE_INLINE void CC_Task (void){
+    if (Battery.IsCharging) return;
+
     // Handle packet if received
     if (CC.NewPacketReceived) {
         CC.NewPacketReceived = false;
@@ -196,6 +193,13 @@ void CC_Task (void){
     }//Switch
 }
 
+FORCE_INLINE void IndicateCharging_TASK(void) {
+    if (!Battery.IsCharging) return;
+    // Fade and brighten russe
+    if      (ELED.PWM == CHARGING_PWM_MIN) ELED.PWMDesired = CHARGING_PWM_MAX;
+    else if (ELED.PWM == CHARGING_PWM_MAX) ELED.PWMDesired = CHARGING_PWM_MIN;
+}
+
 // =============================== Events ======================================
 void EVENT_Detected(void) {
     ELED.PWMDesired = PWM_MAX;
@@ -213,4 +217,22 @@ void EVENT_NewPacket(void) {
             EVENT_Detected();
         }
     } // if PKT_ID_CALL
+}
+
+void EVENT_ChargeStarted(void) {
+    #ifdef LED_DEBUG
+    LED_ON();   // DEBUG
+    #endif
+    // Shutdown CC
+    CC_ENTER_IDLE();
+    CC_POWERDOWN();
+    // Set brightness
+    ELED.PWMDesired = CHARGING_PWM_MIN;
+}
+void EVENT_ChargeEnded(void) {
+    #ifdef LED_DEBUG
+    LED_OFF();   // DEBUG
+    #endif
+    // Set brightness
+    ELED.PWMDesired = 0;
 }
