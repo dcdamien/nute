@@ -18,7 +18,7 @@
 
 // ================================== Light ====================================
 // Timings
-#define LED_STEP_DELAY  72  // ms
+#define LED_STEP_DELAY  4  // ms
 
 // Ports & pins
 #define LED_DDR     DDRD
