@@ -10,7 +10,7 @@
 #include "calma3c.h"
 #include "time_utils.h"
 #include "common.h"
-#include "../../cc_common/cc2500.h"
+#include "cc2500.h"
 
 #include "uart_soft.h"
 
@@ -53,7 +53,7 @@ FORCE_INLINE void GeneralInit(void) {
     TimerInit();    // Time counter
 
     // Light
-    LED_DDR  |= (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
+    LED_DDR  |=   (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
     LED_PORT &= ~((1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P));
     TCCR0A = (1<<WGM01)|(1<<WGM00);
     TCCR0B = (0<<WGM02)|(0<<CS02)|(1<<CS01)|(0<<CS00);  // 1 MHz/8 = 125 kHz of timer infut freq. 125 kHz/255 = 490 Hz of PWM freq.
