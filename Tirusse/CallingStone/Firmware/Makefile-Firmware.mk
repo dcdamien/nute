@@ -1,4 +1,4 @@
-# Netbeans MakeFile.mk of Tirusse project
+# Netbeans MakeFile.mk of CallingStone project
 # build
 build:
 	make all
