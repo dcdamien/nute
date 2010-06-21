@@ -29,8 +29,12 @@
 
 #define DETECTOR_TIMEOUT    3996 // ms
 
-// =============================== Packet info =================================
+// =============================== CC settings =================================
 #define PKT_ID_CALL     0xCA
+// Channels to use
+#define CC_CHANNEL_COUNT    30  // Number of channels to use
+#define CC_CHANNEL_START    11
+#define CC_CHANNEL_END      (CC_CHANNEL_START + CC_CHANNEL_COUNT)
 
 // =============================== LED defins ==================================
 // Timings
@@ -45,7 +49,7 @@
 #define PWM_MAX         150
 
 // Charge indicating brightness
-#define CHARGING_PWM_MAX    18
+#define CHARGING_PWM_MAX    11
 #define CHARGING_PWM_MIN    0
 
 // On/off russe

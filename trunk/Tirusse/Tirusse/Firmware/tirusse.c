@@ -13,10 +13,10 @@
 #include <util/atomic.h>
 
 #include "tirusse.h"
-#include "../../cc_common/cc1101.h"
-#include "time_utils.h"
-#include "battery.h"
-#include "../../cc_common/common.h"
+#include "cc/cc1101.h"
+#include "common/time_utils.h"
+#include "common/battery.h"
+#include "common/common.h"
 
 // ================================= Types =====================================
 struct {
@@ -63,7 +63,7 @@ FORCE_INLINE void GeneralInit(void){
     // LED init
     PWM_Setup();
     ELED.PWMDesired = 0;
-    ELED.PWM = PWM_MAX; // Light-up at power-on
+    ELED.PWM = 0; // Light-up at power-on
     TimerResetDelay(&ELED.Timer);
 
     // Stone init
@@ -209,7 +209,7 @@ void EVENT_Hide(void) {
 }
 
 void EVENT_NewPacket(void) {
-    if (CC.RX_Pkt->CommandID == PKT_ID_CALL) {
+    if (CC.RX_Pkt.CommandID == PKT_ID_CALL) {
         CStone.Detected = true;
         // Send event if needed
         if (!CStone.IsHere) {

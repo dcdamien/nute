@@ -1,5 +1,5 @@
 # MCU name
-MCU = atmega16
+MCU = atmega16a
 
 
 # Processor frequency.
@@ -15,7 +15,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = main
+TARGET = calling_stone
 
 
 # Object files directory
@@ -26,9 +26,9 @@ OBJDIR = obj
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
-cc1101.c \
-time_utils.c \
-battery.c \
+common/time_utils.c \
+cc/cc1101.c \
+common/battery.c \
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
