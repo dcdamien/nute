@@ -24,6 +24,7 @@
 struct {
     uint16_t Timer;
     bool IsOn;
+    bool Blink;
 } ELED;
 struct {
     uint16_t Timer;
@@ -33,7 +34,6 @@ struct {
 int main(void) {
     GeneralInit();
     sei();
-//    DDRA = 0xFF;    //DEBUG
 
     // ******** Main cycle *********
     while (1){
@@ -53,6 +53,7 @@ FORCE_INLINE void GeneralInit(void){
     LED_DDR |= (1<<LED_P);
     TimerResetDelay(&ELED.Timer);
     ELED.IsOn = false;
+    ELED.Blink = true;
 
     // CC init
     TimerResetDelay(&CC_Srv.Timer);
@@ -68,18 +69,21 @@ FORCE_INLINE void GeneralInit(void){
 
 // ================================ Tasks ======================================
 void LED_Task(void) {
-    if (ELED.IsOn) {
-        if (TimerDelayElapsed(&ELED.Timer, LED_ON_PERIOD)) {
-            ELED.IsOn = false;
-            LED_OFF();
+    if (ELED.Blink) {
+        if (ELED.IsOn) {
+            if (TimerDelayElapsed(&ELED.Timer, LED_ON_PERIOD)) {
+                ELED.IsOn = false;
+                LED_OFF();
+            }
         }
-    }
-    else {
-        if (TimerDelayElapsed(&ELED.Timer, LED_OFF_PERIOD)) {
-            ELED.IsOn = true;
-            LED_ON();
+        else {
+            if (TimerDelayElapsed(&ELED.Timer, LED_OFF_PERIOD)) {
+                ELED.IsOn = true;
+                LED_ON();
+            }
         }
-    }
+    } // if blink
+    else LED_ON();  // Light continuously
 }
 
 void CC_Task (void){
@@ -94,7 +98,6 @@ void CC_Task (void){
             break;
 
         case CC_STB_IDLE:
-            PORTA |= (1<<PA1); // DEBUG
             // Transmit at once if IDLE
             // Prepare CALL packet
             CC.TX_Pkt.Address = 0;     // Broadcast
@@ -104,7 +107,6 @@ void CC_Task (void){
 
             CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
             CC_ENTER_TX();
-            PORTA &= ~(1<<PA1); // DEBUG
             break;
         
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
@@ -114,3 +116,12 @@ void CC_Task (void){
 
 
 // =============================== Events ======================================
+void EVENT_ADCMeasureCompleted() {
+    // Choose mode of LED
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        if (Battery.ADCValue <= BAT_U_DISCHARGED) {
+            ELED.Blink = false;
+        }
+        else ELED.Blink = true;
+    }
+}
