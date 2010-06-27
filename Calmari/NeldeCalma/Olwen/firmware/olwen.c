@@ -12,7 +12,7 @@
 #include <avr/interrupt.h>
 #include "olwen.h"
 #include "time_utils.h"
-#include "common.h"
+#include "../../cc_common/common.h"
 #include "../../cc_common/cc2500.h"
 #include "color_table.h"
 
@@ -57,7 +57,7 @@ FORCE_INLINE void GeneralInit(void) {
 
     MustSleep = true;
     // Setup timer
-    TimerInit();    // Time counter
+    TimerInit();
 
     // Light
     LED_DDR  |= (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);

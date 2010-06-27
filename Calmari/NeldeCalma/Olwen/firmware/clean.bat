@@ -1,1 +1,0 @@
-C:/WinAVR/utils/bin/make clean
