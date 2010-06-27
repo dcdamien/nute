@@ -38,8 +38,8 @@ struct {
 // =============================== General =====================================
 int main(void) {
     GeneralInit();
+
     sei();
-//    DDRA = 0xFF;    //DEBUG
 
     // ******** Main cycle *********
     while (1){
@@ -60,10 +60,10 @@ FORCE_INLINE void GeneralInit(void){
     ACSR = 1<<ACD;  // Disable analog comparator
     TimerInit();
 
-    // LED init
-    PWM_Setup();
+    // PWM init
     ELED.PWMDesired = 0;
-    ELED.PWM = 0; // Light-up at power-on
+    ELED.PWM = PWM_MAX; // Light-up at power-on
+    PWMEnable();
     TimerResetDelay(&ELED.Timer);
 
     // Stone init
@@ -84,15 +84,6 @@ FORCE_INLINE void GeneralInit(void){
 }
 
 // ============================= PWM functions =================================
-FORCE_INLINE void PWM_Setup(void) {
-    // Fast PWM, 10 bit, no prescaling, OC1A disconnected, OC1B inverted
-    TCCR1A = (0<<COM1A1)|(0<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(1<<WGM11)|(1<<WGM10);
-    TIMER1_ENABLE();
-    // Setup russe LED
-    DDRD  |= (1<<PD4);
-    PORTD |= (1<<PD4);
-}
-
 bool MayChangePWM(void) {
     if (ELED.PWM <= PWMStepOver1) {
         return TimerDelayElapsed(&ELED.Timer, PWMDelayLong);        // Low speed
@@ -105,6 +96,20 @@ bool MayChangePWM(void) {
     }
     return false;
 }
+
+FORCE_INLINE void PWMEnable(void) {
+    // Fast PWM, 10 bit, no prescaling, OC1A disconnected, OC1B inverted
+    TCCR1A = (1<<COM1B1)|(1<<COM1B0)|(1<<WGM11)|(1<<WGM10);
+    TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);
+    // Setup russe LED
+    DDRD  |= (1<<PD4);
+    PORTD |= (1<<PD4);
+}
+FORCE_INLINE void PWMDisable(void) {
+    TCCR1A = 0;
+    TCCR1B = 0;
+}
+
 
 // ================================ Tasks ======================================
 FORCE_INLINE void Stone_Task(void) {
@@ -125,10 +130,10 @@ FORCE_INLINE void LED_Task(void) {
                 OCR1BL = ELED.PWM;
             }
             // Workaround hardware PWM bug: LED does not switches off totally
-            if (ELED.PWM == 0) TIMER1_DISABLE();
+            if (ELED.PWM == 0) PWMDisable();
         }
         else {
-            if (ELED.PWM == 0) TIMER1_ENABLE();
+            if (ELED.PWM == 0) PWMEnable();
             if (MayChangePWM()) {
                 ELED.PWM++;
                 OCR1BL = ELED.PWM;
