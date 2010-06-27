@@ -46,21 +46,18 @@
 #define PWMStepOver1    36  // Where to switch to quick PWM change mode
 #define PWMStepOver2    54
 #define	PWMMin          0
-#define PWM_MAX         150
+#define PWM_MAX         135
 
 // Charge indicating brightness
 #define CHARGING_PWM_MAX    11
 #define CHARGING_PWM_MIN    0
 
-// On/off russe
-#define TIMER1_ENABLE()     TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10)
-#define TIMER1_DISABLE()    TCCR1B = 0
-
 // =============================== Prototypes ==================================
 void GeneralInit(void);
 
-void PWM_Setup(void);
 bool MayChangePWM(void);
+void PWMDisable(void);
+void PWMEnable(void);
 
 void CC_Task (void);
 void Stone_Task(void);
