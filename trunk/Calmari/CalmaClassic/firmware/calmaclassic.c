@@ -1,159 +1,222 @@
 #include <avr/io.h>
 #include <avr/wdt.h>
 #include "calmaclassic.h"
+#include "time_utils.h"
+#include "common.h"
 
-int main (void){
-    // ************* Init sequence *************
-    // Enable WatchDog at 2 s
-    wdt_enable(WDTO_2S);
-    // Shutdown comparator
-    ACSR |= (1<<ACD);
-    // Setup IO
-    DDRB  = (0<<KeyPin)|(1<<LedPin);
-    PORTB = (0<<KeyPin)|(1<<LedPin); // VCC-based LED
-    // Enable Key IRQ
-    PCMSK = (1<<KeyPin);
-    EnableKeyIRQ();
-		
-    uint8_t state = LightUp;
-	
-    // **************** Main cycle *******************
-    while (1) {
-        // ************ System timer ******************
-        // Enable Timer0 and IRQ
-        TCCR0A = 0x00;
-        TCCR0B = (0<<CS02)|(1<<CS01)|(1<<CS00); // Timer0 clock select: 011 - 61 ovfs/s
-        TIMSK |= (1<<TOIE0);			// Enable Timer0 IRQ
-        MCUCR = (1<<SE)|(0<<SM1)|(0<<SM0);	// Enable idle sleep mode
-        asm volatile (
-            "sei"	"\n\t"
-            "sleep"	"\n\t"
-            "cli"	"\n\t"
-            "wdr"	"\n\t"	// Reset WatchDog
-        ::);
-        MCUCR =0x00;		// disable sleep
+// =================================== Types ===================================
+struct {
+    uint8_t PWM, PWMDesired;
+    uint16_t Timer;
+    bool IsOn;
+} ELED;
+struct {
+    uint16_t Timer;
+    uint16_t Value;
+    bool Measuring;
+    uint8_t Counter;
+} EADC;
+struct {
+    uint16_t Timer;
+    bool IsPressed;
+} EKey;
 
-        // ************** State handler *****************
-        // state changes in case of keypress, light fadeout or fadein completetion, and after wake
-        switch (state) {
-            case WaitKeyRelease:
-                    // nothing to do
-            break;
-
-            case LightUp:
-                // Check if light ramp completed
-                if (DoLightUp() == Finished) state = LightAlive;
-            break;
-
-            case LightAlive:
-                ADCStart ();
-                DoHandleLight();
-            break;
-
-            case LightDown:
-                // check if fade completed
-                if (DoLightDown() == Finished) state = DeepSleep;
-            break;
-
-            case DeepSleep:
-                DoSleep ();
-            break;
-        }
-
-        // ************** Event handler *****************
-        if (Valto == KeyDown) {
-            // After wake
-            if  (state == DeepSleep) state = WaitKeyRelease;
-            // Test if key released
-            if	(KeyIsUp) {
-                    SilTics = 0; // reset timer
-                    if ((state==LightAlive) || (state==LightUp))	state = LightDown;
-                    if (state == WaitKeyRelease)					state = LightUp;
-                    Valto = None;
-            }
-        }	// if event
+// =============================== Implementation ==============================
+int main(void) {
+    GeneralInit();
+ 
+    while(1) {
+        wdt_reset();
+        Key_Task();
+        LED_Task();
+        ADC_Task();
+        Sleep_Task();
     }
 }
 
+FORCE_INLINE void GeneralInit(void) {
+    wdt_enable(WDTO_2S);    // Enable WatchDog at 2 s
+    ACSR |= (1<<ACD);       // Shutdown comparator
+    // Setup IO
+    DDRB  = (0<<KeyPin)|(1<<LedPin);
+    PORTB = (0<<KeyPin)|(1<<LedPin); // VCC-based LED, GND-pulled key
+    // Enable Key IRQ
+    PCMSK = (1<<KeyPin);
+    EnableKeyIRQ();
 
-uint8_t DoLightUp (void){
-	if (Sil >= PWMStartValue) { // if lighting up is finished
-		SilTics = 0; 
-		return Finished;
-	}
-	else { // else proceed with lighting up
-		if (Sil == 0)	PWMStart (); // Start-up PWM
-		if ((Sil <= PWMStepOver1 && SilTics >= PWMDelay1) || 							// low-speed light-up
-			(Sil >  PWMStepOver1 && Sil <= PWMStepOver2 && SilTics >= PWMDelay2) ||	// mid-speed light-up
-			(Sil >  PWMStepOver2 && SilTics >= PWMDelay3) ) 							// high-speed light-up
-		{
-			PWMSet (Sil++);
-			SilTics = 0;
-		}
-		return UnFinished;
-	}
+    // Init LED
+    ELED.PWMDesired = PWMStartValue;    // Light-up at power-on
+    ELED.PWM = 0;
+    TimerResetDelay(&ELED.Timer);
+    ELED.IsOn = true;
+
+    // ADC
+    TimerResetDelay(&EADC.Timer);
+    EADC.Measuring = false;
+
+    // Key
+    TimerResetDelay(&EKey.Timer);
+    EKey.IsPressed = false;
+
+    TimerInit();
 }
-uint8_t DoLightDown (void){
-	if (Sil == 0) {		// if lighting down is finished
-		SilTics = 0;
-		PWMStop (); 	// Shutdown PWM
-		return Finished;
-	}
-	else {				// else proceed with fade
-		if (
-		(Sil <= PWMStepOver1 && SilTics >= PWMDelay1) || 							// low-speed
-		(Sil >  PWMStepOver1 && Sil <= PWMStepOver2 && SilTics >= PWMDelay2) ||	// mid-speed
-		(Sil >  PWMStepOver2 && SilTics >= PWMDelay3) ) 							// high-speed 
-		{
-			PWMSet (--Sil);
-			SilTics = 0;
-		}
-		return UnFinished;
-	}
+
+// ================================== Tasks ====================================
+FORCE_INLINE void Key_Task(void) {
+    if (TimerDelayElapsed(&EKey.Timer, KEY_POLL_TIMEOUT)) {
+        if (!EKey.IsPressed && KEY_IS_DOWN()) {
+            EKey.IsPressed = true;
+            EVENT_KeyPressed();
+        }
+        else if (EKey.IsPressed && !KEY_IS_DOWN()) {
+            EKey.IsPressed = false;
+        }
+    }
 }
-void DoHandleLight (void){
-	// Test if time to measure
-	if (SilTics == TimeToMeasure) {
-		// Reset Timing
-		SilTics = 0;
-		DisableKeyIRQ;
-		// Measure
-		uint16_t ILedN = ADCMeasure ();
-		// Adjust current
-		if (ILedN > ILedNominal && Sil > PWMMin) Sil--;
-		if (ILedN < ILedNominal && Sil < PWMMax) Sil++;
-		PWMSet (Sil);
-		EnableKeyIRQ;
-	}
+FORCE_INLINE void LED_Task(void) {
+    if (ELED.PWM != ELED.PWMDesired) {
+        if (ELED.PWMDesired < ELED.PWM) {   // Lower PWM
+            if (MayChangePWM()) {
+                ELED.PWM--;
+                OCR1A = ELED.PWM;
+            }
+            // Workaround hardware PWM bug: LED does not switches off totally
+            if (ELED.PWM == 0) PWMDisable();
+        }
+        else {
+            if (ELED.PWM == 0) PWMEnable();
+            if (MayChangePWM()) {
+                ELED.PWM++;
+                OCR1A = ELED.PWM;
+            } // if may change
+        } // Fade or brighten
+    } // if not desired
 }
-void DoSleep (void) {
-	ADCStop ();
-	// Enable sleep in power-down mode
-	MCUCR = (1<<SE)|(1<<SM1)|(0<<SM0);
-	// Disable Watchdog	
-	WDTCR |= (1<<WDCE)|(1<<WDE);
-	WDTCR = 0x00;
-	// Fall asleep
-	asm volatile (
-		"sei"	"\n\t"
-		"sleep"	"\n\t"
-		"cli"	"\n\t"
-	::);
-	// Enable WatchDog at 2 s
-	WDTCR = (0<<WDIE)|(0<<WDP3)|(0<<WDCE)|(1<<WDE)|(1<<WDP2)|(1<<WDP1)|(1<<WDP0);
-	// Disable sleep
-	MCUCR = (0<<SE)|(0<<SM1)|(0<<SM0);
+FORCE_INLINE void ADC_Task(void) {
+    // Check if time to measure
+    if (!EADC.Measuring) {
+        if (TimerDelayElapsed(&EADC.Timer, ADC_TIMEOUT)) { // Start measure
+            EADC.Counter = 0;
+            EADC.Value = 0;
+            EADC.Measuring = true;
+            ADC_Start();
+        }
+    }
+    else { // Is measuring
+        // Check if conversion completed
+        if (bit_is_clear(ADCSRA, ADSC)) {   // completed
+            if (EADC.Counter != 0) {        // Discard first conversion
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+                    EADC.Value += ADC;
+                }
+            } // if !=0
+            EADC.Counter++;
+            // Check if measure completed
+            if (EADC.Counter > ADC_NUMBER_OF_MEASURES) {
+                EADC.Measuring = false;
+                TimerResetDelay(&EADC.Timer);
+                ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+                    EADC.Value >>= ADC_POWER_OF_MEASURES;
+                }
+                EVENT_ADC_Done();
+            } // if measure completed
+        } // if conversion completed
+    }
+}
+FORCE_INLINE void Sleep_Task(void) {
+    // Check if is off
+    if (!ELED.IsOn) {
+        // Check if fade completed and key depressed
+        if ((ELED.PWM == 0) && (!EKey.IsPressed)) { // Time to sleep!
+            // No need to stop timer as in power-down mode it is stopped
+            // Stop ADC
+            ADCSRA = (0<<ADEN)|(0<<ADSC)|(0<<ADATE)|(1<<ADIF)|(0<<ADIE)|(0<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+
+            MCUCR = (1<<SE)|(1<<SM1)|(0<<SM0);  // Enable sleep in power-down mode
+            EnableKeyIRQ();
+            wdt_disable();                      // Disable Watchdog
+            // Fall asleep
+            asm volatile (
+                    "sei"	"\n\t"
+                    "sleep"	"\n\t"
+                    "cli"	"\n\t"
+            ::);
+            wdt_enable(WDTO_2S);    // Enable WatchDog at 2 s
+            DisableKeyIRQ();
+            MCUCR = (0<<SE)|(0<<SM1)|(0<<SM0);  // Disable sleep
+        } // if PWM==0
+    } // if !is on
+}
+
+// ================================= Events ====================================
+FORCE_INLINE void EVENT_ADC_Done(void) {
+    if (!ELED.IsOn) return;
+    // Adjust current
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        if (EADC.Value > ILedNominal && ELED.PWMDesired > 0)        ELED.PWMDesired--;
+        if (EADC.Value < ILedNominal && ELED.PWMDesired < PWM_MAX)  ELED.PWMDesired++;
+    }
+}
+FORCE_INLINE void EVENT_KeyPressed(void) {
+    if (ELED.IsOn) {
+        ELED.IsOn = false;
+        ELED.PWMDesired = 0;
+    }
+    else {
+        ELED.IsOn = true;
+        // Left existing PWM if key pressed during fade-out
+        if (ELED.PWM > PWMStartValue) ELED.PWMDesired = ELED.PWM;
+        else ELED.PWMDesired = PWMStartValue;
+    }
+}
+
+// =================================== PWM =====================================
+FORCE_INLINE void PWMEnable(void){
+    // Setup timer1
+    TCNT1 = 0x00;
+    OCR1C = 0xFF;
+    OCR1A = 0x00;
+    OCR1B = 0x00;
+    // Disable Timer1 interrupts
+    TIMSK &= ~((1<<OCIE1A)|(1<<OCIE1B)|(1<<TOIE1));
+    // Init clock
+    PLLCSR |= (1<<LSM); // Set low-speed mode (32MHz), need for low-voltage operation
+    PLLCSR |= (1<<PLLE); // Set PLL enable
+    loop_until_bit_is_set (PLLCSR, PLOCK); // wait until PLOCK become 1
+    PLLCSR |= (1<<PCKE); // Enable PCK
+    // Set PWM mode; PCK is freq source. UnComment desired rows
+    // ********* SingleChannelVCC **********
+    TCCR1 = (1<<PWM1A)|(1<<COM1A1)|(1<<COM1A0)|(0<<CS13)|(0<<CS12)|(0<<CS11)|(1<<CS10);
+}
+FORCE_INLINE void PWMDisable(void){
+    TCCR1  = 0x00; // Stop Timer1
+    PLLCSR = 0x00; // Stop clock
+}
+bool MayChangePWM(void) {
+    if (ELED.PWM <= PWMStepOver1) {
+        return TimerDelayElapsed(&ELED.Timer, PWMDelayLong);        // Low speed
+    }
+    else if (ELED.PWM > PWMStepOver1 && ELED.PWM <= PWMStepOver2) {
+        return TimerDelayElapsed(&ELED.Timer, PWMDelayMid);         // Mid-speed
+    }
+    else if (ELED.PWM > PWMStepOver2) {
+        return TimerDelayElapsed(&ELED.Timer, PWMDelayFast);        // High-speed
+    }
+    return false;
+}
+
+void ADC_Start(void) {
+    // 1.1 V reference w/o capacitor, not left-adjusted, channel dif ADC2-ADC3 x20
+    ADMUX = (0<<REFS2)|(1<<REFS1)|(0<<REFS0)|(0<<ADLAR)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(1<<MUX0);
+    // Unipolar mode, not reversed polarity
+    ADCSRB = (0<<BIN)|(0<<IPR);
+    // Start first conversion
+    // ADC enabled, IRQ disabled, 125 kHz
+    ADCSRA = (1<<ADEN)|(1<<ADSC)|(0<<ADATE)|(1<<ADIF)|(0<<ADIE)|(0<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+    // leave ADC enabled
 }
 
 // ******************** Interrupts **************************
-// Timer0 interrupt
-ISR (TIM0_OVF_vect) {
-	// Increase timer
-	SilTics++;
-}
-
 // Key interrupt
-ISR (PCINT0_vect){
-    if (!KeyIsUp)  Valto = KeyDown;
-}
+EMPTY_INTERRUPT (PCINT0_vect);
 

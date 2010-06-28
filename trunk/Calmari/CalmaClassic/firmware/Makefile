@@ -20,6 +20,7 @@ TARGET = calmaclassic
 
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
+time_utils.c \
 
 
 

@@ -2,47 +2,58 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
-// ************** Functions prototypes *****************
-uint8_t KeyState (void);
-uint8_t DoLightUp (void);
-uint8_t DoLightDown (void);
-void DoHandleLight (void);
-void DoSleep (void);
+// =================================== PWM =====================================
+// Timings
+#define PWMDelayLong    108  // Low brightness
+#define PWMDelayMid     72  // Mid brightness
+#define PWMDelayFast    18  // High brightness
 
-// ******************* Constants ***********************
-enum {None, KeyDown, KeyDepressed}; // events
-enum {DeepSleep, WaitKeyRelease, LightUp, LightAlive, LightDown}; // system states
-enum {Finished, UnFinished}; // Threads state
+// Light constants
+#define PWM_MAX         250
+#define PWMStartValue	45	// Initial LED brightness
+#define PWMStepOver1	36	// Where to switch to quick PWM change mode
+#define PWMStepOver2	54
+
+// ================================== ADC ======================================
+#define ADC_TIMEOUT     99
+// Number of measures as power of 2: 0 means 1, 1 means 2, 3 means 8 and so on
+// Needed for averaging of values
+#define ADC_POWER_OF_MEASURES   3   // Power of 2
+#define ADC_NUMBER_OF_MEASURES  (1<<ADC_POWER_OF_MEASURES)
+
+#define ILedNominal     400 // 20 mA
+
+// ================================= Common ====================================
 // Pins
 #define KeyPin	PB2
 #define LedPin	PB1
 
-// Timings
-#define PWMDelay1		4	// Low brightness
-#define PWMDelay2		2	// Mid brightness
-#define PWMDelay3		1	// High brightness
-#define TimeToMeasure	36	// 61 is once a second
-
-// Light constants
-#define PWMStartValue	45	// Initial LED brightness
-#define PWMStepOver1	36	// Where to switch to quick PWM change mode
-#define PWMStepOver2	54
-#define	PWMMin			0
-#define PWMMax			250
-#define ILedNominal		400	// 20 mA
+#define KEY_POLL_TIMEOUT    108 // ms
 
 // *************** Pseudo functions ********************
-#define KeyIsUp()       bit_is_set (PINB, KeyPin)
+#define KEY_IS_DOWN()   bit_is_set (PINB, KeyPin)
 #define EnableKeyIRQ()  GIMSK = (0<<INT0)|(1<<PCIE)
 #define DisableKeyIRQ() GIMSK = (0<<INT0)|(0<<PCIE)
 
-// ****************** Variables ************************
-volatile uint8_t Valto = None;
-volatile uint8_t Sil = 0;
-volatile uint8_t SilTics = 0;
 
-// ****************** includes 2 ***********************
-#include "PWMUnit.c"
-#include "ADCUnit.c"
+// ============================ Prototypes =====================================
+void GeneralInit(void);
 
+void ADC_Start(void);
+
+// PWM
+bool MayChangePWM(void);
+void PWMEnable(void);
+void PWMDisable(void);
+
+// Tasks
+void Key_Task(void);
+void LED_Task(void);
+void Sleep_Task(void);
+void ADC_Task(void);
+
+// Events
+void EVENT_ADC_Done(void);
+void EVENT_KeyPressed(void);
