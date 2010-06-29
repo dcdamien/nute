@@ -8,6 +8,8 @@
 #ifndef MOTOR_H
 #define	MOTOR_H
 
+#include <avr/io.h>
+
 // ============================== Defines ======================================
 #define MOTOR_DDR   DDRD
 #define MOTOR_PORT  PORTD

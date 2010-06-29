@@ -1,5 +1,5 @@
 # MCU name
-MCU = atmega88
+MCU = atmega16a
 
 
 # Processor frequency.
@@ -27,7 +27,8 @@ OBJDIR = obj
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
 time_utils.c \
-cc2500.c \
+motor.c \
+common/cc2500.c \
 
 #uart_soft.c \
 

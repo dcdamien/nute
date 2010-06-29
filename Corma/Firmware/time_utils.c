@@ -1,13 +1,20 @@
 #include "time_utils.h"
 
+
 volatile uint16_t TickCounter;
 
 void TimerInit (void) {
     // Millisecond timer initialization, with output compare interrupt enabled
-    TCCR1A = 0;
-    TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(1<<CS11)|(0<<CS10); // CTC mode, 1 MHz/8 = 125 kHz
-    OCR1A  = 125;                           // 125 kHz / 125 = 1000 compares per second
-    TIMSK1 |= (1<<OCIE1A);                  // Enable interrupt
+    #ifdef TCCR0A
+    TCCR0A = (1<<WGM01);                    // CTC mode
+    TCCR0B = (0<<CS02)|(1<<CS01)|(0<<CS00); // 1 MHz/8 = 125 kHz
+    OCR0A  = 125;                           // 125 kHz / 125 = 1000 compares per second
+    TIMSK0 |= (1<<OCIE0A);                  // Enable interrupt
+    #else
+    TCCR0 = (1<<WGM01)|(0<<WGM00)|(0<<CS02)|(1<<CS01)|(0<<CS00);// CTC mode, 1 MHz/8 = 125 kHz
+    OCR0  = 125;                                                // 125 kHz / 125 = 1000 compares per second
+    TIMSK |= (1<<OCIE0);                                        // Enable interrupt
+    #endif
 }
 
 bool TimerDelayElapsed (uint16_t *AVar, const uint16_t ADelay) {
@@ -16,7 +23,7 @@ bool TimerDelayElapsed (uint16_t *AVar, const uint16_t ADelay) {
         ttmp = TickCounter;
     }
     if ((ttmp - *AVar) >= ADelay) {
-        *AVar = ttmp;
+        *AVar = ttmp;   // Reset delay
         return true;
     }
     else return false;
@@ -50,6 +57,12 @@ void IncSecond (struct Time_t *ATime) {
 // ================================ Interrupts =================================
 // ISR for the timer 0 compare vector. This ISR fires once each millisecond,
 // and increments the tick counter.
-ISR (TIMER1_COMPA_vect, ISR_BLOCK) {
-	TickCounter++;
+#ifdef TIMER0_COMPA_vect
+ISR (TIMER0_COMPA_vect, ISR_BLOCK) {
+    TickCounter++;
 }
+#else
+ISR (TIMER0_COMP_vect, ISR_BLOCK) {
+    TickCounter++;
+}
+#endif
