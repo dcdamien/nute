@@ -30,13 +30,10 @@
 #define KeyPin	PB2
 #define LedPin	PB1
 
-#define KEY_POLL_TIMEOUT    108 // ms
+#define KEY_POLL_TIMEOUT    99 // ms
 
 // *************** Pseudo functions ********************
 #define KEY_IS_DOWN()   bit_is_set (PINB, KeyPin)
-#define EnableKeyIRQ()  GIMSK = (0<<INT0)|(1<<PCIE)
-#define DisableKeyIRQ() GIMSK = (0<<INT0)|(0<<PCIE)
-
 
 // ============================ Prototypes =====================================
 void GeneralInit(void);

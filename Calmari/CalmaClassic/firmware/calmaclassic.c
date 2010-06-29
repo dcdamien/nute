@@ -1,5 +1,6 @@
 #include <avr/io.h>
 #include <avr/wdt.h>
+#include <avr/sleep.h>
 #include "calmaclassic.h"
 #include "time_utils.h"
 #include "common.h"
@@ -24,11 +25,14 @@ struct {
 // =============================== Implementation ==============================
 int main(void) {
     GeneralInit();
- 
+
+    sei();
+
+    //PORTB &= ~(1<<PB1);
     while(1) {
         wdt_reset();
-        Key_Task();
         LED_Task();
+        Key_Task();
         ADC_Task();
         Sleep_Task();
     }
@@ -40,9 +44,8 @@ FORCE_INLINE void GeneralInit(void) {
     // Setup IO
     DDRB  = (0<<KeyPin)|(1<<LedPin);
     PORTB = (0<<KeyPin)|(1<<LedPin); // VCC-based LED, GND-pulled key
-    // Enable Key IRQ
-    PCMSK = (1<<KeyPin);
-    EnableKeyIRQ();
+
+    TimerInit();
 
     // Init LED
     ELED.PWMDesired = PWMStartValue;    // Light-up at power-on
@@ -57,18 +60,16 @@ FORCE_INLINE void GeneralInit(void) {
     // Key
     TimerResetDelay(&EKey.Timer);
     EKey.IsPressed = false;
-
-    TimerInit();
 }
 
 // ================================== Tasks ====================================
 FORCE_INLINE void Key_Task(void) {
     if (TimerDelayElapsed(&EKey.Timer, KEY_POLL_TIMEOUT)) {
-        if (!EKey.IsPressed && KEY_IS_DOWN()) {
+        if ((!EKey.IsPressed) && KEY_IS_DOWN()) {
             EKey.IsPressed = true;
             EVENT_KeyPressed();
         }
-        else if (EKey.IsPressed && !KEY_IS_DOWN()) {
+        else if (EKey.IsPressed && (!KEY_IS_DOWN())) {
             EKey.IsPressed = false;
         }
     }
@@ -129,21 +130,20 @@ FORCE_INLINE void Sleep_Task(void) {
         // Check if fade completed and key depressed
         if ((ELED.PWM == 0) && (!EKey.IsPressed)) { // Time to sleep!
             // No need to stop timer as in power-down mode it is stopped
-            // Stop ADC
-            ADCSRA = (0<<ADEN)|(0<<ADSC)|(0<<ADATE)|(1<<ADIF)|(0<<ADIE)|(0<<ADPS2)|(1<<ADPS1)|(1<<ADPS0);
+            ADCSRA = 0x00;                      // Stop ADC
 
             MCUCR = (1<<SE)|(1<<SM1)|(0<<SM0);  // Enable sleep in power-down mode
-            EnableKeyIRQ();
+            GIMSK = (1<<PCIE);                  // }
+            PCMSK = (1<<PCINT2);                // } Enable Key IRQ
             wdt_disable();                      // Disable Watchdog
-            // Fall asleep
-            asm volatile (
-                    "sei"	"\n\t"
-                    "sleep"	"\n\t"
-                    "cli"	"\n\t"
-            ::);
-            wdt_enable(WDTO_2S);    // Enable WatchDog at 2 s
-            DisableKeyIRQ();
+            sleep_cpu();                        // Fall asleep
+            // Awake occured
+            wdt_enable(WDTO_2S);                // Enable WatchDog at 2 s
+            GIMSK = (0<<PCIE);                  // Disable Key IRQ
             MCUCR = (0<<SE)|(0<<SM1)|(0<<SM0);  // Disable sleep
+
+            EKey.IsPressed = true;
+            EVENT_KeyPressed();
         } // if PWM==0
     } // if !is on
 }
