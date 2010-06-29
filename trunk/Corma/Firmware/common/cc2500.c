@@ -16,8 +16,8 @@ void CC_Init(void){
     // ******** Hardware init section *******
     // Interrupts
     CC_GDO0_IRQ_DISABLE();
-    EICRA |= (1<<ISC01)|(0<<ISC00); // Falling edge generates an interrupt
-    EIFR  |= (1<<INTF0);            // Clear IRQ flag
+    MCUCSR &= ~(1<<ISC2);   // Falling edge generates an interrupt
+    GIFR   |= (1<<INTF2);   // Clear IRQ flag
     // Setup ports
     CC_DDR  &= ~((1<<CC_GDO0)|(1<<CC_MISO));
     CC_DDR  |=   (1<<CC_CS)|(1<<CC_MOSI)|(1<<CC_SCLK);
@@ -26,20 +26,14 @@ void CC_Init(void){
     CC_SCLK_LO;
     CC_CS_HI;
     // Setup SPI: MSB first, master, SCK idle low, f/4
-    //SPCR = (0<<SPIE)|(1<<SPE)|(0<<DORD)|(1<<MSTR)|(0<<CPOL)|(0<<CPHA)|(0<<SPR1)|(0<<SPR0);
-    //SPSR = (1<<SPI2X);
-    // Setup UART as SPI: all the same as above
-    UCSR0C = (1<<UMSEL01)|(1<<UMSEL00)|(0<<UDORD0)|(0<<UCPHA0)|(0<<UCPOL0);
-    UCSR0B = (1<<TXEN0)|(1<<RXEN0);
-    UBRR0 = 1;
+    SPCR = (0<<SPIE)|(1<<SPE)|(0<<DORD)|(1<<MSTR)|(0<<CPOL)|(0<<CPHA)|(0<<SPR1)|(0<<SPR0);
+    SPSR = (1<<SPI2X);
 
     // ******* Firmware init section *******
     CC.NewPacketReceived = false;
     CC_RESET();
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
-
-    CC_GDO0_IRQ_ENABLE();
 }
 
 FORCE_INLINE void CC_SetChannel(uint8_t AChannel){
@@ -160,22 +154,21 @@ void CC_RfConfig(void){
 
 // ============================= Low level =====================================
 uint8_t CC_ReadWriteByte(uint8_t AByte){
-    UDR0 = AByte;	// Start transmission
+    SPDR = AByte;	// Start transmission
     // Wait for transmission to complete
-    //while (bit_is_clear (UCSR0A, TXC0));    // Wait until transmission completed
-    while (bit_is_clear (UCSR0A, RXC0));    // Wait until reception completed
-    uint8_t Response = UDR0;
+    while (bit_is_clear (SPSR, SPIF));
+    uint8_t Response = SPDR;
     return Response;
 }
 
 // ============================ Interrupts =====================================
-ISR(INT0_vect) {
-    //PORTC |= (1<<PC0); // DEBUG
+ISR(INT2_vect) {
+    PORTA |= (1<<PA0); // DEBUG
     // Packet has been successfully recieved
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
-    //PORTC &= ~(1<<PC0);
+    PORTA &= ~(1<<PA0);
 }

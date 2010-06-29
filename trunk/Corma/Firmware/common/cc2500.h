@@ -1,5 +1,5 @@
 /* 
- * File:   cc2500.h of NeldeCalma
+ * File:   cc2500.h of Corma (ATmega16)
  * Author: Laurelindo
  *
  * Created on 11 Декабрь 2009 г., 2:08
@@ -17,21 +17,18 @@
 #include "cc2500_rf_settings.h"
 #include "common.h"
 
-// ==================== Application-specific defins ============================
-// Channels to use
-#define CC_CHANNEL      0
-
 // ================================== Defins ===================================
 // Ports
-#define CC_DDR  DDRD
-#define CC_PORT PORTD
-#define CC_PIN  PIND
+#define CC_DDR  DDRB
+#define CC_PORT PORTB
+#define CC_PIN  PINB
 
-#define CC_GDO0 PD2
-#define CC_CS   PD7
-#define CC_MOSI PD1
-#define CC_MISO PD0
-#define CC_SCLK PD4
+#define CC_GDO0 PB2
+#define CC_GDO2 PB3
+#define CC_CS   PB4
+#define CC_MOSI PB5
+#define CC_MISO PB6
+#define CC_SCLK PB7
 
 // =========================== Pseudo functions ================================
 #define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
@@ -44,8 +41,8 @@
 #define CC_MISO_IS_HI( )    bit_is_set(CC_PIN, CC_MISO)
 #define CC_GDO0_IS_HI( )    bit_is_set(CC_PIN, CC_GDO0)
 
-#define CC_GDO0_IRQ_ENABLE( )   EIMSK |=  (1<<INT0)
-#define CC_GDO0_IRQ_DISABLE( )  EIMSK &= ~(1<<INT0)
+#define CC_GDO0_IRQ_ENABLE( )   GICR |=  (1<<INT2)
+#define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
 
 // =============================== Variables ===================================
 #define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-3

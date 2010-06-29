@@ -8,6 +8,7 @@
 #include <util/delay.h>
 #include "common/common.h"
 #include "motor.h"
+#include "time_utils.h"
 
 enum MotorState_t {M_Idle, M_On, M_Off};
 struct {

@@ -20,7 +20,7 @@
 
 // ============================== CC timings ===================================
 #define CC_RX_ON_DELAY      54 // ms
-#define CC_RX_OFF_DELAY     504 // ms
+#define CC_RX_OFF_DELAY     108 // ms
 
 // ================================== Light ====================================
 // Timings
