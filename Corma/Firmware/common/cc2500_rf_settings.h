@@ -14,18 +14,15 @@
 //#define CC_BITRATE_250K
 
 // ============================ Common use values ==============================
-//#define CC_PKT_LENGTH       30    // Data size = 27
-//#define CC_PKT_LENGTH       6   // Data size = 3
-#define CC_PKT_LENGTH       7   // Data size = 4
-//#define CC_PKT_LENGTH       9   // Data size = 6
+#define CC_PKT_LENGTH       5   // for this exact application
 #define CC_TX_FIFO_SIZE     33
 #define CC_RX_FIFO_SIZE     32
 
 // =================================== Power ===================================
 //#define CC_PATABLE0_VALUE   0x00    // -55 dBm
-#define CC_PATABLE0_VALUE   0x50    // -30 dBm
+//#define CC_PATABLE0_VALUE   0x50    // -30 dBm
 //#define CC_PATABLE0_VALUE   0x44    // -28 dBm
-//#define CC_PATABLE0_VALUE   0xFE    // 0 dBm
+#define CC_PATABLE0_VALUE   0xFE    // 0 dBm
 //#define CC_PATABLE0_VALUE   0xFF    // +1 dBm
 
 

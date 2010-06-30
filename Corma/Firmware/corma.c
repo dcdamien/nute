@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <avr/wdt.h>
 #include <avr/eeprom.h>
+#include <util/delay.h>
 #include "corma.h"
 #include "time_utils.h"
 #include "motor.h"
@@ -20,20 +21,13 @@
 #endif
 
 // ============================= Types =========================================
-enum CC_Mode_t {CC_Sleep, CC_RX, CC_TX};
-struct {
-    uint16_t Timer;
-    bool JustEnteredRX;
-    enum CC_Mode_t Mode;
-} CC_Srv;
 struct {
     uint8_t Addr;
-    uint8_t OtherAddr[30];
+    uint8_t OtherAddr[MAX_OTHERS_COUNT];
     uint8_t OtherCounter;
     uint8_t CycleCounter;
+    bool CC_Sleeping;
 } Corma;
-
-
 
 // ============================== General ======================================
 int main(void) {
@@ -46,12 +40,18 @@ int main(void) {
 
     // DEBUG
     DDRA = 0xFF;
+    uint16_t Timerr;
+    TimerResetDelay(&Timerr);
 
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
         //Motor_TASK();
+        if (TimerDelayElapsed(&Timerr, 20)) {
+            PORTA ^= 1<<PA7;
+        }
+
     } // while
 }
 
@@ -72,21 +72,18 @@ FORCE_INLINE void GeneralInit(void) {
     //MotorInit(Corma.Addr);
 
     // CC init
-    CC_Srv.JustEnteredRX = false;
-    CC_Srv.Mode = CC_TX;
-    TimerResetDelay(&CC_Srv.Timer);
+    Corma.CC_Sleeping = false;
     CC_Init();
-    //CC_SetChannel(CORMA_CHANNEL);
-    CC_SetChannel(0);  // Debug
+    CC_SetChannel(CORMA_CHANNEL);
     CC_SetAddress(4);   //Never changes in CC itself
 
     // Setup Timer1: cycle timings
     TCNT1 = 0;
-    OCR1A = ((uint16_t)Corma.Addr) << TIMER_MULTI;
     TCCR1A = 0;
-    ICR1 = CYCLE_DURATION;
-    TIMSK |= (1<<OCIE1A)|(1<<ICIE1);
-    TIM1_START();
+    OCR1A = ((uint16_t)Corma.Addr) * PKT_DURATION;  // TX start
+    ICR1 = SUBCYCLE_DURATION;                       // TX + RX/Sleep duration
+    TIMSK |= (1<<OCIE1A)|(1<<TICIE1);
+    CYC_TIMER_START();
 }
 
 // ============================== Tasks ========================================
@@ -97,13 +94,9 @@ void CC_Task (void) {
         EVENT_NewPacket();
     }
 
-    // If in sleep mode, check if it is time to wake-up; otherwise return
-/*
-    if (CC_Srv.DeepSleep) {
-        if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
-        else return;
-    }
-*/
+    // Check if sleeping
+    if (Corma.CC_Sleeping) return;  // Nothing to do here. We'll wake in interrupt.
+
     // Do with CC what needed
     CC_GET_STATE();
     switch (CC.State){
@@ -114,58 +107,49 @@ void CC_Task (void) {
             CC_FLUSH_TX_FIFO();
             break;
 
-        case CC_STB_IDLE:   // Idle mode means that CC just has awaken
-            if (CC_Srv.Mode == CC_TX) {
-                // Prepare packet & transmit it
-                CC.TX_Pkt.Address = 0;      // Broadcast
-                CC.TX_Pkt.PacketID++;       // Increase packet ID, to avoid repeative treatment
-                CC.TX_Pkt.CommandID = PKT_ID_CALL_HI; // }
-                CC.TX_Pkt.Data[0]   = PKT_ID_CALL_LO; // } Packet ID
-
-                CC.TX_Pkt.Data[1] = Corma.Addr;
-                ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
-                    CC.TX_Pkt.Data[2] = (uint8_t)((TickCounter >> 8) & 0x00FF);
-                    CC.TX_Pkt.Data[3] = (uint8_t)(TickCounter & 0x00FF);
-                }
-
-                CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
-                CC_ENTER_TX();
-                CC_Srv.Mode = CC_RX;    // Next idle time, enter RX
+        case CC_STB_IDLE:
+            if (Corma.CycleCounter == 0) { // rx cycle
+                // Enter RX-after-TX
+                // TODO
+                //if (!CC.NewPacketReceived) CC_ENTER_RX();
             }
-            else if (CC_Srv.Mode == CC_RX) {
-                CC_ENTER_RX();
-                CC_GDO0_IRQ_ENABLE();
-                CC_Srv.JustEnteredRX = true;
+            else { // TX cycle
+                // May be IDLE only after TX
+                CC_POWERDOWN();
             }
             break;
-
+/*
         case CC_STB_RX:
+            PORTA |= (1<<PA2);// DEBUG
             // Reset timer if just entered RX
             if (CC_Srv.JustEnteredRX) {
                 CC_Srv.JustEnteredRX = false;
                 TimerResetDelay(&CC_Srv.Timer);
             }
-            else {
+  //          else {
                 // Check if CC_RX_ON_DELAY delay elapsed
+
                 if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_ON_DELAY)) { // Time to switch off
                     CC_GDO0_IRQ_DISABLE();
                     CC_ENTER_IDLE();
-                    CC_Srv.Mode = CC_TX;    // Next idle time, enter TX
+                    //CC_Srv.Mode = CC_TX;    // Next idle time, enter TX
                     //CC_POWERDOWN();
                     //CC_Srv.Mode = CC_Sleep;
                 }// if timer
-            }// if not RX
-            break;
+*/
+    //        }// if not RX
+//            PORTA &= ~(1<<PA2);// DEBUG
+  //          break;
+
 
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
     }//Switch
 }
 
-
 // ============================== Events =======================================
 FORCE_INLINE void EVENT_NewPacket(void) {
-    if ((CC.RX_Pkt.CommandID == PKT_ID_CALL_HI) && (CC.RX_Pkt.Data[0] == PKT_ID_CALL_LO)) {
+    if (CC.RX_Pkt.CommandID == PKT_ID_CALL) {
 
     } // if PKT_ID_Call
     #ifdef DEBUG_UART
@@ -186,3 +170,39 @@ FORCE_INLINE void EVENT_NewPacket(void) {
     #endif
 }
 
+// ============================ Interrupts =====================================
+// Transmit interrupt
+ISR(TIMER1_COMPA_vect) {
+    PORTA |= (1<<PA3); // DEBUG
+    CC_ENTER_IDLE();
+    CC_GDO0_IRQ_DISABLE();
+    // Prepare packet & transmit it
+    CC.TX_Pkt.ToAddr = 0;      // Broadcast
+    CC.TX_Pkt.CommandID = PKT_ID_CALL;
+    CC.TX_Pkt.SenderAddr = Corma.Addr;
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        CC.TX_Pkt.SenderTime = TCNT1;
+    }
+    CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+    CC_ENTER_TX();
+    PORTA &= ~(1<<PA3); // DEBUG
+}
+
+// SubCycle end interrupt
+ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
+    PORTA |= (1<<PA1);// DEBUG
+    // Handle cycle counter
+    if (++Corma.CycleCounter >= CYCLE_COUNT) Corma.CycleCounter = 0;
+
+    if (Corma.CycleCounter == 0) {  // RX cycle
+        // Enter RX-before-TX
+        // TODO
+    }
+    _delay_us(500);
+/*
+    CC_ENTER_RX();
+    CC_GDO0_IRQ_ENABLE();
+    CC_Srv.JustEnteredRX = true;
+*/
+    PORTA &= ~(1<<PA1);// DEBUG
+}
