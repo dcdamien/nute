@@ -45,12 +45,11 @@
 #define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
 
 // =============================== Variables ===================================
-#define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-3
-struct CC_Packet_t{
-    uint8_t Address;
-    uint8_t PacketID;
+struct CC_Packet_t {
+    uint8_t ToAddr;
     uint8_t CommandID;
-    uint8_t Data[CC_PKT_DATA_LENGTH];
+    uint8_t SenderAddr;
+    uint16_t SenderTime;
     uint8_t RSSI;
     uint8_t LQI;
 };
@@ -66,7 +65,6 @@ struct CC_t {
         struct CC_Packet_t TX_Pkt;
     };
     bool NewPacketReceived;
-    bool TransmitEnable;
 };
 
 extern struct CC_t CC;
