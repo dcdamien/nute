@@ -49,6 +49,7 @@ struct CC_Packet_t {
     uint8_t ToAddr;
     uint8_t CommandID;
     uint8_t SenderAddr;
+    uint8_t SenderCycle;
     uint16_t SenderTime;
     uint8_t RSSI;
     uint8_t LQI;
