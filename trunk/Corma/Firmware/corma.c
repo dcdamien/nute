@@ -15,28 +15,18 @@
 #include "common/common.h"
 #include "common/cc2500.h"
 
-//#define DEBUG_UART
-#ifdef DEBUG_UART
-#include "uart_soft.h"
-#endif
-
 // ============================= Types =========================================
 struct {
     uint8_t Addr;
     uint8_t OtherAddr[MAX_OTHERS_COUNT];
-    uint8_t OtherCounter;
+    uint8_t OthersCounter;
     uint8_t CycleCounter;
-    bool CC_Sleeping;
+    bool CC_IsSleeping;
 } Corma;
 
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
-
-    #ifdef DEBUG_UART
-    UARTInit();
-    UARTSendString_P(PSTR("Calma is here\r"));
-    #endif
 
     // DEBUG
     DDRA = 0xFF;
@@ -47,11 +37,10 @@ int main(void) {
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
-        //Motor_TASK();
+        Motor_TASK();
         if (TimerDelayElapsed(&Timerr, 20)) {
             PORTA ^= 1<<PA7;
         }
-
     } // while
 }
 
@@ -65,14 +54,13 @@ FORCE_INLINE void GeneralInit(void) {
     // Corma init
     Corma.Addr = eeprom_read_byte(EE_CORMA_ADDRESS);
     if (Corma.Addr == 0xFF) Corma.Addr = 0;   // Erased eeprom
-    Corma.OtherCounter = 0;
+    Corma.OthersCounter = 0;
     Corma.CycleCounter = 0;
 
     // Setup motor
-    //MotorInit(Corma.Addr);
+    MotorInit(Corma.Addr+1);
 
     // CC init
-    Corma.CC_Sleeping = false;
     CC_Init();
     CC_SetChannel(CORMA_CHANNEL);
     CC_SetAddress(4);   //Never changes in CC itself
@@ -86,6 +74,20 @@ FORCE_INLINE void GeneralInit(void) {
     CYC_TIMER_START();
 }
 
+void NewSubcycle(void) {
+    // Handle cycle counter
+    if (++Corma.CycleCounter >= CYCLE_COUNT) {
+        Corma.CycleCounter = 0;
+        // Flinch!
+        MotorSetCount (Corma.OthersCounter);
+        //MotorSetCount (2);
+        Corma.OthersCounter = 0;
+        // Enter RX-before-TX
+        CC_ENTER_RX();
+        CC_GDO0_IRQ_ENABLE();   // Enable RX interrupt
+    }
+}
+
 // ============================== Tasks ========================================
 void CC_Task (void) {
     // Handle packet if received
@@ -95,7 +97,6 @@ void CC_Task (void) {
     }
 
     // Check if sleeping
-    if (Corma.CC_Sleeping) return;  // Nothing to do here. We'll wake in interrupt.
 
     // Do with CC what needed
     CC_GET_STATE();
@@ -110,16 +111,8 @@ void CC_Task (void) {
         case CC_STB_IDLE:
             if (Corma.CycleCounter == 0) {  // rx cycle
                 // Enter RX-after-TX
-   //             CC_ENTER_RX();
-                Corma.CC_Sleeping = false;
-            }
-            else { // TX cycle
-                PORTA |= (1<<PA2);// DEBUG
-                // May be IDLE only after TX
-                //CC_POWERDOWN();
-                Corma.CC_Sleeping = true;
-                _delay_us(1500);
-                PORTA &= ~(1<<PA2); // DEBUG
+                CC_ENTER_RX();
+                CC_GDO0_IRQ_ENABLE();   // Enable RX interrupt
             }
             break;
 
@@ -131,24 +124,30 @@ void CC_Task (void) {
 // ============================== Events =======================================
 FORCE_INLINE void EVENT_NewPacket(void) {
     if (CC.RX_Pkt.CommandID == PKT_ID_CALL) {
-
+        ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+            // Count this one if did not do it yet
+            bool IsCounted = false;
+            for (uint8_t i=0; i<Corma.OthersCounter; i++)
+                if (Corma.OtherAddr[i] == CC.RX_Pkt.SenderAddr) {
+                    IsCounted = true;
+                    break;
+                }
+            if (!IsCounted)
+                Corma.OtherAddr[Corma.OthersCounter++] = CC.RX_Pkt.SenderAddr;
+            
+            // Adjust our timer if sender address is lower, and do not otherwise
+            if (CC.RX_Pkt.SenderAddr < Corma.Addr) {
+                CYC_TIMER_STOP();
+                Corma.CycleCounter = CC.RX_Pkt.SenderCycle;
+                TCNT1 = CC.RX_Pkt.SenderTime + PKT_DURATION;
+                if (TCNT1 > SUBCYCLE_DURATION) {
+                    TCNT1 -= SUBCYCLE_DURATION;
+                    NewSubcycle();
+                }
+                CYC_TIMER_START();
+            } // if addr
+        } // Atomic
     } // if PKT_ID_Call
-    #ifdef DEBUG_UART
-    UARTSendUint(CC.RX_Pkt.PacketID);
-    UARTSend(' ');
-    UARTSendAsHex(CC.RX_Pkt.Data[1]);
-    UARTSend(' ');
-    UARTSendAsHex(CC.RX_Pkt.Data[2]);
-    UARTSend(' ');
-    UARTSendAsHex(CC.RX_Pkt.Data[3]);
-
-    UARTSend(' ');
-    UARTSend(' ');
-    UARTSendUint(CC.RX_Pkt.RSSI);
-    UARTSend(' ');
-    UARTSendAsHex(CC.RX_Pkt.LQI);
-    UARTNewLine();
-    #endif
 }
 
 // ============================ Interrupts =====================================
@@ -156,33 +155,26 @@ FORCE_INLINE void EVENT_NewPacket(void) {
 ISR(TIMER1_COMPA_vect) {
     PORTA |= (1<<PA3); // DEBUG
     // Enter TX mode
-    CC_ENTER_IDLE();
     CC_GDO0_IRQ_DISABLE();  // Do not interrupt during transmit
     // Prepare packet & transmit it
     CC.TX_Pkt.ToAddr = 0;      // Broadcast
     CC.TX_Pkt.CommandID = PKT_ID_CALL;
     CC.TX_Pkt.SenderAddr = Corma.Addr;
+    CC.TX_Pkt.SenderCycle = Corma.CycleCounter;
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         CC.TX_Pkt.SenderTime = TCNT1;
     }
     CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
     CC_ENTER_TX();
-    Corma.CC_Sleeping = false;
+    // Wait for packet to transmit completely
+    while (!CC_GDO0_IS_HI());   // After this, SYNC word is transmitted
+    while (CC_GDO0_IS_HI());    // After this, packet is transmitted
     PORTA &= ~(1<<PA3); // DEBUG
 }
 
 // SubCycle end interrupt
 ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
     PORTA |= (1<<PA1);// DEBUG
-    _delay_us(500);
-    // Handle cycle counter
-    if (++Corma.CycleCounter >= CYCLE_COUNT) Corma.CycleCounter = 0;
-
-    if (Corma.CycleCounter == 0) {  // RX cycle
-        // Enter RX-before-TX
-//        CC_ENTER_RX();
-//        CC_GDO0_IRQ_ENABLE();   // Enable RX interrupt
-        Corma.CC_Sleeping = false;
-    }
+    NewSubcycle();
     PORTA &= ~(1<<PA1);// DEBUG
 }

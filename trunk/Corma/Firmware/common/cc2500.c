@@ -11,6 +11,9 @@
 #include "common/cc2500.h"
 #include "time_utils.h"
 
+#include "../corma.h"
+#include "../motor.h"
+
 struct CC_t CC;
 
 void CC_Init(void){
@@ -170,6 +173,11 @@ ISR(INT2_vect) {
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
+        //EVENT_NewPacket();
+        
     }
+    //
     PORTA &= ~(1<<PA0);
+
+    
 }

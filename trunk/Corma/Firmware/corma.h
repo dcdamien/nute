@@ -23,9 +23,9 @@
 #define CYC_TIMER_START()    TCCR1B = TCCR1B_ON
 #define CYC_TIMER_STOP()     TCCR1B = TCCR1B_OFF
 
-#define CYCLE_COUNT         7
-#define PKT_DURATION        333     // tics: experimental result, 21 ms
-#define SUBCYCLE_DURATION   3933    // 251.7 ms
+#define CYCLE_COUNT         4
+#define PKT_DURATION        360     // tics: experimental result, 21 ms
+#define SUBCYCLE_DURATION   3960    // 251.7 ms
 
 // ================================== Light ====================================
 // Timings
@@ -39,6 +39,7 @@
 // =============================== Prototypes ==================================
 // General
 void GeneralInit(void);
+void NewSubcycle(void);
 
 // Tasks
 void CC_Task (void);

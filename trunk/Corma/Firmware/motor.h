@@ -17,7 +17,7 @@
 
 #define MAX_COUNT_TO_FLINCH 4
 // Motor timings, ms
-#define MOTOR_ON_TIME       25
+#define MOTOR_ON_TIME       18
 #define MOTOR_OFF_TIME      150
 #define MOTOR_UPDATE_TIME   999
 
