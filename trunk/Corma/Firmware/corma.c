@@ -108,39 +108,20 @@ void CC_Task (void) {
             break;
 
         case CC_STB_IDLE:
-            if (Corma.CycleCounter == 0) { // rx cycle
+            if (Corma.CycleCounter == 0) {  // rx cycle
                 // Enter RX-after-TX
-                // TODO
-                //if (!CC.NewPacketReceived) CC_ENTER_RX();
+   //             CC_ENTER_RX();
+                Corma.CC_Sleeping = false;
             }
             else { // TX cycle
+                PORTA |= (1<<PA2);// DEBUG
                 // May be IDLE only after TX
-                CC_POWERDOWN();
+                //CC_POWERDOWN();
+                Corma.CC_Sleeping = true;
+                _delay_us(1500);
+                PORTA &= ~(1<<PA2); // DEBUG
             }
             break;
-/*
-        case CC_STB_RX:
-            PORTA |= (1<<PA2);// DEBUG
-            // Reset timer if just entered RX
-            if (CC_Srv.JustEnteredRX) {
-                CC_Srv.JustEnteredRX = false;
-                TimerResetDelay(&CC_Srv.Timer);
-            }
-  //          else {
-                // Check if CC_RX_ON_DELAY delay elapsed
-
-                if (TimerDelayElapsed(&CC_Srv.Timer, CC_RX_ON_DELAY)) { // Time to switch off
-                    CC_GDO0_IRQ_DISABLE();
-                    CC_ENTER_IDLE();
-                    //CC_Srv.Mode = CC_TX;    // Next idle time, enter TX
-                    //CC_POWERDOWN();
-                    //CC_Srv.Mode = CC_Sleep;
-                }// if timer
-*/
-    //        }// if not RX
-//            PORTA &= ~(1<<PA2);// DEBUG
-  //          break;
-
 
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
@@ -174,8 +155,9 @@ FORCE_INLINE void EVENT_NewPacket(void) {
 // Transmit interrupt
 ISR(TIMER1_COMPA_vect) {
     PORTA |= (1<<PA3); // DEBUG
+    // Enter TX mode
     CC_ENTER_IDLE();
-    CC_GDO0_IRQ_DISABLE();
+    CC_GDO0_IRQ_DISABLE();  // Do not interrupt during transmit
     // Prepare packet & transmit it
     CC.TX_Pkt.ToAddr = 0;      // Broadcast
     CC.TX_Pkt.CommandID = PKT_ID_CALL;
@@ -185,24 +167,22 @@ ISR(TIMER1_COMPA_vect) {
     }
     CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
     CC_ENTER_TX();
+    Corma.CC_Sleeping = false;
     PORTA &= ~(1<<PA3); // DEBUG
 }
 
 // SubCycle end interrupt
 ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
     PORTA |= (1<<PA1);// DEBUG
+    _delay_us(500);
     // Handle cycle counter
     if (++Corma.CycleCounter >= CYCLE_COUNT) Corma.CycleCounter = 0;
 
     if (Corma.CycleCounter == 0) {  // RX cycle
         // Enter RX-before-TX
-        // TODO
+//        CC_ENTER_RX();
+//        CC_GDO0_IRQ_ENABLE();   // Enable RX interrupt
+        Corma.CC_Sleeping = false;
     }
-    _delay_us(500);
-/*
-    CC_ENTER_RX();
-    CC_GDO0_IRQ_ENABLE();
-    CC_Srv.JustEnteredRX = true;
-*/
     PORTA &= ~(1<<PA1);// DEBUG
 }
