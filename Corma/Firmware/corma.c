@@ -12,6 +12,7 @@
 #include "corma.h"
 #include "time_utils.h"
 #include "motor.h"
+#include "battery.h"
 #include "common/common.h"
 #include "common/cc2500.h"
 
@@ -23,24 +24,25 @@ struct {
     uint8_t CycleCounter;
     bool CC_IsSleeping;
 } Corma;
+struct {
+    uint16_t Timer;
+    bool IsOn;
+    bool Blink;
+} ELED;
 
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
 
-    // DEBUG
-    DDRA = 0xFF;
-    uint16_t Timerr;
-    TimerResetDelay(&Timerr);
+    DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2)|(1<<PA3)|(1<<PA4);
 
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
         Motor_TASK();
-        if (TimerDelayElapsed(&Timerr, 20)) {
-            PORTA ^= 1<<PA7;
-        }
+        LED_Task();
+        Battery_Task();
     } // while
 }
 
@@ -57,6 +59,12 @@ FORCE_INLINE void GeneralInit(void) {
     Corma.OthersCounter = 0;
     Corma.CycleCounter = 0;
 
+    // LED init
+    LED_DDR |= (1<<LED_P);
+    TimerResetDelay(&ELED.Timer);
+    ELED.IsOn = false;
+    ELED.Blink = true;
+
     // Setup motor
     MotorInit(Corma.Addr+1);
 
@@ -72,6 +80,9 @@ FORCE_INLINE void GeneralInit(void) {
     ICR1 = SUBCYCLE_DURATION;                       // TX + RX/Sleep duration
     TIMSK |= (1<<OCIE1A)|(1<<TICIE1);
     CYC_TIMER_START();
+
+    // Battery
+    BatteryInit();
 }
 
 // ============================== Tasks ========================================
@@ -104,6 +115,24 @@ void CC_Task (void) {
     }//Switch
 }
 
+void LED_Task(void) {
+    if (ELED.Blink) {
+        if (ELED.IsOn) {
+            if (TimerDelayElapsed(&ELED.Timer, LED_ON_PERIOD)) {
+                ELED.IsOn = false;
+                LED_OFF();
+            }
+        }
+        else {
+            if (TimerDelayElapsed(&ELED.Timer, LED_OFF_PERIOD)) {
+                ELED.IsOn = true;
+                LED_ON();
+            }
+        }
+    } // if blink
+    else LED_ON();  // Light continuously
+}
+
 // ============================== Events =======================================
 FORCE_INLINE void EVENT_NewPacket(void) {
     if (CC.RX_Pkt.CommandID == PKT_ID_CALL) {
@@ -134,6 +163,15 @@ FORCE_INLINE void EVENT_NewPacket(void) {
         } // Atomic
     } // if PKT_ID_Call
 }
+void EVENT_ADCMeasureCompleted(void) {
+    // Choose mode of LED
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        if (Battery.ADCValue <= BAT_U_DISCHARGED) {
+            ELED.Blink = false;
+        }
+        else ELED.Blink = true;
+    }
+}
 
 // ============================ Interrupts =====================================
 // Transmit interrupt
@@ -159,10 +197,6 @@ ISR(TIMER1_COMPA_vect) {
 
 // SubCycle end interrupt
 ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
-    NewSubcycle();
-}
-
-void NewSubcycle(void) {
     PORTA |= (1<<PA1);// DEBUG
     _delay_us(500);
     // Handle cycle counter

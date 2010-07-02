@@ -29,8 +29,7 @@ SRC = $(TARGET).c \
 time_utils.c \
 motor.c \
 common/cc2500.c \
-
-#uart_soft.c \
+battery.c
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
