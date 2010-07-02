@@ -82,6 +82,9 @@ FORCE_INLINE void BatteryInit(void) {
     TimerResetDelay(&Battery.ChargeTimer);
     #endif
     #ifdef BAT_ADC
+    BAT_ADC_DDR |=  (1<<BAT_SWITCH);
+    BAT_ADC_DDR &= ~(1<<BAT_ADC_P);
+    BATTERY_METER_OFF();
     TimerResetDelay(&Battery.ADCTimer);
     Battery.ADCState = ADCNoMeasure;
     #endif
