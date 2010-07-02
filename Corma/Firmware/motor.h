@@ -21,8 +21,10 @@
 #define MOTOR_OFF_TIME      150
 #define MOTOR_UPDATE_TIME   999
 
-#define MOTOR_ON()  MOTOR_PORT &= ~(1<<MOTOR_P)
-#define MOTOR_OFF() MOTOR_PORT |=  (1<<MOTOR_P)
+//#define MOTOR_ON()  MOTOR_PORT &= ~(1<<MOTOR_P)
+//#define MOTOR_OFF() MOTOR_PORT |=  (1<<MOTOR_P)
+#define MOTOR_ON()  MOTOR_DDR |=  (1<<MOTOR_P)
+#define MOTOR_OFF() MOTOR_DDR &= ~(1<<MOTOR_P)
 
 // =========================== Prototypes ======================================
 void MotorInit(uint8_t FlinchCount);
