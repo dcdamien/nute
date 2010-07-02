@@ -29,22 +29,24 @@
 #define SUBCYCLE_DURATION   5040    // 322 ms
 
 // ================================== Light ====================================
-// Timings
-#define LED_STEP_DELAY  36  // ms
+#define LED_DDR   DDRC
+#define LED_PORT  PORTC
+#define LED_P     PC6
 
-// Ports & pins
-#define LED_DDR     DDRD
-#define LED_PORT    PORTD
+#define LED_ON()  LED_PORT |=  (1<<LED_P)
+#define LED_OFF() LED_PORT &= ~(1<<LED_P)
+
+#define LED_ON_PERIOD   99 // ms
+#define LED_OFF_PERIOD  999 // ms
 
 
 // =============================== Prototypes ==================================
 // General
 void GeneralInit(void);
-void NewSubcycle(void);
 
 // Tasks
 void CC_Task (void);
-
+void LED_Task(void);
 
 // Events
 void EVENT_NewPacket(void);
