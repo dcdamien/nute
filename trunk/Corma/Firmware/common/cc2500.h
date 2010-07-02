@@ -77,6 +77,9 @@ void CC_Init(void);
 void CC_SetChannel(uint8_t AChannel);
 void CC_SetAddress(uint8_t AAdress);
 
+void CC_EnterRX(void);
+void CC_EnterTX(void);
+
 // Middle level
 uint8_t CC_ReadRegister (uint8_t ARegAddr);
 void CC_WriteRegister (uint8_t ARegAddr, uint8_t AData);

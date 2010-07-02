@@ -24,8 +24,9 @@
 #define CYC_TIMER_STOP()     TCCR1B = TCCR1B_OFF
 
 #define CYCLE_COUNT         4
-#define PKT_DURATION        360     // tics: experimental result, 21 ms
-#define SUBCYCLE_DURATION   3960    // 251.7 ms
+#define PKT_DURATION        504
+//#define SUBCYCLE_DURATION   3960    // 251.7 ms
+#define SUBCYCLE_DURATION   5040    // 322 ms
 
 // ================================== Light ====================================
 // Timings

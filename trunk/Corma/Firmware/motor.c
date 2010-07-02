@@ -19,7 +19,7 @@ struct {
 } EMotor;
 
 FORCE_INLINE void MotorInit(uint8_t FlinchCount) {
-    MOTOR_DDR |= (1<<MOTOR_P);
+    MOTOR_PORT &= ~(1<<MOTOR_P);
     EMotor.State = M_Idle;
     EMotor.Count = 0;
     // Motor blink at power-on

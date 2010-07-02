@@ -51,6 +51,16 @@ FORCE_INLINE void CC_SetAddress(uint8_t AAddress) {
     CC_WriteRegister(CC_ADDR, AAddress);
 }
 
+FORCE_INLINE void CC_EnterRX(void) {
+    CC_ENTER_RX();
+    CC_GDO0_IRQ_ENABLE();   // Enable RX interrupt
+}
+FORCE_INLINE void CC_EnterTX(void) {
+    CC_GDO0_IRQ_DISABLE();
+    CC_ENTER_TX();
+}
+
+
 // ============================= Inner use =====================================
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
