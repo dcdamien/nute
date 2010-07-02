@@ -35,7 +35,7 @@
 #define BAT_POWER_OF_MEASURES   3   // Power of 2
 #define BAT_NUMBER_OF_MEASURES  (1<<BAT_POWER_OF_MEASURES)
 
-#define BAT_U_DISCHARGED    585 // About 3.6V
+#define BAT_U_DISCHARGED    720 // About 3.6V
 #define BAT_MEASURE_PERIOD  999 // ms; Period of battery measurement
 #define ADC_PREPARE_TIMEOUT 50  // ms; Time for ADC to prepare
 
