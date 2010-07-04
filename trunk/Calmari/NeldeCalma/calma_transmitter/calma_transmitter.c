@@ -26,12 +26,32 @@ int main(void) {
     UARTSendString_P(PSTR("Calma is here\r"));
     #endif
 
-    SetColor (10, 150, 50);
+    SetColor (50, 0, 0);
+
+    uint16_t TTimer;
+    uint8_t counter = 0;
 
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
+        if (TimerDelayElapsed(&TTimer, 9000)) {
+            switch (counter) {
+                case 0:
+                    SetColor(50,0,0);
+                    counter = 1;
+                    break;
+                case 1:
+                    SetColor(0,50,0);
+                    counter = 2;
+                    break;
+                case 2:
+                    SetColor(0,0,50);
+                    counter = 0;
+                    break;
+                default: break;
+            }
+        }
     } // while
 }
 
