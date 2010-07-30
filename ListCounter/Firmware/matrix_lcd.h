@@ -10,6 +10,7 @@
 
 #include <avr/io.h>
 #include <stdbool.h>
+#include <avr/pgmspace.h>
 
 // =================================== Settings ================================
 #define LCD_2_LINE
@@ -46,7 +47,11 @@ void LCD_cls(void);
 void LCD_WriteChar(uint8_t AChar);
 void LCD_SetCursor(uint8_t x, uint8_t y);
 
+void LCD_PrintString_P(const uint8_t x, const uint8_t y, const char *S);
+void LCD_PrintUint32(const uint8_t x, const uint8_t y, uint32_t ANumber);
+
 // Inner use
+uint8_t LCD_CycleE(void);
 void LCD_Command(uint8_t ACmd);
 void LCD_BusyWaitBF(void);
 uint8_t LCD_ReadCntr(void);

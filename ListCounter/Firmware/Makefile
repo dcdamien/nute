@@ -28,7 +28,7 @@ OBJDIR = obj
 SRC = $(TARGET).c \
 time_utils.c \
 matrix_lcd.c \
-
+ee_store_uint32.c \
 
 
 

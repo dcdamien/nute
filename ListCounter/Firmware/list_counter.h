@@ -11,11 +11,11 @@
 // =============================== General =====================================
 
 // =============================== Prototypes ==================================
-void GeneralInit(void);
-
 // Tasks
+void TASK_Lister(void);
 
 // Events
+void EVENT_NewList(void);
 
 #endif
 
