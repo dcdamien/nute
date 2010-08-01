@@ -15,19 +15,11 @@
 
 // ============================= Global =========================================
 uint32_t ECounter;
+bool ListIn;
 
 // ============================== General ======================================
 int main(void) {
-    DDRC |= 1<<PC4;
-    PORTC |= 1<<PC4;
-    // Init LCD
-    LCD_Init();
-    // Display Ostranna info
-    LCD_PrintString_P(4, 0, PSTR("Ostranna"));
-    LCD_PrintString_P(0, 1, PSTR("ListCounter v1.0"));
-    _delay_ms(2000);
-    // Check if EEPROM is erased    
-    EE_CheckIfErased();
+    GeneralInit();
     // Display initial count
     LCD_cls();
     LCD_PrintString_P(0, 0, PSTR("List count:"));
@@ -40,10 +32,44 @@ int main(void) {
     } // while
 }
 
+FORCE_INLINE void GeneralInit(void) {
+    // Watchdog
+    wdt_enable(WDTO_1S);
+    // Sensor
+    SENSOR_DDR  &= ~(1<<SENSOR_P);  // Sensor is input
+    //SENSOR_PORT &= ~(1<<SENSOR_P);  // Pull-up is off
+    SENSOR_PORT |= (1<<SENSOR_P);  // Pull-up is on
+    ListIn = false;
+
+    // Init LCD
+    LCD_Init();
+    // Display Ostranna info
+    LCD_PrintString_P(4, 0, PSTR("Ostranna"));
+    LCD_PrintString_P(0, 1, PSTR("ListCounter v1.0"));
+    // Repeat to allow watchdog to reset
+    _delay_ms(500);
+    wdt_reset();
+    _delay_ms(500);
+    wdt_reset();
+    _delay_ms(500);
+    wdt_reset();
+    _delay_ms(500);
+    wdt_reset();
+
+    // Check if EEPROM is erased
+    EE_CheckIfErased();
+}
+
 // ============================== Tasks ========================================
 FORCE_INLINE void TASK_Lister(void) {
-    _delay_ms(1000);
-    EVENT_NewList();
+    _delay_ms(500);
+    if((!ListIn) && LIST_IS_IN()) {         // New list enters
+        ListIn = true;
+        EVENT_NewList();
+    }
+    else if(ListIn && (!LIST_IS_IN())) {    // List leaves
+        ListIn = false;
+    }
 }
 
 // ============================== Events =======================================
@@ -53,7 +79,7 @@ void EVENT_NewList(void) {
     LCD_WriteChar('*');
     // Increase counter, save it and print it
     ECounter++;
-    EE_WriteUint32(ECounter);
+    // !!!EE_WriteUint32(ECounter);
     LCD_PrintString_P(0, 1, PSTR("                "));  // Clear lower string
     LCD_PrintUint32(0, 1, ECounter);
     // Hide star
