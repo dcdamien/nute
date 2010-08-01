@@ -16,13 +16,15 @@
  The buffer is circled.
  When searching last address, search lasts while two consequent values of
  counter distinct by one. When that is not right, then buffer end is found.
- There is restriction to maximum total buffer size: it must not exceed
- 255 bytes, to make possible uint8_t addresses.
+
+ There is restriction to maximum buffer size: it must not exceed
+ 255 bytes, to make possible 8-bit counter values. Absolute addresses are 16-bit.
+ This restriction needed to make search more quick.
 */
 
 // ================================ Defines ====================================
 #define EE_START_ADDR   0
-#define EE_BUF_SIZE     7
+#define EE_BUF_SIZE     45
 
 // ================================= Types =====================================
 struct EE_Cell_t {
@@ -38,7 +40,7 @@ uint32_t EE_ReadUint32(void);
 void EE_WriteUint32(uint32_t ANumber);
 
 // Inner use
-void EE_FindCurrentAddr(uint8_t *EEAddr, uint8_t *PCounter);
+uint16_t EE_FindCurrentAddr(void);
 
 
 
