@@ -38,7 +38,7 @@ FORCE_INLINE void GeneralInit(void) {
     // Sensor
     SENSOR_DDR  &= ~(1<<SENSOR_P);  // Sensor is input
     //SENSOR_PORT &= ~(1<<SENSOR_P);  // Pull-up is off
-    SENSOR_PORT |= (1<<SENSOR_P);  // Pull-up is on
+    SENSOR_PORT |= (1<<SENSOR_P);   // Pull-up is on
     ListIn = false;
 
     // Init LCD
@@ -79,7 +79,7 @@ void EVENT_NewList(void) {
     LCD_WriteChar('*');
     // Increase counter, save it and print it
     ECounter++;
-    // !!!EE_WriteUint32(ECounter);
+    EE_WriteUint32(ECounter);
     LCD_PrintString_P(0, 1, PSTR("                "));  // Clear lower string
     LCD_PrintUint32(0, 1, ECounter);
     // Hide star
