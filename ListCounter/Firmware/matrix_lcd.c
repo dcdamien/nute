@@ -7,9 +7,19 @@ void LCD_Init(void) {
     LCD_CNTR_DDR  |=   (1<<LCD_RS)|(1<<LCD_RW)|(1<<LCD_E);
     LCD_CNTR_PORT &= ~((1<<LCD_RS)|(1<<LCD_RW)|(1<<LCD_E));
     _delay_ms(150);
+    // Set 8-bit mode
+    LCD_DATA_DDR |= (1<<LCD_DATA7)|(1<<LCD_DATA6)|(1<<LCD_DATA5)|(1<<LCD_DATA4);
+    LCD_DATA_PORT &= ~((1<<LCD_DATA7)|(1<<LCD_DATA6));
+    LCD_DATA_PORT |= (1<<LCD_DATA5)|(1<<LCD_DATA4);
+    LCD_CycleE();
+    _delay_ms(5);
+    LCD_CycleE();
+    _delay_ms(2);
+    LCD_CycleE();
+    _delay_ms(2);
     // Set 4-bit mode
-    LCD_CNTR_PORT &= ~(1<<LCD_DATA4);
-    LCD_CNTR_PORT |= (1<<LCD_DATA5);
+    LCD_DATA_PORT &= ~((1<<LCD_DATA7)|(1<<LCD_DATA6)|(1<<LCD_DATA4));
+    LCD_DATA_PORT |= (1<<LCD_DATA5);
     LCD_CycleE();
     _delay_ms(2);
     // Repeat 4-bit mode with needed F & N flags

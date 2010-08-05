@@ -1,16 +1,6 @@
-update=27/07/2010 13:25:49
+update=04/08/2010 13:58:45
 version=1
-last_client=eeschema
-[cvpcb]
-version=1
-NetITyp=0
-NetIExt=.net
-PkgIExt=.pkg
-NetDir=
-LibDir=
-NetType=0
-[cvpcb/libraries]
-EquName1=devcms
+last_client=cvpcb
 [pcbnew]
 version=1
 PadDrlX=320
@@ -66,6 +56,11 @@ MaxLnkS=3
 ShowRat=0
 ShowMRa=1
 [pcbnew/libraries]
+LibName1=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Common_kl
+LibName2=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Connectors_kl
+LibName3=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\display_kl
+LibName4=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\pcb_details
+LibName5=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Tittar_kl
 LibDir=
 [general]
 version=1
@@ -114,3 +109,8 @@ LibName6=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Power_kl
 LibName7=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\RF ICs
 LibName8=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Tittar_kl
 LibName9=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Transistors_kl
+[cvpcb]
+version=1
+NetIExt=net
+[cvpcb/libraries]
+EquName1=devcms

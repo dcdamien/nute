@@ -46,6 +46,7 @@ FORCE_INLINE void GeneralInit(void) {
     // Display Ostranna info
     LCD_PrintString_P(4, 0, PSTR("Ostranna"));
     LCD_PrintString_P(0, 1, PSTR("ListCounter v1.0"));
+
     // Repeat to allow watchdog to reset
     _delay_ms(500);
     wdt_reset();
