@@ -14,7 +14,7 @@ FORMAT = ihex
 
 
 # Target file name (without extension).
-TARGET = MainUnit
+TARGET = lume
 
 
 # List C source files here. (C dependencies are automatically generated.)
