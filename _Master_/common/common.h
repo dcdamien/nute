@@ -8,6 +8,7 @@
 #ifndef _COMMON_H
 #define	_COMMON_H
 
+#define nop( )  asm volatile ("nop\n\t" ::) 
 #define FORCE_INLINE inline __attribute__ ((__always_inline__)) 
 
 #endif	/* _COMMON_H */
