@@ -41,9 +41,7 @@ void EVENT_NewHour(void);
 void EVENT_NewHyperMinute(void);
 
 // Light control
-void L_WriteByte(uint8_t AByte);
-void L_Latch(void);
-
+void WriteControlBytes(void);
 
 // ====================== Constants ======================
 // Timings
