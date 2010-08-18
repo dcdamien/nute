@@ -1,10 +1,11 @@
-// ====================== Includes ======================
+// ============================ Includes =======================================
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <inttypes.h>
 #include <avr/sleep.h>
 #include <stdbool.h>
 
+// ========================== Ports & pins =====================================
 // Power ok
 #define PWROK_DDR   DDRC
 #define PWROK_PORT  PORTC
@@ -29,7 +30,7 @@
 #define H1PWM       PB2
 
 
-// ================= Functions prototypes ==================
+// ========================== Functions prototypes =============================
 void GeneralInit (void);
 
 // Tasks
@@ -45,9 +46,6 @@ void L_Latch(void);
 
 
 // ====================== Constants ======================
-#define ON	1
-#define OFF	0
-
 // Timings
 #define PWMDelay1   7	// Low brightness
 #define PWMDelay2   4	// Mid brightness
@@ -60,4 +58,3 @@ void L_Latch(void);
 #define MAX_PWM		250
 #define MIN_PWM		10
 #define PWM_STEP	40
-
