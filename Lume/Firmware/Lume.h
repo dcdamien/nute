@@ -29,6 +29,14 @@
 #define H0PWM       PB1
 #define H1PWM       PB2
 
+// ================================ Types ======================================
+enum PWMMode_t {PWMHold, PWMRise, PWMFade};
+struct PWM_t {
+    uint8_t Value;
+    uint16_t Timer, Delay;
+    enum PWMMode_t Mode;
+    volatile uint8_t *OCRX;
+};
 
 // ========================== Functions prototypes =============================
 void GeneralInit (void);
@@ -41,11 +49,51 @@ void EVENT_NewHour(void);
 void EVENT_NewHyperMinute(void);
 
 // Light control
-void WriteControlBytes(void);
+void RiseMinute(uint8_t AMinute);
+void FadeMinute(uint8_t AMinute);
 
-// ====================== Constants ======================
+void WriteControlBytes(void);
+void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode);
+void TogglePWM(struct PWM_t *pwm);
+
+// Time utils
+bool TimerDelayElapsed(uint16_t *AVar, const uint16_t ADelay);
+void TimerResetDelay(uint16_t *AVar);
+
+// ================================= Constants =================================
+// Light control
+#define M7M12       0b01000000
+#define M65M115     0b10000000
+#define M05M55      0b01000000
+#define M1M6        0b10000000
+
+#define M12     0
+#define M0_5    1
+#define M1      2
+#define M1_5    3
+#define M2      4
+#define M2_5    5
+#define M3      6
+#define M3_5    7
+#define M4      8
+#define M4_5    9
+#define M5      10
+#define M5_5    11
+#define M6      12
+#define M6_5    13
+#define M7      14
+#define M7_5    15
+#define M8      16
+#define M8_5    17
+#define M9      18
+#define M9_5    19
+#define M10     20
+#define M10_5   21
+#define M11     22
+#define M11_5   23
+
 // Timings
-#define PWMDelay1   7	// Low brightness
+#define PWMDelay1   199	// Low brightness
 #define PWMDelay2   4	// Mid brightness
 #define PWMDelay3   1	// High brightness
 

@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 18/08/2010 20:21:39
+EESchema Schematic File Version 2  date 18/08/2010 21:58:19
 LIBS:Atmel_kl
 LIBS:Connectors_kl
 LIBS:Interface_kl
@@ -1355,7 +1355,7 @@ Entry Wire Line
 	8350 3450 8450 3550
 Entry Wire Line
 	8350 5150 8450 5250
-Text Label 7900 3450 0    60   ~ 0
+Text Label 7900 3600 0    60   ~ 0
 M7M12
 Text Label 7900 5150 0    60   ~ 0
 M1M6
@@ -3571,7 +3571,7 @@ Text Label 7900 4700 0    60   ~ 0
 M1A1
 Text Label 7900 4550 0    60   ~ 0
 M1A0
-Text Label 7900 3600 0    60   ~ 0
+Text Label 7900 3450 0    60   ~ 0
 M65M115
 Text Label 7900 4400 0    60   ~ 0
 M0A2
