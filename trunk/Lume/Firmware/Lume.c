@@ -16,7 +16,7 @@ struct {
     uint8_t HByte, MByte;   // Control bytes
     // PWMs
     uint8_t PWM_Top;
-    struct PWM_t Min0PWM, Min1PWM;
+    struct PWM_t Min0PWM, Min1PWM, Hr0PWM, Hr1PWM;
 } LControl;
 
 volatile uint16_t TickCounter;
@@ -74,22 +74,20 @@ int main (void) {
     }	// while 1
 }
 
-void GeneralInit(void) {
+FORCE_INLINE void GeneralInit(void) {
     // Light control
     L_DDR  |=   (1<<DATA_IN)|(1<<LATCH)|(1<<SRCLK);
     L_PORT &= ~((1<<DATA_IN)|(1<<LATCH)|(1<<SRCLK));
     M_PWM_DDR  |= (1<<M0PWM)|(1<<M1PWM);
     H_PWM_DDR  |= (1<<H0PWM)|(1<<H1PWM);
+    M_PWM_PORT |= (1<<M0PWM)|(1<<M1PWM);
+    H_PWM_PORT |= (1<<H0PWM)|(1<<H1PWM);
     // Hours PWM
-    TCCR1A = (1<<COM1A1)|(1<<COM1A0)|(1<<COM1B1)|(1<<COM1B0)|(0<<WGM11)|(1<<WGM10);
+    TCCR1A = (0<<WGM11)|(1<<WGM10);
     TCCR1B = (0<<WGM13)|(1<<WGM12)|(1<<CS12)|(0<<CS11)|(0<<CS10);
-    OCR1AL = 0;
-    OCR1BL = 0;
     // Minutes PWM & delay counter
-    TCCR0A = (1<<COM0A1)|(1<<COM0A0)|(1<<COM0B1)|(1<<COM0B0)|(1<<WGM01)|(1<<WGM00);
-    TCCR0B = (0<<CS02)|(0<<CS01)|(1<<CS00);
-    OCR0A = 200;
-    OCR0B = 20;
+    TCCR0A = (1<<WGM01)|(1<<WGM00);
+    TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
     TIMSK0 = (1<<TOIE0);
 
     // Serial port setup
@@ -111,14 +109,21 @@ void GeneralInit(void) {
 
     // Setup initial values
     Time.Second = 1;
-    Time.HyperMinute = 0;
+    Time.HyperMinute = 1;
     Time.Hour = 0;
 
-    LControl.PWM_Top = 250;
+    LControl.PWM_Top = 255;
     LControl.Min0PWM.OCRX = &OCR0A;
     LControl.Min1PWM.OCRX = &OCR0B;
+    LControl.Hr0PWM.OCRX  = &OCR1AL;
+    LControl.Hr1PWM.OCRX  = &OCR1BL;
 
     Mode = ModeRegular;
+
+// DEBUG
+    DDRC |= 1<<PC4;
+    PORTC &= ~(1<<PC4);
+
 
     // Start-up time setup
     EVENT_NewHour();
@@ -149,16 +154,23 @@ FORCE_INLINE void WriteControlBytes(void) {
 }
 
 void TogglePWM(struct PWM_t *pwm) {
-    if(pwm->Mode == PWMHold) return;    // Nothing to do here
+    if(pwm->Mode == PWMHold) return;                            // Nothing to do here
     if(!TimerDelayElapsed(&(pwm->Timer), pwm->Delay)) return;   // Not in time
     if(pwm->Mode == PWMRise) {
         pwm->Value++;
         if(pwm->Value == LControl.PWM_Top) pwm->Mode = PWMHold;
-        *(pwm->OCRX) = pwm->Value;
+
     } // if mode
     else {
         pwm->Value--;
-        if(pwm->Value == 0) pwm->Mode = PWMHold;
+        if(pwm->Value == 0) {
+            pwm->Mode = PWMHold;
+            // Disconnect PWM
+            if     (pwm->OCRX == &OCR0A)  TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
+            else if(pwm->OCRX == &OCR0B)  TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));
+            else if(pwm->OCRX == &OCR1AL) TCCR1A &= ~((1<<COM1A1)|(1<<COM1A0));
+            else if(pwm->OCRX == &OCR1BL) TCCR1A &= ~((1<<COM1B1)|(1<<COM1B0));
+        }
     }
     *(pwm->OCRX) = pwm->Value;
 }
@@ -171,40 +183,28 @@ void EVENT_NewHour(void) {
 }
 // Switch on needed minute channels, setup their start PWM and pepare to change
 void EVENT_NewHyperMinute(void) {
-    // Setup Minutes byte
     LControl.HByte &= 0b00111111;   // Clear minutes bits
     LControl.MByte = 0;             // Clear minutes byte
     // Here is switching logic
     //RiseMinute(Time.HyperMinute);
-    FadeMinute(Time.HyperMinute);
+    SetupMinute(Time.HyperMinute, PWMRise);
 /*
     switch(Time.HyperMinute) {
         case 0: RiseMinute(M12);  break;
         case 1: RiseMinute(M0_5); break;
     } // switch
 */
-
-    //LControl.MByte = MTable[Time.HyperMinute];
     // Write bytes to setup LEDs
     WriteControlBytes();
 }
 
-void RiseMinute(uint8_t AMinute) {
+void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode) {
     // Setup channel
     LControl.HByte |= MTable[AMinute][0];
     LControl.MByte |= MTable[AMinute][1];
     // Setup PWM
-    if(AMinute & 0x01) SetupPWM(&LControl.Min1PWM, PWMRise);    // odd => integers
-    else               SetupPWM(&LControl.Min0PWM, PWMRise);    // if even => fractional
-}
-void FadeMinute(uint8_t AMinute) {
-    // Setup channel
-    LControl.HByte |= MTable[AMinute][0];
-    LControl.MByte |= MTable[AMinute][1];
-    // Setup PWM
-    if(AMinute & 0x01) SetupPWM(&LControl.Min1PWM, PWMFade);    // odd => integers
-    else               SetupPWM(&LControl.Min0PWM, PWMFade);    // if even => fractional
-
+    if(AMinute & 0x01) SetupPWM(&LControl.Min0PWM, AMode);    // even => integers: 1 means M0_5, 2 - M1 and so on
+    else               SetupPWM(&LControl.Min1PWM, AMode);
 }
 
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
@@ -220,6 +220,12 @@ void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
         *(pwm->OCRX) = LControl.PWM_Top;
         pwm->Delay = PWMDelay1;     // !!!!!!!FIXME
     } // else
+
+    // Switch PWM on
+    if     (pwm->OCRX == &OCR0A)  TCCR0A |= ((1<<COM0A1)|(1<<COM0A0));
+    else if(pwm->OCRX == &OCR0B)  TCCR0A |= ((1<<COM0B1)|(1<<COM0B0));
+    else if(pwm->OCRX == &OCR1AL) TCCR1A |= ((1<<COM1A1)|(1<<COM1A0));
+    else if(pwm->OCRX == &OCR1BL) TCCR1A |= ((1<<COM1B1)|(1<<COM1B0));
 }
 
 
@@ -247,7 +253,7 @@ void TimerResetDelay(uint16_t *AVar) {
 // =========================== Interrupts ======================================
 // Time counter
 ISR(TIMER2_OVF_vect) { 
-    //H_PWM_PORT ^= (1<<H0PWM);
+    //PORTC ^= 1<<PC4;
 
     // Get out in settings mode
     if (Mode != ModeRegular) return;
