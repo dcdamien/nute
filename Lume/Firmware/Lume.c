@@ -186,14 +186,33 @@ void EVENT_NewHyperMinute(void) {
     LControl.HByte &= 0b00111111;   // Clear minutes bits
     LControl.MByte = 0;             // Clear minutes byte
     // Here is switching logic
-    //RiseMinute(Time.HyperMinute);
-    SetupMinute(Time.HyperMinute, PWMRise);
-/*
+    //SetupMinute(Time.HyperMinute, PWMRise);
     switch(Time.HyperMinute) {
-        case 0: RiseMinute(M12);  break;
-        case 1: RiseMinute(M0_5); break;
+        case M0_5:  SetupMinute(M0_5,  PWMRise); SetupMinute(M12,   PWMFade); break;
+        case M1:    SetupMinute(M1,    PWMRise); SetupMinute(M0_5,  PWMFade); break;
+        case M1_5:  SetupMinute(M1_5,  PWMRise); SetupMinute(M1,    PWMFade); break;
+        case M2:    SetupMinute(M2,    PWMRise); SetupMinute(M1_5,  PWMFade); break;
+        case M2_5:  SetupMinute(M2_5,  PWMRise); SetupMinute(M2,    PWMFade); break;
+        case M3:    SetupMinute(M3,    PWMRise); SetupMinute(M2_5,  PWMFade); break;
+        case M3_5:  SetupMinute(M3_5,  PWMRise); SetupMinute(M3,    PWMFade); break;
+        case M4:    SetupMinute(M4,    PWMRise); SetupMinute(M3_5,  PWMFade); break;
+        case M4_5:  SetupMinute(M4_5,  PWMRise); SetupMinute(M4,    PWMFade); break;
+        case M5:    SetupMinute(M5,    PWMRise); SetupMinute(M4_5,  PWMFade); break;
+        case M5_5:  SetupMinute(M5_5,  PWMRise); SetupMinute(M5,    PWMFade); break;
+        case M6:    SetupMinute(M6,    PWMRise); SetupMinute(M5_5,  PWMFade); break;
+        case M6_5:  SetupMinute(M6_5,  PWMRise); SetupMinute(M6,    PWMFade); break;
+        case M7:    SetupMinute(M7,    PWMRise); SetupMinute(M6_5,  PWMFade); break;
+        case M7_5:  SetupMinute(M7_5,  PWMRise); SetupMinute(M7,    PWMFade); break;
+        case M8:    SetupMinute(M8,    PWMRise); SetupMinute(M7_5,  PWMFade); break;
+        case M8_5:  SetupMinute(M8_5,  PWMRise); SetupMinute(M8,    PWMFade); break;
+        case M9:    SetupMinute(M9,    PWMRise); SetupMinute(M8_5,  PWMFade); break;
+        case M9_5:  SetupMinute(M9_5,  PWMRise); SetupMinute(M9,    PWMFade); break;
+        case M10:   SetupMinute(M10,   PWMRise); SetupMinute(M9_5,  PWMFade); break;
+        case M10_5: SetupMinute(M10_5, PWMRise); SetupMinute(M10,   PWMFade); break;
+        case M11:   SetupMinute(M11,   PWMRise); SetupMinute(M10_5, PWMFade); break;
+        case M11_5: SetupMinute(M11_5, PWMRise); SetupMinute(M11,   PWMFade); break;
+        case M12:   SetupMinute(M12,   PWMRise); SetupMinute(M11_5, PWMFade); break;
     } // switch
-*/
     // Write bytes to setup LEDs
     WriteControlBytes();
 }
