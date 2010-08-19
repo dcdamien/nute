@@ -49,8 +49,7 @@ void EVENT_NewHour(void);
 void EVENT_NewHyperMinute(void);
 
 // Light control
-void RiseMinute(uint8_t AMinute);
-void FadeMinute(uint8_t AMinute);
+void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode);
 
 void WriteControlBytes(void);
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode);
@@ -61,12 +60,20 @@ bool TimerDelayElapsed(uint16_t *AVar, const uint16_t ADelay);
 void TimerResetDelay(uint16_t *AVar);
 
 // ================================= Constants =================================
-// Light control
-#define M7M12       0b01000000
-#define M65M115     0b10000000
-#define M05M55      0b01000000
-#define M1M6        0b10000000
+// Timings
+#define PWMDelay1   99	// Low brightness
+#define PWMDelay2   4	// Mid brightness
+#define PWMDelay3   1	// High brightness
 
+// Light constants
+#define PWMStepOver1	27	// Where to switch to quick PWM change mode
+#define PWMStepOver2	45
+
+#define MAX_PWM		250
+#define MIN_PWM		10
+#define PWM_STEP	40
+
+// Light control
 #define M12     0
 #define M0_5    1
 #define M1      2
@@ -92,15 +99,3 @@ void TimerResetDelay(uint16_t *AVar);
 #define M11     22
 #define M11_5   23
 
-// Timings
-#define PWMDelay1   199	// Low brightness
-#define PWMDelay2   4	// Mid brightness
-#define PWMDelay3   1	// High brightness
-
-// Light constants
-#define PWMStepOver1	27	// Where to switch to quick PWM change mode
-#define PWMStepOver2	45
-
-#define MAX_PWM		250
-#define MIN_PWM		10
-#define PWM_STEP	40
