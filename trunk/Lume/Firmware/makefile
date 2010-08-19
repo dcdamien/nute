@@ -18,7 +18,9 @@ TARGET = lume
 
 
 # List C source files here. (C dependencies are automatically generated.)
-SRC = $(TARGET).c
+SRC = $(TARGET).c \
+led_io.c \
+delay_util.c
 
 
 # List Assembler source files here.
