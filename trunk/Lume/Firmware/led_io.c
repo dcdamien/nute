@@ -8,20 +8,20 @@ struct LControl_t LControl;
 
 // Tables of accordance
 const uint8_t HTable[12] = {
-    0b0, // H0 == H12
-    0b0, // H1
-    0b0, // H2
-    0b0, // H3
-    0b0, // H4
-    0b0, // H5
-    0b0, // H6
-    0b0, // H7
-    0b0, // H8
-    0b0, // H9
-    0b0, // H10
-    0b0, // H11
+    0b00101000, // H0 == H12
+    0b00000000, // H1
+    0b00000000, // H2
+    0b00000001, // H3
+    0b00001000, // H4
+    0b00000010, // H5
+    0b00010000, // H6
+    0b00000011, // H7
+    0b00011000, // H8
+    0b00000100, // H9
+    0b00100000, // H10
+    0b00000101, // H11
 };
-const uint8_t MTable[24][2] = { // First byte for minutes bits, second for minute byte
+const uint8_t MTable[24][2] = { // First byte for minutes decoder enable bits, second for enable bits & minute code
     {0b10000000, 0b00101000},   // M12
     {0b00000000, 0b01000000},   // M0.5
     {0b00000000, 0b10000000},   // M1
@@ -58,7 +58,7 @@ FORCE_INLINE void LedIOInit(void) {
     H_PWM_PORT |= (1<<H0PWM)|(1<<H1PWM);
     // Hours PWM
     TCCR1A = (0<<WGM11)|(1<<WGM10);
-    TCCR1B = (0<<WGM13)|(1<<WGM12)|(1<<CS12)|(0<<CS11)|(0<<CS10);
+    TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);
     // Minutes PWM & delay counter
     TCCR0A = (1<<WGM01)|(1<<WGM00);
     TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
@@ -97,6 +97,13 @@ void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode) {
     if(AMinute & 0x01) SetupPWM(&LControl.Min0PWM, AMode);    // even => integers: 1 means M0_5, 2 - M1 and so on
     else               SetupPWM(&LControl.Min1PWM, AMode);
 }
+void SetupHour(uint8_t AHour, enum PWMMode_t AMode) {
+    // Setup channel
+    LControl.HByte |= HTable[AHour];
+    // Setup PWM
+    if(AHour & 0x01) SetupPWM(&LControl.Hr0PWM, AMode);     // Odd: 1, 3, 5...
+    else             SetupPWM(&LControl.Hr1PWM, AMode);     // Even: 2, 4, 6...
+}
 
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
     pwm->Mode = mode;
@@ -120,17 +127,18 @@ void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
 }
 
 void TogglePWM(struct PWM_t *pwm) {
-    if(pwm->Mode == PWMHold) return;                            // Nothing to do here
+    if(pwm->Mode == PWMHold) return;                       // Nothing to do here
     if(!DelayElapsed(&(pwm->Timer), pwm->Delay)) return;   // Not in time
+    // Handle Rise or Fade
     if(pwm->Mode == PWMRise) {
         pwm->Value++;
-        if(pwm->Value == LControl.PWM_Top) pwm->Mode = PWMHold;
-
+        if(pwm->Value == LControl.PWM_Top)  // Top achieved
+            pwm->Mode = PWMHold;            // Do not touch it anymore
     } // if mode
-    else {
+    else {  // Fade
         pwm->Value--;
-        if(pwm->Value == 0) {
-            pwm->Mode = PWMHold;
+        if(pwm->Value == 0) {               // Bottom achieved
+            pwm->Mode = PWMHold;            // Do not touch it anymore
             // Disconnect PWM
             if     (pwm->OCRX == &OCR0A)  TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
             else if(pwm->OCRX == &OCR0B)  TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));

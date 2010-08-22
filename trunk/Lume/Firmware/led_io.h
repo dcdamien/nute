@@ -49,6 +49,8 @@ void LedIOInit(void);
 void WriteControlBytes(void);
 
 void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode);
+void SetupHour(uint8_t AHour, enum PWMMode_t AMode);
+
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode);
 
 void TogglePWM(struct PWM_t *pwm);
