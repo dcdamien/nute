@@ -30,8 +30,8 @@ FORCE_INLINE void GeneralInit(void) {
 
     // Keys
     // Timer2: realtime clock counter
-    //TCCR2B = (0<<CS22)|(0<<CS21)|(1<<CS20);	// DEBUG: no division
-    TCCR2B = (0<<CS22)|(1<<CS21)|(0<<CS20);	// DEBUG: div 8
+    TCCR2B = (0<<CS22)|(0<<CS21)|(1<<CS20);	// DEBUG: no division
+    //TCCR2B = (0<<CS22)|(1<<CS21)|(0<<CS20);	// DEBUG: div 8
     //TCCR2B = (0<<CS22)|(1<<CS21)|(1<<CS20);	// DEBUG: div 32
     ASSR  = (1<<AS2);				// Set Async mode of the timer
     TCCR2A = 0;
@@ -40,15 +40,14 @@ FORCE_INLINE void GeneralInit(void) {
 
     // Setup initial values
     Time.Second = 1;
-    Time.HyperMinute = 1;
-    Time.Hour = 0;
+    Time.HyperMinute = 0;
+    Time.Hour = 1;
 
     Mode = ModeRegular;
 
 // DEBUG
     DDRC |= 1<<PC4;
     PORTC &= ~(1<<PC4);
-
 
     // Start-up time setup
     EVENT_NewHour();
@@ -59,23 +58,32 @@ FORCE_INLINE void GeneralInit(void) {
 // Check if need toggle something
 void TASK_Toggle(void) {
     if(!POWER_OK()) return;
-
+    // Toggle minutes & hours PWM
     TogglePWM(&LControl.Min0PWM);
     TogglePWM(&LControl.Min1PWM);
+    TogglePWM(&LControl.Hr0PWM);
+    TogglePWM(&LControl.Hr1PWM);
 }
 
 // ============================ Events =========================================
 void EVENT_NewHour(void) {
-    // Setup Hours byte
-//    uint8_t HTmp = LControl.HByte & 0b11000000; // Save bits that belong to minutes
-//    LControl.HByte = HTmp + 0b00111111;//HTable[Time.Hour];
+    LControl.HByte &= 0b11000000;   // Clear hours bits
+    // Here is switching logic
+    SetupHour(Time.Hour, PWMRise);
+    if(Time.Hour == 0) SetupHour(11, PWMFade);
+    else SetupHour(Time.Hour-1, PWMFade);
+    // Control bytes will be written in minutes' handler
 }
 // Switch on needed minute channels, setup their start PWM and pepare to change
 void EVENT_NewHyperMinute(void) {
     LControl.HByte &= 0b00111111;   // Clear minutes bits
     LControl.MByte = 0;             // Clear minutes byte
     // Here is switching logic
-    //SetupMinute(Time.HyperMinute, PWMRise);
+    //SetupMinute(Time.HyperMinute, PWMRise); // DEBUG
+    SetupMinute(Time.HyperMinute, PWMRise);
+    if(Time.HyperMinute == 0) SetupMinute(23, PWMFade);
+    else SetupMinute(Time.HyperMinute-1, PWMFade);
+/*
     switch(Time.HyperMinute) {
         case M0_5:  SetupMinute(M0_5,  PWMRise); SetupMinute(M12,   PWMFade); break;
         case M1:    SetupMinute(M1,    PWMRise); SetupMinute(M0_5,  PWMFade); break;
@@ -102,6 +110,7 @@ void EVENT_NewHyperMinute(void) {
         case M11_5: SetupMinute(M11_5, PWMRise); SetupMinute(M11,   PWMFade); break;
         case M12:   SetupMinute(M12,   PWMRise); SetupMinute(M11_5, PWMFade); break;
     } // switch
+*/
     // Write bytes to setup LEDs
     WriteControlBytes();
 }
@@ -110,8 +119,7 @@ void EVENT_NewHyperMinute(void) {
 // Time counter
 ISR(TIMER2_OVF_vect) { 
     //PORTC ^= 1<<PC4;
-
-    // Get out in settings mode
+    // Get out if in mode of settings
     if (Mode != ModeRegular) return;
 
     Time.Second++;
@@ -119,11 +127,13 @@ ISR(TIMER2_OVF_vect) {
         Time.Second = 1;
         Time.HyperMinute++;
         if(Time.HyperMinute > 23) { // 24 HyperMinutes in one hour
+        //if(Time.HyperMinute > 3) { // DEBUG: 4 HyperMinutes in one hour
+//        if(Time.HyperMinute > 11) { // DEBUG: HyperMinutes as hours
             Time.HyperMinute = 0;
             Time.Hour++;
             if(Time.Hour > 11) Time.Hour = 0;
-    //        if (POWER_OK()) EVENT_NewHour();
+            if (POWER_OK()) EVENT_NewHour();
         } // if Hyperminute > 23
-        if (POWER_OK()) EVENT_NewHyperMinute();
+        if (POWER_OK()) EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
     }// Second
 }
