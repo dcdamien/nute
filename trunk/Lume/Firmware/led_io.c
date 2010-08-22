@@ -69,7 +69,7 @@ FORCE_INLINE void LedIOInit(void) {
     UCSR0C = (1<<UMSEL01)|(1<<UMSEL00)|(0<<UDORD0)|(0<<UCPHA0)|(0<<UCPOL0); // MSB first, leading edge, idle low
     UBRR0  = 0; // Max speed
 
-    LControl.PWM_Top = 255;
+    LControl.PWM_TopValue = 255;
     LControl.Min0PWM.OCRX = &OCR0A;
     LControl.Min1PWM.OCRX = &OCR0B;
     LControl.Hr0PWM.OCRX  = &OCR1AL;
@@ -108,45 +108,96 @@ void SetupHour(uint8_t AHour, enum PWMMode_t AMode) {
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
     pwm->Mode = mode;
     DelayReset(&(pwm->Timer));
-    if(mode == PWMRise) {
-        pwm->Value = 0;
-        *(pwm->OCRX) = 0;
-        pwm->Delay = PWMDelay1;
-    }
-    else {
-        pwm->Value = LControl.PWM_Top;
-        *(pwm->OCRX) = LControl.PWM_Top;
-        pwm->Delay = PWMDelay1;     // !!!!!!!FIXME
-    } // else
-
-    // Switch PWM on
-    if     (pwm->OCRX == &OCR0A)  TCCR0A |= ((1<<COM0A1)|(1<<COM0A0));
-    else if(pwm->OCRX == &OCR0B)  TCCR0A |= ((1<<COM0B1)|(1<<COM0B0));
-    else if(pwm->OCRX == &OCR1AL) TCCR1A |= ((1<<COM1A1)|(1<<COM1A0));
-    else if(pwm->OCRX == &OCR1BL) TCCR1A |= ((1<<COM1B1)|(1<<COM1B0));
+    switch(mode) {
+        case PWMRise:
+            pwm->Value = 0;
+            *(pwm->OCRX) = 0;
+            pwm->Delay = PWMDelay1;
+            PWM_On(pwm->OCRX);
+            break;
+        case PWMFade:
+            pwm->Value = LControl.PWM_TopValue;
+            *(pwm->OCRX) = LControl.PWM_TopValue;
+            pwm->Delay = PWMDelay1;     // !!!!!!!FIXME
+            PWM_On(pwm->OCRX);
+            break;
+        case PWMTop:
+            *(pwm->OCRX) = LControl.PWM_TopValue;
+            PWM_On(pwm->OCRX);
+            break;
+        case PWMBlink:
+            *(pwm->OCRX) = 128;
+            PWM_Blink(pwm->OCRX);
+            break;
+        case PWMOff:
+            PWM_Off(pwm->OCRX);
+            break;
+        default:
+            break;
+    } // switch
 }
 
+void PWM_On(io_uint8_t *p) {
+    if (p == &OCR0A) {
+        TCCR0A |= ((1<<COM0A1)|(1<<COM0A0));
+        TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);  // Fast PWM
+    }
+    else if(p == &OCR0B) {
+        TCCR0A |= ((1<<COM0B1)|(1<<COM0B0));
+        TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);  // Fast PWM
+    }
+    else if(p == &OCR1AL) {
+        TCCR1A |= ((1<<COM1A1)|(1<<COM1A0));
+        TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);   // Fast PWM
+    }
+    else if(p == &OCR1BL) {
+        TCCR1A |= ((1<<COM1B1)|(1<<COM1B0));
+        TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);   // Fast PWM
+    }
+}
+void PWM_Off(io_uint8_t *p) {
+    if     (p == &OCR0A)  TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
+    else if(p == &OCR0B)  TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));
+    else if(p == &OCR1AL) TCCR1A &= ~((1<<COM1A1)|(1<<COM1A0));
+    else if(p == &OCR1BL) TCCR1A &= ~((1<<COM1B1)|(1<<COM1B0));
+}
+void PWM_Blink(io_uint8_t *p) {
+    if (p == &OCR0A) {
+        TCCR0A |= ((1<<COM0A1)|(1<<COM0A0));
+        TCCR0B = (0<<WGM02)|(0<<CS02)|(1<<CS01)|(1<<CS00);  // Slow PWM
+    }
+    else if(p == &OCR0B) {
+        TCCR0A |= ((1<<COM0B1)|(1<<COM0B0));
+        TCCR0B = (0<<WGM02)|(0<<CS02)|(1<<CS01)|(1<<CS00);  // Slow PWM
+    }
+    else if(p == &OCR1AL) {
+        TCCR1A |= ((1<<COM1A1)|(1<<COM1A0));
+        TCCR1B = (0<<WGM13)|(1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);   // Slow PWM
+    }
+    else if(p == &OCR1BL) {
+        TCCR1A |= ((1<<COM1B1)|(1<<COM1B0));
+        TCCR1B = (0<<WGM13)|(1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);   // Slow PWM
+    }
+}
+
+
 void TogglePWM(struct PWM_t *pwm) {
-    if(pwm->Mode == PWMHold) return;                       // Nothing to do here
     if(!DelayElapsed(&(pwm->Timer), pwm->Delay)) return;   // Not in time
     // Handle Rise or Fade
     if(pwm->Mode == PWMRise) {
         pwm->Value++;
-        if(pwm->Value == LControl.PWM_Top)  // Top achieved
+        if(pwm->Value == LControl.PWM_TopValue)// Top achieved
             pwm->Mode = PWMHold;            // Do not touch it anymore
+        *(pwm->OCRX) = pwm->Value;
     } // if mode
-    else {  // Fade
+    else if(pwm->Mode == PWMFade) {         // Fade
         pwm->Value--;
         if(pwm->Value == 0) {               // Bottom achieved
             pwm->Mode = PWMHold;            // Do not touch it anymore
-            // Disconnect PWM
-            if     (pwm->OCRX == &OCR0A)  TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
-            else if(pwm->OCRX == &OCR0B)  TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));
-            else if(pwm->OCRX == &OCR1AL) TCCR1A &= ~((1<<COM1A1)|(1<<COM1A0));
-            else if(pwm->OCRX == &OCR1BL) TCCR1A &= ~((1<<COM1B1)|(1<<COM1B0));
+            PWM_Off(pwm->OCRX);             // Disconnect PWM
         }
-    }
-    *(pwm->OCRX) = pwm->Value;
+        *(pwm->OCRX) = pwm->Value;
+    } // if mode
 }
 
 

@@ -9,6 +9,7 @@
 #define	LED_IO_H
 
 #include <inttypes.h>
+#include "common.h"
 
 // Lights
 #define L_DDR       DDRD
@@ -27,17 +28,17 @@
 #define H1PWM       PB2
 
 // ================================ Types ======================================
-enum PWMMode_t {PWMHold, PWMRise, PWMFade};
+enum PWMMode_t {PWMHold, PWMTop, PWMRise, PWMFade, PWMBlink, PWMOff};
 struct PWM_t {
     uint8_t Value;
     uint16_t Timer, Delay;
     enum PWMMode_t Mode;
-    volatile uint8_t *OCRX;
+    io_uint8_t *OCRX;
 };
 struct LControl_t {
     uint8_t HByte, MByte;   // Control bytes
     // PWMs
-    uint8_t PWM_Top;
+    uint8_t PWM_TopValue;
     struct PWM_t Min0PWM, Min1PWM, Hr0PWM, Hr1PWM;
 };
 
@@ -52,6 +53,9 @@ void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode);
 void SetupHour(uint8_t AHour, enum PWMMode_t AMode);
 
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode);
+void PWM_On(io_uint8_t *p);
+void PWM_Off(io_uint8_t *p);
+void PWM_Blink(io_uint8_t *p);
 
 void TogglePWM(struct PWM_t *pwm);
 
