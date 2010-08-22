@@ -1,6 +1,7 @@
 #include "Lume.h"
 #include "common.h"
 #include "led_io.h"
+#include "delay_util.h"
 #include <util/delay.h>
 #include <util/atomic.h>
 
@@ -11,16 +12,22 @@ struct {
     uint8_t Second;
 } Time;
 
+struct {
+    bool MenuPressed, UpPressed, DownPressed;
+    uint16_t Timer;
+} Keys;
+
 enum {ModeRegular, ModeSetHours, ModeSetMinutes} Mode;
 
 // ============================ Implementation =================================
 int main (void) {
     GeneralInit ();
-
     sei();
-
     while (1) {  // forever
-        TASK_Toggle();
+        if(POWER_OK()) {    // Handle tasks only if power is ok. Time is counted in interrupt.
+            TASK_Toggle();
+            TASK_Keys();
+        } // If Power ok
     }	// while 1
 }
 
@@ -29,6 +36,13 @@ FORCE_INLINE void GeneralInit(void) {
     LedIOInit();
 
     // Keys
+    KEYS_DDR  &= ~((1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN));    // Keys are inputs
+    KEYS_PORT |=   (1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN);     // Pull-ups on
+    Keys.DownPressed = false;
+    Keys.MenuPressed = false;
+    Keys.UpPressed   = false;
+    DelayReset(&Keys.Timer);
+
     // Timer2: realtime clock counter
     TCCR2B = (0<<CS22)|(0<<CS21)|(1<<CS20);	// DEBUG: no division
     //TCCR2B = (0<<CS22)|(1<<CS21)|(0<<CS20);	// DEBUG: div 8
@@ -55,9 +69,8 @@ FORCE_INLINE void GeneralInit(void) {
 }
 
 // =============================== Tasks =======================================
-// Check if need toggle something
+// Checks if need toggle something
 void TASK_Toggle(void) {
-    if(!POWER_OK()) return;
     // Toggle minutes & hours PWM
     TogglePWM(&LControl.Min0PWM);
     TogglePWM(&LControl.Min1PWM);
@@ -65,13 +78,58 @@ void TASK_Toggle(void) {
     TogglePWM(&LControl.Hr1PWM);
 }
 
+void TASK_Keys(void) {
+    if (!DelayElapsed(&Keys.Timer, KEYS_POLL_TIME)) return;
+
+    // ******** Up key *******
+    if(!Keys.UpPressed && KEY_UP_PRESSED()) {       // Keypress occured
+        Keys.UpPressed = true;
+        EVENT_KeyUpPressed();
+    }
+    else if(Keys.UpPressed && !KEY_UP_PRESSED()) {  // Depress occured
+        Keys.UpPressed = false;
+    }
+
+    // ******** Down key *******
+    if(!Keys.DownPressed && KEY_DOWN_PRESSED()) {       // Keypress occured
+        Keys.DownPressed = true;
+        EVENT_KeyDownPressed();
+    }
+    else if(Keys.DownPressed && !KEY_DOWN_PRESSED()) {  // Depress occured
+        Keys.DownPressed = false;
+    }
+
+    // ******** Menu key *******
+    if(!Keys.MenuPressed && KEY_MENU_PRESSED()) {       // Keypress occured
+        Keys.MenuPressed = true;
+        EVENT_KeyMenuPressed();
+    }
+    else if (Keys.MenuPressed && !KEY_MENU_PRESSED()) { // Depress occured
+        Keys.MenuPressed = false;
+    }
+}
+
 // ============================ Events =========================================
 void EVENT_NewHour(void) {
     LControl.HByte &= 0b11000000;   // Clear hours bits
     // Here is switching logic
-    SetupHour(Time.Hour, PWMRise);
-    if(Time.Hour == 0) SetupHour(11, PWMFade);
-    else SetupHour(Time.Hour-1, PWMFade);
+    uint8_t HourCurrent = Time.Hour;
+    uint8_t HourPrev = (HourCurrent == 0)? 11: HourCurrent-1;
+    // Setup hours
+    switch(Mode) {
+        case ModeRegular:
+            SetupHour(HourCurrent, PWMRise);
+            SetupHour(HourPrev,    PWMFade);
+            break;
+        case ModeSetHours:
+            SetupHour(HourCurrent, PWMBlink);
+            SetupHour(HourPrev,    PWMOff);
+            break;
+        default:
+            SetupHour(HourCurrent, PWMTop);
+            SetupHour(HourPrev,    PWMOff);
+            break;
+    } // switch
     // Control bytes will be written in minutes' handler
 }
 // Switch on needed minute channels, setup their start PWM and pepare to change
@@ -79,10 +137,12 @@ void EVENT_NewHyperMinute(void) {
     LControl.HByte &= 0b00111111;   // Clear minutes bits
     LControl.MByte = 0;             // Clear minutes byte
     // Here is switching logic
-    //SetupMinute(Time.HyperMinute, PWMRise); // DEBUG
-    SetupMinute(Time.HyperMinute, PWMRise);
-    if(Time.HyperMinute == 0) SetupMinute(23, PWMFade);
-    else SetupMinute(Time.HyperMinute-1, PWMFade);
+    if(Mode != ModeSetMinutes) {      // Regular mode
+        SetupMinute(Time.HyperMinute, PWMRise);
+        if(Time.HyperMinute == 0) SetupMinute(23, PWMFade);
+        else SetupMinute(Time.HyperMinute-1, PWMFade);
+    }
+
 /*
     switch(Time.HyperMinute) {
         case M0_5:  SetupMinute(M0_5,  PWMRise); SetupMinute(M12,   PWMFade); break;
@@ -114,6 +174,61 @@ void EVENT_NewHyperMinute(void) {
     // Write bytes to setup LEDs
     WriteControlBytes();
 }
+
+// Keys events
+void EVENT_KeyUpPressed(void) {
+    // Behave depending on current mode
+    switch (Mode) {
+        case ModeSetHours:
+            if(Time.Hour == 11) Time.Hour = 0;
+            else Time.Hour++;
+            EVENT_NewHour();
+            EVENT_NewHyperMinute();
+            break;
+        case ModeSetMinutes:
+            Time.HyperMinute++;
+            if(Time.HyperMinute > 23) Time.HyperMinute = 0;
+            EVENT_NewHyperMinute();
+            break;
+        default:
+            break;
+    } // switch
+}
+void EVENT_KeyDownPressed(void) {
+    // Behave depending on current mode
+    switch (Mode) {
+        case ModeSetHours:
+            if(Time.Hour == 0) Time.Hour = 11;
+            else Time.Hour--;
+            EVENT_NewHour();
+            EVENT_NewHyperMinute();
+            break;
+        case ModeSetMinutes:
+            if(Time.HyperMinute == 0) Time.HyperMinute = 23;
+            else Time.HyperMinute--;
+            EVENT_NewHyperMinute();
+            break;
+        default:
+            break;
+    } // switch
+}
+void EVENT_KeyMenuPressed(void) {
+    // Behave depending on current mode
+    switch (Mode) {
+        case ModeRegular:   // Enter SetHours mode
+            Mode = ModeSetHours;
+            break;
+        case ModeSetHours:  // Enter SetMinutes mode
+            Mode = ModeSetMinutes;
+            break;
+        case ModeSetMinutes:    // Return to regular
+            Mode = ModeRegular;
+            break;
+    } // switch
+    EVENT_NewHour();
+    EVENT_NewHyperMinute();
+}
+
 
 // =========================== Interrupts ======================================
 // Time counter
