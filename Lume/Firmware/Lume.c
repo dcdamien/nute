@@ -115,7 +115,7 @@ void EVENT_NewHour(void) {
     HoursOff();                     // Shutdown both PWM channels
     // Here is switching logic
     HCurrent = Time.Hour;
-    HPrev = (Time.Hour == 0)? 11 : Time.Hour-1;
+    HPrev = (HCurrent == 0)? 11 : HCurrent-1;
     switch(Mode) {
         case ModeRegular:   
             SetupHour(HCurrent, PWMRise);
@@ -133,16 +133,27 @@ void EVENT_NewHour(void) {
 }
 // Switch on needed minute channels, setup their start PWM and pepare to change
 void EVENT_NewHyperMinute(void) {
+    uint8_t MCurrent, MPrev;
     LControl.HByte &= 0b00111111;   // Clear minutes bits
     LControl.MByte = 0;             // Clear minutes byte
+    MinutesOff();                   // Shutdown both PWM channels
     // Here is switching logic
-    if(Mode != ModeSetMinutes) {      // Regular mode
-        SetupMinute(Time.HyperMinute, PWMRise);
-        if(Time.HyperMinute == 0) SetupMinute(23, PWMFade);
-        else SetupMinute(Time.HyperMinute-1, PWMFade);
-    }
-    // Write bytes to setup LEDs
-    WriteControlBytes();
+    MCurrent = Time.HyperMinute;
+    MPrev = (MCurrent == 0)? 23 : MCurrent-1;
+    switch(Mode) {
+        case ModeRegular:
+            SetupMinute(MCurrent, PWMRise);
+            SetupMinute(MPrev,    PWMFade);
+            break;
+        case ModeSetMinutes:
+            SetupMinute(MCurrent, PWMBlink);
+            break;
+        default:
+            SetupMinute(MCurrent, PWMTop);
+            break;
+    } // switch
+    WriteControlBytes();    // Write bytes to setup LEDs
+    MinutesOn();            // Switch on needed PWM channels
 }
 
 // Keys events
