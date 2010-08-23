@@ -2,6 +2,7 @@
 #include "common.h"
 #include "led_io.h"
 #include "delay_util.h"
+#include "luminocity.h"
 #include <util/atomic.h>
 
 // ============================ Types & variables ==============================
@@ -26,6 +27,7 @@ int main (void) {
         //if(POWER_OK()) {    // Handle tasks only if power is ok. Time is counted in interrupt.
             TASK_Toggle();
             TASK_Keys();
+            TASK_Lumi();
         //} // If Power ok
     }	// while 1
 }
@@ -33,6 +35,7 @@ int main (void) {
 FORCE_INLINE void GeneralInit(void) {
     // Light control
     LedIOInit();
+    LumiInit();
 
     // Keys
     KEYS_DDR  &= ~((1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN));    // Keys are inputs
@@ -58,17 +61,13 @@ FORCE_INLINE void GeneralInit(void) {
 
     Mode = ModeRegular;
 
-// DEBUG
-    DDRC |= 1<<PC4;
-    PORTC &= ~(1<<PC4);
-
     // Start-up time setup
     EVENT_NewHour();
     EVENT_NewHyperMinute();
 }
 
 // =============================== Tasks =======================================
-// Checks if need toggle something
+// Checks if need to toggle something
 void TASK_Toggle(void) {
     // Toggle minutes & hours PWM
     TogglePWM(&LControl.Min0PWM);
@@ -107,6 +106,7 @@ void TASK_Keys(void) {
         Keys.MenuPressed = false;
     }
 }
+
 
 // ============================ Events =========================================
 void EVENT_NewHour(void) {
@@ -208,17 +208,22 @@ void EVENT_KeyMenuPressed(void) {
     EVENT_NewHyperMinute();
 }
 
+// Luminocity change event
+void EVENT_LumiChanged(void) {
+    if(Lumi.ADCValue > 200) Time.Hour = 1;
+    else Time.Hour = 3;
+
+    EVENT_NewHour();
+}
 
 // =========================== Interrupts ======================================
 // Time counter
 ISR(TIMER2_OVF_vect) {
-    //PORTC ^= 1<<PC4;
     // Get out if in mode of settings
     if (Mode != ModeRegular) return;
 
     Time.Second++;
     if(Time.Second > 150) {    // 150 seconds in one hyperminute
-        //PORTC ^= 1<<PC4;
         Time.Second = 1;
         Time.HyperMinute++;
         if(Time.HyperMinute > 23) { // 24 HyperMinutes in one hour
@@ -228,9 +233,9 @@ ISR(TIMER2_OVF_vect) {
             Time.Hour++;
             if(Time.Hour > 11) Time.Hour = 0;
             //if (POWER_OK())
-                EVENT_NewHour();
+            //    EVENT_NewHour();
         } // if Hyperminute > 23
         //if (POWER_OK())
-            EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
+          //  EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
     }// Second
 }

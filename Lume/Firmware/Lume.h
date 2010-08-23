@@ -45,4 +45,6 @@ void EVENT_KeyUpPressed(void);
 void EVENT_KeyDownPressed(void);
 void EVENT_KeyMenuPressed(void);
 
+void EVENT_LumiChanged(void);
+
 #endif
