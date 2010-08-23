@@ -27,8 +27,14 @@
 #define H0PWM       PB1
 #define H1PWM       PB2
 
+#define H0PWM_ON()  TCCR1A |= ((1<<COM1A1)|(1<<COM1A0))
+#define H1PWM_ON()  TCCR1A |= ((1<<COM1B1)|(1<<COM1B0))
+#define M0PWM_ON()  TCCR0A |= ((1<<COM0A1)|(1<<COM0A0))
+#define M1PWM_ON()  TCCR1A |= ((1<<COM0B1)|(1<<COM0B0))
+
+
 // ================================ Types ======================================
-enum PWMMode_t {PWMHold, PWMTop, PWMRise, PWMFade, PWMBlink, PWMOff};
+enum PWMMode_t {PWMHold, PWMRise, PWMFade, PWMTop, PWMBlink, PWMOff};
 struct PWM_t {
     uint8_t Value;
     uint16_t Timer, Delay;
@@ -50,12 +56,18 @@ void LedIOInit(void);
 void WriteControlBytes(void);
 
 void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode);
+
 void SetupHour(uint8_t AHour, enum PWMMode_t AMode);
 
+//void HourConnect(uint8_t AHour);
+//void HourSetPWM(uint8_t AHour, enum PWMMode_t AMode);
+
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode);
-void PWM_On(io_uint8_t *p);
+//void PWM_On(io_uint8_t *p);
 void PWM_Off(io_uint8_t *p);
-void PWM_Blink(io_uint8_t *p);
+
+void HoursOff(void);
+void HoursOn(void);
 
 void TogglePWM(struct PWM_t *pwm);
 
@@ -64,6 +76,8 @@ void TogglePWM(struct PWM_t *pwm);
 #define PWMDelay1   99	// Low brightness
 #define PWMDelay2   4	// Mid brightness
 #define PWMDelay3   1	// High brightness
+
+#define BLINK_DELAY 1000
 
 // Light constants
 #define PWMStepOver1	27	// Where to switch to quick PWM change mode
