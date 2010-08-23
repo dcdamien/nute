@@ -27,7 +27,8 @@ OBJDIR = obj
 # List C source files here. (C dependencies are automatically generated.)
 SRC = $(TARGET).c \
 led_io.c \
-delay_util.c
+delay_util.c \
+luminocity.c
 
 
 # List C++ source files here. (C dependencies are automatically generated.)
