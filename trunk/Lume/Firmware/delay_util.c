@@ -22,5 +22,6 @@ void DelayReset(uint16_t *AVar) {
 // ================================ Interrupts =================================
 // Delay counter
 ISR(TIMER0_OVF_vect) {
+    //PORTC ^= 1<<PC4;
     TickCounter++;
 }

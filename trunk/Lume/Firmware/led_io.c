@@ -62,7 +62,7 @@ FORCE_INLINE void LedIOInit(void) {
     // Minutes PWM & delay counter
     TCCR0A = (1<<WGM01)|(1<<WGM00);
     TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);
-    TIMSK0 = (1<<TOIE0);
+    TIMSK0 = (1<<TOIE0);    // Interrupt is in delay_util
 
     // Serial port setup
     UCSR0B = (1<<TXEN0);    // TX enable, irqs disable
@@ -77,16 +77,18 @@ FORCE_INLINE void LedIOInit(void) {
 }
 
 FORCE_INLINE void WriteControlBytes(void) {
-    while (bit_is_clear(UCSR0A, UDRE0));    // Wait until buffer is empty
-    UDR0 = LControl.MByte;
-    while (bit_is_clear(UCSR0A, UDRE0));    // Wait until buffer is empty
-    UDR0 = LControl.HByte;
-    // Toggle latch
-    UCSR0A = (1<<TXC0);                     // Reset TXC0 flag
-    while (bit_is_clear(UCSR0A, TXC0));     // Wait until shift register is empty
-    L_PORT |=  (1<<LATCH);
-    nop();
-    L_PORT &= ~(1<<LATCH);
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+        UCSR0A = (1<<TXC0);                     // Reset TXC0 flag
+        while (bit_is_clear(UCSR0A, UDRE0));    // Wait until buffer is empty
+        UDR0 = LControl.MByte;
+        while (bit_is_clear(UCSR0A, UDRE0));    // Wait until buffer is empty
+        UDR0 = LControl.HByte;
+        // Toggle latch
+        while (bit_is_clear(UCSR0A, TXC0))  PORTC ^= 1<<PC4;     // Wait until shift register is empty
+        L_PORT |=  (1<<LATCH);
+        nop();
+        L_PORT &= ~(1<<LATCH);
+    }
 }
 
 void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode) {
@@ -97,13 +99,22 @@ void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode) {
     if(AMinute & 0x01) SetupPWM(&LControl.Min0PWM, AMode);    // even => integers: 1 means M0_5, 2 - M1 and so on
     else               SetupPWM(&LControl.Min1PWM, AMode);
 }
+
 void SetupHour(uint8_t AHour, enum PWMMode_t AMode) {
-    // Setup channel
-    LControl.HByte |= HTable[AHour];
-    // Setup PWM
+    LControl.HByte |= HTable[AHour];                        // Setup byte
     if(AHour & 0x01) SetupPWM(&LControl.Hr0PWM, AMode);     // Odd: 1, 3, 5...
     else             SetupPWM(&LControl.Hr1PWM, AMode);     // Even: 2, 4, 6...
 }
+
+/*
+FORCE_INLINE void HourConnect(uint8_t AHour) {
+    LControl.HByte |= HTable[AHour];
+}
+FORCE_INLINE void HourSetPWM(uint8_t AHour, enum PWMMode_t AMode) {
+    if(AHour & 0x01) SetupPWM(&LControl.Hr0PWM, AMode);     // Odd: 1, 3, 5...
+    else             SetupPWM(&LControl.Hr1PWM, AMode);     // Even: 2, 4, 6...
+}
+*/
 
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
     pwm->Mode = mode;
@@ -113,91 +124,72 @@ void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
             pwm->Value = 0;
             *(pwm->OCRX) = 0;
             pwm->Delay = PWMDelay1;
-            PWM_On(pwm->OCRX);
             break;
         case PWMFade:
             pwm->Value = LControl.PWM_TopValue;
             *(pwm->OCRX) = LControl.PWM_TopValue;
             pwm->Delay = PWMDelay1;     // !!!!!!!FIXME
-            PWM_On(pwm->OCRX);
             break;
         case PWMTop:
             *(pwm->OCRX) = LControl.PWM_TopValue;
-            PWM_On(pwm->OCRX);
             break;
         case PWMBlink:
-            *(pwm->OCRX) = 128;
-            PWM_Blink(pwm->OCRX);
-            break;
-        case PWMOff:
-            PWM_Off(pwm->OCRX);
+            pwm->Value = LControl.PWM_TopValue;
+            *(pwm->OCRX) = LControl.PWM_TopValue;
+            pwm->Delay = BLINK_DELAY;
             break;
         default:
             break;
     } // switch
 }
 
-void PWM_On(io_uint8_t *p) {
-    if (p == &OCR0A) {
-        TCCR0A |= ((1<<COM0A1)|(1<<COM0A0));
-        TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);  // Fast PWM
-    }
-    else if(p == &OCR0B) {
-        TCCR0A |= ((1<<COM0B1)|(1<<COM0B0));
-        TCCR0B = (0<<WGM02)|(0<<CS02)|(0<<CS01)|(1<<CS00);  // Fast PWM
-    }
-    else if(p == &OCR1AL) {
-        TCCR1A |= ((1<<COM1A1)|(1<<COM1A0));
-        TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);   // Fast PWM
-    }
-    else if(p == &OCR1BL) {
-        TCCR1A |= ((1<<COM1B1)|(1<<COM1B0));
-        TCCR1B = (0<<WGM13)|(1<<WGM12)|(0<<CS12)|(0<<CS11)|(1<<CS10);   // Fast PWM
-    }
-}
 void PWM_Off(io_uint8_t *p) {
     if     (p == &OCR0A)  TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
     else if(p == &OCR0B)  TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));
     else if(p == &OCR1AL) TCCR1A &= ~((1<<COM1A1)|(1<<COM1A0));
     else if(p == &OCR1BL) TCCR1A &= ~((1<<COM1B1)|(1<<COM1B0));
 }
-void PWM_Blink(io_uint8_t *p) {
-    if (p == &OCR0A) {
-        TCCR0A |= ((1<<COM0A1)|(1<<COM0A0));
-        TCCR0B = (0<<WGM02)|(0<<CS02)|(1<<CS01)|(1<<CS00);  // Slow PWM
-    }
-    else if(p == &OCR0B) {
-        TCCR0A |= ((1<<COM0B1)|(1<<COM0B0));
-        TCCR0B = (0<<WGM02)|(0<<CS02)|(1<<CS01)|(1<<CS00);  // Slow PWM
-    }
-    else if(p == &OCR1AL) {
-        TCCR1A |= ((1<<COM1A1)|(1<<COM1A0));
-        TCCR1B = (0<<WGM13)|(1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);   // Slow PWM
-    }
-    else if(p == &OCR1BL) {
-        TCCR1A |= ((1<<COM1B1)|(1<<COM1B0));
-        TCCR1B = (0<<WGM13)|(1<<WGM12)|(1<<CS12)|(0<<CS11)|(1<<CS10);   // Slow PWM
-    }
+
+
+FORCE_INLINE void HoursOff(void) {
+    TCCR1A = (0<<WGM11)|(1<<WGM10);
+    OCR1AL = 0;
+    OCR1BL = 0;
+    LControl.Hr0PWM.Mode = PWMOff;
+    LControl.Hr1PWM.Mode = PWMOff;
 }
+void HoursOn(void) {
+    if((LControl.Hr0PWM.Mode != PWMHold) && (LControl.Hr0PWM.Mode != PWMOff)) H0PWM_ON();
+    if((LControl.Hr1PWM.Mode != PWMHold) && (LControl.Hr1PWM.Mode != PWMOff)) H1PWM_ON();
+}
+
 
 
 void TogglePWM(struct PWM_t *pwm) {
     if(!DelayElapsed(&(pwm->Timer), pwm->Delay)) return;   // Not in time
     // Handle Rise or Fade
-    if(pwm->Mode == PWMRise) {
-        pwm->Value++;
-        if(pwm->Value == LControl.PWM_TopValue)// Top achieved
-            pwm->Mode = PWMHold;            // Do not touch it anymore
-        *(pwm->OCRX) = pwm->Value;
-    } // if mode
-    else if(pwm->Mode == PWMFade) {         // Fade
-        pwm->Value--;
-        if(pwm->Value == 0) {               // Bottom achieved
-            pwm->Mode = PWMHold;            // Do not touch it anymore
-            PWM_Off(pwm->OCRX);             // Disconnect PWM
-        }
-        *(pwm->OCRX) = pwm->Value;
-    } // if mode
+    switch(pwm->Mode) {
+        case PWMRise:
+            if(pwm->Value == LControl.PWM_TopValue) pwm->Mode = PWMHold;    // Do not touch it anymore
+            else pwm->Value++;
+            *(pwm->OCRX) = pwm->Value;
+            break;
+        case PWMFade:
+            if(pwm->Value == 0) {               // Bottom achieved
+                pwm->Mode = PWMHold;            // Do not touch it anymore
+                PWM_Off(pwm->OCRX);             // Disconnect PWM
+            }
+            else pwm->Value--;
+            *(pwm->OCRX) = pwm->Value;
+            break;
+        case PWMBlink:
+            
+            if(pwm->Value == LControl.PWM_TopValue) pwm->Value = 0; // Toggle light
+            else pwm->Value = LControl.PWM_TopValue;
+            *(pwm->OCRX) = pwm->Value;
+            break;
+        default: break;
+    } // switch
 }
 
 
