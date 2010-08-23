@@ -106,16 +106,6 @@ void SetupHour(uint8_t AHour, enum PWMMode_t AMode) {
     else             SetupPWM(&LControl.Hr1PWM, AMode);     // Even: 2, 4, 6...
 }
 
-/*
-FORCE_INLINE void HourConnect(uint8_t AHour) {
-    LControl.HByte |= HTable[AHour];
-}
-FORCE_INLINE void HourSetPWM(uint8_t AHour, enum PWMMode_t AMode) {
-    if(AHour & 0x01) SetupPWM(&LControl.Hr0PWM, AMode);     // Odd: 1, 3, 5...
-    else             SetupPWM(&LControl.Hr1PWM, AMode);     // Even: 2, 4, 6...
-}
-*/
-
 void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
     pwm->Mode = mode;
     DelayReset(&(pwm->Timer));
@@ -153,17 +143,22 @@ void PWM_Off(io_uint8_t *p) {
 
 FORCE_INLINE void HoursOff(void) {
     TCCR1A = (0<<WGM11)|(1<<WGM10);
-    OCR1AL = 0;
-    OCR1BL = 0;
     LControl.Hr0PWM.Mode = PWMOff;
     LControl.Hr1PWM.Mode = PWMOff;
 }
-void HoursOn(void) {
+FORCE_INLINE void HoursOn(void) {
     if((LControl.Hr0PWM.Mode != PWMHold) && (LControl.Hr0PWM.Mode != PWMOff)) H0PWM_ON();
     if((LControl.Hr1PWM.Mode != PWMHold) && (LControl.Hr1PWM.Mode != PWMOff)) H1PWM_ON();
 }
-
-
+FORCE_INLINE void MinutesOff(void) {
+    TCCR0A = (1<<WGM01)|(1<<WGM00);
+    LControl.Min0PWM.Mode = PWMOff;
+    LControl.Min1PWM.Mode = PWMOff;
+}
+FORCE_INLINE void MinutesOn(void) {
+    if((LControl.Min0PWM.Mode != PWMHold) && (LControl.Min0PWM.Mode != PWMOff)) M0PWM_ON();
+    if((LControl.Min1PWM.Mode != PWMHold) && (LControl.Min1PWM.Mode != PWMOff)) M1PWM_ON();
+}
 
 void TogglePWM(struct PWM_t *pwm) {
     if(!DelayElapsed(&(pwm->Timer), pwm->Delay)) return;   // Not in time
