@@ -3,6 +3,7 @@
 #include "led_io.h"
 #include "delay_util.h"
 #include "luminocity.h"
+#include <avr/sleep.h>
 #include <util/atomic.h>
 
 // ============================ Types & variables ==============================
@@ -22,13 +23,40 @@ enum {ModeRegular, ModeSetHours, ModeSetMinutes} Mode;
 // ============================ Implementation =================================
 int main (void) {
     GeneralInit ();
+
+    DDRD  |= _BV(PD2);
+    PORTD &= ~_BV(PD2);
+
     sei();
     while (1) {  // forever
-        //if(POWER_OK()) {    // Handle tasks only if power is ok. Time is counted in interrupt.
+        if(POWER_OK()) {    // Handle tasks only if power is ok. Time is counted in interrupt.
             TASK_Toggle();
             TASK_Keys();
             TASK_Lumi();
-        //} // If Power ok
+            //PORTD ^= _BV(PD2);
+        } // If Power ok
+        else {  // power failure, enter sleep mode
+            KeysShutdown();
+            LumiShutdown();
+            LedIOShutdown();
+
+            set_sleep_mode(SLEEP_MODE_PWR_SAVE);	// Left timer2 enabled
+            sleep_enable();
+            PORTD |= _BV(PD2);
+            do {
+                sleep_cpu();
+                PORTD ^= _BV(PD2);
+            } while(!POWER_OK());
+            // Power restored
+            KeysInit();
+            LumiInit();
+            LedIOreinit();
+
+            Mode = ModeRegular;
+
+            EVENT_NewHour();
+            EVENT_NewHyperMinute();
+        }
     }	// while 1
 }
 
@@ -37,13 +65,11 @@ FORCE_INLINE void GeneralInit(void) {
     LedIOInit();
     LumiInit();
 
-    // Keys
-    KEYS_DDR  &= ~((1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN));    // Keys are inputs
-    KEYS_PORT |=   (1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN);     // Pull-ups on
-    Keys.DownPressed = false;
-    Keys.MenuPressed = false;
-    Keys.UpPressed   = false;
-    DelayReset(&Keys.Timer);
+    // Power ok
+    PWROK_DDR  &= ~(1<<PWROK_P);
+    PWROK_PORT &= ~(1<<PWROK_P);
+
+    KeysInit();
 
     // Timer2: realtime clock counter
     TCCR2A = 0;
@@ -64,6 +90,19 @@ FORCE_INLINE void GeneralInit(void) {
     // Start-up time setup
     EVENT_NewHour();
     EVENT_NewHyperMinute();
+}
+
+void KeysInit(void) {
+    KEYS_DDR  &= ~((1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN));    // Keys are inputs
+    KEYS_PORT |=   (1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN);     // Pull-ups on
+    Keys.DownPressed = false;
+    Keys.MenuPressed = false;
+    Keys.UpPressed   = false;
+    DelayReset(&Keys.Timer);
+}
+FORCE_INLINE void KeysShutdown(void) {
+    KEYS_PORT &= ~((1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN));
+    KEYS_DDR  |=   (1<<KEY_MENU)|(1<<KEY_UP)|(1<<KEY_DOWN);
 }
 
 // =============================== Tasks =======================================
@@ -106,7 +145,6 @@ void TASK_Keys(void) {
         Keys.MenuPressed = false;
     }
 }
-
 
 // ============================ Events =========================================
 void EVENT_NewHour(void) {
@@ -246,10 +284,8 @@ ISR(TIMER2_OVF_vect) {
             Time.HyperMinute = 0;
             Time.Hour++;
             if(Time.Hour > 11) Time.Hour = 0;
-            //if (POWER_OK())
-                EVENT_NewHour();
+            if (POWER_OK()) EVENT_NewHour();
         } // if Hyperminute > 23
-        //if (POWER_OK())
-            EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
+        if (POWER_OK()) EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
     }// Second
 }

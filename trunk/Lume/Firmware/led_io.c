@@ -78,6 +78,25 @@ FORCE_INLINE void LedIOInit(void) {
     LControl.Hr0PWM.OCRX  = &OCR1AL;
     LControl.Hr1PWM.OCRX  = &OCR1BL;
 }
+FORCE_INLINE void LedIOShutdown(void) {
+    // Power-off ports
+    L_PORT &= ~((1<<DATA_IN)|(1<<LATCH)|(1<<SRCLK));
+    M_PWM_PORT &= ~((1<<M0PWM)|(1<<M1PWM));
+    H_PWM_PORT &= ~((1<<H0PWM)|(1<<H1PWM));
+    HoursOff();
+    MinutesOff();
+    // Disable USART
+    UCSR0B = 0;
+}
+FORCE_INLINE void LedIOreinit(void) {
+    M_PWM_PORT |= (1<<M0PWM)|(1<<M1PWM);
+    H_PWM_PORT |= (1<<H0PWM)|(1<<H1PWM);
+    // Enable USART
+    UCSR0B = (1<<TXEN0);    // TX enable, irqs disable
+    UCSR0C = (1<<UMSEL01)|(1<<UMSEL00)|(0<<UDORD0)|(0<<UCPHA0)|(0<<UCPOL0); // MSB first, leading edge, idle low
+    UBRR0  = 0;     // Max speed
+    UCSR0A = 0xFF;  // reset interrupts
+}
 
 FORCE_INLINE void WriteControlBytes(void) {
     ATOMIC_BLOCK(ATOMIC_FORCEON) {
@@ -87,7 +106,7 @@ FORCE_INLINE void WriteControlBytes(void) {
         while (bit_is_clear(UCSR0A, UDRE0));    // Wait until buffer is empty
         UDR0 = LControl.HByte;
         // Toggle latch
-        while (bit_is_clear(UCSR0A, TXC0));     // Wait until shift register is empty
+        while (bit_is_clear(UCSR0A, TXC0)) PORTD ^= _BV(PD2);     // Wait until shift register is empty
         L_PORT |=  (1<<LATCH);
         nop();
         L_PORT &= ~(1<<LATCH);
@@ -133,13 +152,12 @@ void SetupPWM(struct PWM_t *pwm, enum LEDMode_t mode) {
     } // switch
 }
 
-void PWM_Off(io_uint8_t *p) {
+FORCE_INLINE void PWM_Off(io_uint8_t *p) {
     if     (p == &OCR0A)  TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
     else if(p == &OCR0B)  TCCR0A &= ~((1<<COM0B1)|(1<<COM0B0));
     else if(p == &OCR1AL) TCCR1A &= ~((1<<COM1A1)|(1<<COM1A0));
     else if(p == &OCR1BL) TCCR1A &= ~((1<<COM1B1)|(1<<COM1B0));
 }
-
 
 FORCE_INLINE void HoursOff(void) {
     TCCR1A = (0<<WGM11)|(1<<WGM10);

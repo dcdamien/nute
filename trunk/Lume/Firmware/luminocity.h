@@ -47,6 +47,7 @@ extern struct Lumi_t Lumi;
 
 // ============================== Prototypes ===================================
 void LumiInit(void);
+void LumiShutdown(void);
 void TASK_Lumi(void);
 
 void EVENT_ADCMeasureCompleted(void);
