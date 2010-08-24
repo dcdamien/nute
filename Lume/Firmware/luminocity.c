@@ -55,7 +55,12 @@ void TASK_Lumi(void) {
 }
 
 void EVENT_ADCMeasureCompleted(void) {
-    // Set current level of luminocity. Higher voltage means darker space.
-    EVENT_LumiChanged();
-    
+    if((Lumi.ADCValue >  BRIGHTNESS_TRESHOLD) && !Lumi.ItsDark) {   // Darkness fell upon the watch
+        Lumi.ItsDark = true;
+        EVENT_LumiChanged();
+    }
+    else if ((Lumi.ADCValue <= BRIGHTNESS_TRESHOLD) &&  Lumi.ItsDark) { // Light poured upon the watch again
+        Lumi.ItsDark = false;
+        EVENT_LumiChanged();
+    }
 }

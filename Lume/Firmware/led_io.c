@@ -69,7 +69,10 @@ FORCE_INLINE void LedIOInit(void) {
     UCSR0C = (1<<UMSEL01)|(1<<UMSEL00)|(0<<UDORD0)|(0<<UCPHA0)|(0<<UCPOL0); // MSB first, leading edge, idle low
     UBRR0  = 0; // Max speed
 
-    LControl.PWM_TopValue = 255;
+    LControl.PWM_TopValue = PWM_MAX;
+    LControl.PWMDark      = PWM_MIN;
+    LControl.PWMLight     = PWM_MAX;
+    
     LControl.Min0PWM.OCRX = &OCR0A;
     LControl.Min1PWM.OCRX = &OCR0B;
     LControl.Hr0PWM.OCRX  = &OCR1AL;
@@ -91,7 +94,7 @@ FORCE_INLINE void WriteControlBytes(void) {
     }
 }
 
-void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode) {
+void SetupMinute(uint8_t AMinute, enum LEDMode_t AMode) {
     // Setup channel
     LControl.HByte |= MTable[AMinute][0];
     LControl.MByte |= MTable[AMinute][1];
@@ -99,33 +102,30 @@ void SetupMinute(uint8_t AMinute, enum PWMMode_t AMode) {
     if(AMinute & 0x01) SetupPWM(&LControl.Min0PWM, AMode);    // even => integers: 1 means M0_5, 2 - M1 and so on
     else               SetupPWM(&LControl.Min1PWM, AMode);
 }
-
-void SetupHour(uint8_t AHour, enum PWMMode_t AMode) {
+void SetupHour(uint8_t AHour, enum LEDMode_t AMode) {
     LControl.HByte |= HTable[AHour];                        // Setup byte
     if(AHour & 0x01) SetupPWM(&LControl.Hr0PWM, AMode);     // Odd: 1, 3, 5...
     else             SetupPWM(&LControl.Hr1PWM, AMode);     // Even: 2, 4, 6...
 }
 
-void SetupPWM(struct PWM_t *pwm, enum PWMMode_t mode) {
+void SetupPWM(struct PWM_t *pwm, enum LEDMode_t mode) {
     pwm->Mode = mode;
     DelayReset(&(pwm->Timer));
     switch(mode) {
-        case PWMRise:
-            pwm->Value = 0;
-            *(pwm->OCRX) = 0;
-            pwm->Delay = PWMDelay1;
+        case LED_Rise:
+            *pwm->OCRX = 0;
+            pwm->Delay = FADE_DELAY1;
             break;
-        case PWMFade:
-            pwm->Value = LControl.PWM_TopValue;
-            *(pwm->OCRX) = LControl.PWM_TopValue;
-            pwm->Delay = PWMDelay1;     // !!!!!!!FIXME
+        case LED_Fade:
+            *pwm->OCRX = LControl.PWM_TopValue;
+            pwm->Delay = FADE_DELAY1;
             break;
-        case PWMTop:
-            *(pwm->OCRX) = LControl.PWM_TopValue;
+        case LED_On:
+            *pwm->OCRX = LControl.PWM_TopValue;
+            pwm->Delay = HOLD_DELAY;
             break;
-        case PWMBlink:
-            pwm->Value = LControl.PWM_TopValue;
-            *(pwm->OCRX) = LControl.PWM_TopValue;
+        case LED_Blink:
+            *pwm->OCRX = LControl.PWM_TopValue;
             pwm->Delay = BLINK_DELAY;
             break;
         default:
@@ -143,48 +143,65 @@ void PWM_Off(io_uint8_t *p) {
 
 FORCE_INLINE void HoursOff(void) {
     TCCR1A = (0<<WGM11)|(1<<WGM10);
-    LControl.Hr0PWM.Mode = PWMOff;
-    LControl.Hr1PWM.Mode = PWMOff;
+    LControl.Hr0PWM.Mode = LED_Off;
+    LControl.Hr1PWM.Mode = LED_Off;
 }
 FORCE_INLINE void HoursOn(void) {
-    if((LControl.Hr0PWM.Mode != PWMHold) && (LControl.Hr0PWM.Mode != PWMOff)) H0PWM_ON();
-    if((LControl.Hr1PWM.Mode != PWMHold) && (LControl.Hr1PWM.Mode != PWMOff)) H1PWM_ON();
+    if(LControl.Hr0PWM.Mode != LED_Off) H0PWM_ON();
+    if(LControl.Hr1PWM.Mode != LED_Off) H1PWM_ON();
 }
 FORCE_INLINE void MinutesOff(void) {
     TCCR0A = (1<<WGM01)|(1<<WGM00);
-    LControl.Min0PWM.Mode = PWMOff;
-    LControl.Min1PWM.Mode = PWMOff;
+    LControl.Min0PWM.Mode = LED_Off;
+    LControl.Min1PWM.Mode = LED_Off;
 }
 FORCE_INLINE void MinutesOn(void) {
-    if((LControl.Min0PWM.Mode != PWMHold) && (LControl.Min0PWM.Mode != PWMOff)) M0PWM_ON();
-    if((LControl.Min1PWM.Mode != PWMHold) && (LControl.Min1PWM.Mode != PWMOff)) M1PWM_ON();
+    if(LControl.Min0PWM.Mode != LED_Off) M0PWM_ON();
+    if(LControl.Min1PWM.Mode != LED_Off) M1PWM_ON();
 }
 
 void TogglePWM(struct PWM_t *pwm) {
     if(!DelayElapsed(&(pwm->Timer), pwm->Delay)) return;   // Not in time
     // Handle Rise or Fade
+    uint8_t Value = *pwm->OCRX;
     switch(pwm->Mode) {
-        case PWMRise:
-            if(pwm->Value == LControl.PWM_TopValue) pwm->Mode = PWMHold;    // Do not touch it anymore
-            else pwm->Value++;
-            *(pwm->OCRX) = pwm->Value;
-            break;
-        case PWMFade:
-            if(pwm->Value == 0) {               // Bottom achieved
-                pwm->Mode = PWMHold;            // Do not touch it anymore
-                PWM_Off(pwm->OCRX);             // Disconnect PWM
+        
+        case LED_On:
+            if(Value != LControl.PWM_TopValue) {
+                if(Value > LControl.PWM_TopValue) Value--;
+                else Value++;
+                *(pwm->OCRX) = Value;
             }
-            else pwm->Value--;
-            *(pwm->OCRX) = pwm->Value;
             break;
-        case PWMBlink:
-            
-            if(pwm->Value == LControl.PWM_TopValue) pwm->Value = 0; // Toggle light
-            else pwm->Value = LControl.PWM_TopValue;
-            *(pwm->OCRX) = pwm->Value;
+
+        case LED_Rise:
+            if(Value < LControl.PWM_TopValue) {
+                Value++;
+                *pwm->OCRX = Value;
+            }
+            else {
+                pwm->Mode = LED_On;
+                pwm->Delay = HOLD_DELAY;
+            }
             break;
+
+        case LED_Fade:
+            if(Value > 0) {
+                Value--;
+                *pwm->OCRX = Value;
+            }
+            else {
+                pwm->Mode = LED_Off;
+                PWM_Off(pwm->OCRX);
+            }
+            break;
+
+        case LED_Blink:
+            if(Value != 0) Value = 0; // Toggle light
+            else Value = LControl.PWM_TopValue;
+            *(pwm->OCRX) = Value;
+            break;
+
         default: break;
     } // switch
 }
-
-
