@@ -33,6 +33,9 @@
 // ========================== Functions prototypes =============================
 void GeneralInit (void);
 
+void KeysInit(void);
+void KeysShutdown(void);
+
 // Tasks
 void TASK_Toggle(void);
 void TASK_Keys(void);

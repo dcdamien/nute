@@ -54,6 +54,8 @@ extern struct LControl_t LControl;
 
 // ================================ Prototypes =================================
 void LedIOInit(void);
+void LedIOShutdown(void);
+void LedIOreinit(void);
 
 void WriteControlBytes(void);
 

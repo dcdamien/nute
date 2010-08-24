@@ -2,6 +2,7 @@
 #include <util/atomic.h>
 #include "delay_util.h"
 #include "Lume.h"
+#include "common.h"
 
 struct Lumi_t Lumi;
 
@@ -10,6 +11,10 @@ void LumiInit(void) {
     LUMI_PORT &= ~(1<<LUMI_P);
     Lumi.ADCState = ADCNoMeasure;
     DelayReset(&Lumi.Timer);
+}
+FORCE_INLINE void LumiShutdown(void) {
+    ADC_DISABLE();
+    ADC_REF_DISABLE();
 }
 
 void TASK_Lumi(void) {
