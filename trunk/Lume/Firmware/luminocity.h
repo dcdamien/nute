@@ -9,6 +9,10 @@
 #define	LUMINOCITY_H
 
 #include <avr/io.h>
+#include <stdbool.h>
+
+// ============================== Defines ======================================
+#define BRIGHTNESS_TRESHOLD 200 // About 4 V
 
 #define LUMI_P       PC4
 #define LUMI_DDR     DDRC
@@ -32,10 +36,9 @@
 
 // ========================= Types & variables =================================
 enum ADC_State_t {ADCNoMeasure, ADCInit, ADCMeasuring};
-enum Luminocity_t {Lumi1, Lumi2, Lumi3, Lumi4};     // Lower means darker
 struct Lumi_t {
     uint16_t Timer;
-    enum Luminocity_t Lumi, PrevLumi;
+    bool ItsDark;
     uint8_t MeasuresCounter;
     uint16_t ADCValue;
     enum ADC_State_t ADCState;

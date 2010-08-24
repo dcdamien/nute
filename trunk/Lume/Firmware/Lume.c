@@ -118,14 +118,14 @@ void EVENT_NewHour(void) {
     HPrev = (HCurrent == 0)? 11 : HCurrent-1;
     switch(Mode) {
         case ModeRegular:   
-            SetupHour(HCurrent, PWMRise);
-            SetupHour(HPrev,    PWMFade);
+            SetupHour(HCurrent, LED_Rise);
+            SetupHour(HPrev,    LED_Fade);
             break;
         case ModeSetHours:
-            SetupHour(HCurrent, PWMBlink);
+            SetupHour(HCurrent, LED_Blink);
             break;
         default:
-            SetupHour(HCurrent, PWMTop);
+            SetupHour(HCurrent, LED_On);
             break;
     } // switch
     WriteControlBytes();    // Write bytes to setup LEDs
@@ -142,14 +142,14 @@ void EVENT_NewHyperMinute(void) {
     MPrev = (MCurrent == 0)? 23 : MCurrent-1;
     switch(Mode) {
         case ModeRegular:
-            SetupMinute(MCurrent, PWMRise);
-            SetupMinute(MPrev,    PWMFade);
+            SetupMinute(MCurrent, LED_Rise);
+            SetupMinute(MPrev,    LED_Fade);
             break;
         case ModeSetMinutes:
-            SetupMinute(MCurrent, PWMBlink);
+            SetupMinute(MCurrent, LED_Blink);
             break;
         default:
-            SetupMinute(MCurrent, PWMTop);
+            SetupMinute(MCurrent, LED_On);
             break;
     } // switch
     WriteControlBytes();    // Write bytes to setup LEDs
@@ -170,7 +170,15 @@ void EVENT_KeyUpPressed(void) {
             if(Time.HyperMinute > 23) Time.HyperMinute = 0;
             EVENT_NewHyperMinute();
             break;
-        default:
+        case ModeRegular: // Change brightness of dark and light modes
+            if(Lumi.ItsDark) {
+                if(LControl.PWMDark < PWM_MAX) LControl.PWMDark += PWM_STEP;
+                LControl.PWM_TopValue = LControl.PWMDark;
+            }
+            else {
+                if(LControl.PWMLight < PWM_MAX) LControl.PWMLight += PWM_STEP;
+                LControl.PWM_TopValue = LControl.PWMLight;
+            }
             break;
     } // switch
 }
@@ -187,7 +195,15 @@ void EVENT_KeyDownPressed(void) {
             else Time.HyperMinute--;
             EVENT_NewHyperMinute();
             break;
-        default:
+        case ModeRegular: // Change brightness of dark and light modes
+            if(Lumi.ItsDark) {
+                if(LControl.PWMDark > PWM_MIN) LControl.PWMDark -= PWM_STEP;
+                LControl.PWM_TopValue = LControl.PWMDark;
+            }
+            else {
+                if(LControl.PWMLight > PWM_MIN) LControl.PWMLight -= PWM_STEP;
+                LControl.PWM_TopValue = LControl.PWMLight;
+            }
             break;
     } // switch
 }
@@ -210,10 +226,8 @@ void EVENT_KeyMenuPressed(void) {
 
 // Luminocity change event
 void EVENT_LumiChanged(void) {
-    if(Lumi.ADCValue > 200) Time.Hour = 1;
-    else Time.Hour = 3;
-
-    EVENT_NewHour();
+    if(Lumi.ItsDark) LControl.PWM_TopValue = LControl.PWMDark;
+    else             LControl.PWM_TopValue = LControl.PWMLight;
 }
 
 // =========================== Interrupts ======================================
@@ -233,9 +247,9 @@ ISR(TIMER2_OVF_vect) {
             Time.Hour++;
             if(Time.Hour > 11) Time.Hour = 0;
             //if (POWER_OK())
-            //    EVENT_NewHour();
+                EVENT_NewHour();
         } // if Hyperminute > 23
         //if (POWER_OK())
-          //  EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
+            EVENT_NewHyperMinute(); // Call after EVENT_NewHour to write correct control bytes
     }// Second
 }

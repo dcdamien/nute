@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 18/08/2010 21:58:19
+EESchema Schematic File Version 2  date 23/08/2010 18:45:29
 LIBS:Atmel_kl
 LIBS:Connectors_kl
 LIBS:Interface_kl
@@ -15,7 +15,7 @@ EELAYER END
 $Descr A3 16535 11700
 Sheet 1 1
 Title ""
-Date "18 aug 2010"
+Date "23 aug 2010"
 Rev ""
 Comp ""
 Comment1 ""
@@ -24,25 +24,9 @@ Comment3 ""
 Comment4 ""
 $EndDescr
 Wire Wire Line
+	6350 11100 8200 11100
+Wire Wire Line
 	8950 8350 9050 8350
-$Comp
-L GND #PWR?
-U 1 1 4C6C080F
-P 8950 8350
-F 0 "#PWR?" H 9040 8330 30  0001 C CNN
-F 1 "GND" H 8950 8270 30  0001 C CNN
-	1    8950 8350
-	0    1    1    0   
-$EndComp
-$Comp
-L GND #PWR?
-U 1 1 4C6C0806
-P 8950 7050
-F 0 "#PWR?" H 9040 7030 30  0001 C CNN
-F 1 "GND" H 8950 6970 30  0001 C CNN
-	1    8950 7050
-	0    1    1    0   
-$EndComp
 Wire Wire Line
 	8950 7050 9050 7050
 Wire Wire Line
@@ -352,10 +336,7 @@ Connection ~ 7950 10600
 Wire Wire Line
 	7950 10600 7950 10650
 Wire Wire Line
-	8450 10650 8450 10600
-Wire Wire Line
-	8200 10600 8200 10650
-Connection ~ 8200 10600
+	8200 10650 8200 10600
 Wire Wire Line
 	7600 10600 7600 10650
 Connection ~ 7600 10600
@@ -376,9 +357,6 @@ Connection ~ 7100 11100
 Wire Wire Line
 	7950 11100 7950 11050
 Connection ~ 7600 11100
-Wire Wire Line
-	8450 11050 8450 11100
-Connection ~ 8200 11100
 Wire Wire Line
 	9050 1750 9050 1850
 Wire Wire Line
@@ -536,10 +514,6 @@ Wire Wire Line
 	3450 4350 3350 4350
 Wire Wire Line
 	3350 4350 3350 4150
-Wire Wire Line
-	8450 10600 6250 10600
-Wire Wire Line
-	8450 11100 6350 11100
 Wire Bus Line
 	8450 8650 5550 8650
 Wire Bus Line
@@ -1349,6 +1323,26 @@ Wire Wire Line
 Connection ~ 2250 9400
 Wire Wire Line
 	8350 3600 7800 3600
+Wire Wire Line
+	8200 10600 6250 10600
+$Comp
+L GND #PWR?
+U 1 1 4C6C080F
+P 8950 8350
+F 0 "#PWR?" H 9040 8330 30  0001 C CNN
+F 1 "GND" H 8950 8270 30  0001 C CNN
+	1    8950 8350
+	0    1    1    0   
+$EndComp
+$Comp
+L GND #PWR?
+U 1 1 4C6C0806
+P 8950 7050
+F 0 "#PWR?" H 9040 7030 30  0001 C CNN
+F 1 "GND" H 8950 6970 30  0001 C CNN
+	1    8950 7050
+	0    1    1    0   
+$EndComp
 Entry Wire Line
 	8350 3600 8450 3700
 Entry Wire Line
@@ -3122,7 +3116,7 @@ L R R3
 U 1 1 4C49AEE3
 P 1900 5950
 F 0 "R3" V 1980 5950 50  0000 C CNN
-F 1 "10k" V 1900 5950 50  0000 C CNN
+F 1 "100k" V 1900 5950 50  0000 C CNN
 	1    1900 5950
 	1    0    0    -1  
 $EndComp
@@ -4162,15 +4156,6 @@ P 9050 1850
 F 0 "#PWR052" H 9140 1830 30  0001 C CNN
 F 1 "GND" H 9050 1770 30  0001 C CNN
 	1    9050 1850
-	1    0    0    -1  
-$EndComp
-$Comp
-L C C15
-U 1 1 4C48A14D
-P 8450 10850
-F 0 "C15" H 8500 10950 50  0000 L CNN
-F 1 "0.1u" H 8500 10750 50  0000 L CNN
-	1    8450 10850
 	1    0    0    -1  
 $EndComp
 $Comp
