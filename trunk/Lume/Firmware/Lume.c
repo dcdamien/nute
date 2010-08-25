@@ -23,29 +23,22 @@ enum {ModeRegular, ModeSetHours, ModeSetMinutes} Mode;
 // ============================ Implementation =================================
 int main (void) {
     GeneralInit ();
-
-    DDRD  |= _BV(PD2);
-    PORTD &= ~_BV(PD2);
-
     sei();
     while (1) {  // forever
         if(POWER_OK()) {    // Handle tasks only if power is ok. Time is counted in interrupt.
             TASK_Toggle();
             TASK_Keys();
             TASK_Lumi();
-            //PORTD ^= _BV(PD2);
         } // If Power ok
         else {  // power failure, enter sleep mode
             KeysShutdown();
             LumiShutdown();
             LedIOShutdown();
-
-            set_sleep_mode(SLEEP_MODE_PWR_SAVE);	// Left timer2 enabled
+            // Enter sleep
+            set_sleep_mode(SLEEP_MODE_PWR_SAVE);    // Left timer2 enabled
             sleep_enable();
-            PORTD |= _BV(PD2);
             do {
                 sleep_cpu();
-                PORTD ^= _BV(PD2);
             } while(!POWER_OK());
             // Power restored
             KeysInit();
@@ -74,10 +67,10 @@ FORCE_INLINE void GeneralInit(void) {
     // Timer2: realtime clock counter
     TCCR2A = 0;
     ASSR  = (1<<AS2);				// Set Async mode of the timer
-    TCCR2B = (0<<CS22)|(0<<CS21)|(1<<CS20);	// DEBUG: no division
+    //TCCR2B = (0<<CS22)|(0<<CS21)|(1<<CS20);	// DEBUG: no division
     //TCCR2B = (0<<CS22)|(1<<CS21)|(0<<CS20);	// DEBUG: div 8
     //TCCR2B = (0<<CS22)|(1<<CS21)|(1<<CS20);	// DEBUG: div 32
-    //TCCR2B = (1<<CS22)|(0<<CS21)|(1<<CS20);	// RELEASE: div 128, once per second
+    TCCR2B = (1<<CS22)|(0<<CS21)|(1<<CS20);	// RELEASE: div 128, once per second
     TIMSK2 |= (1<<TOIE2);
 
     // Setup initial values

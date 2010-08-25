@@ -106,7 +106,7 @@ FORCE_INLINE void WriteControlBytes(void) {
         while (bit_is_clear(UCSR0A, UDRE0));    // Wait until buffer is empty
         UDR0 = LControl.HByte;
         // Toggle latch
-        while (bit_is_clear(UCSR0A, TXC0)) PORTD ^= _BV(PD2);     // Wait until shift register is empty
+        while (bit_is_clear(UCSR0A, TXC0));     // Wait until shift register is empty
         L_PORT |=  (1<<LATCH);
         nop();
         L_PORT &= ~(1<<LATCH);
