@@ -16,8 +16,8 @@
 <File path=".\lume.fsx" Folder="-1"/>
     </Pcb>
     <ARouteSessions>
-<Session name="lume" date="2010-08-05 21:49:39" path=".\autoroute_lume_100805214939\">
-<File path=".\autoroute_lume_100805214939\lume_12595-80s.fsb" Folder="-1"/>
+<Session name="lume" date="2010-09-17 16:07:40" path=".\autoroute_lume_100917160740\">
+<File path=".\autoroute_lume_100917160740\lume_11784-102s.fsb" Folder="-1"/>
 </Session>
     </ARouteSessions>
   </Document>
