@@ -22,7 +22,6 @@ int main(void) {
 
     sei();
 
-    //PORTB &= ~(1<<PB1);
     while(1) {
         wdt_reset();
         LED_Task();

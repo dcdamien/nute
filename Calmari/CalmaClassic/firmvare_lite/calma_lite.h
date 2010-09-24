@@ -6,9 +6,9 @@
 
 // =================================== PWM =====================================
 // Timings
-#define PWMDelayLong    54  // Low brightness
-#define PWMDelayMid     36  // Mid brightness
-#define PWMDelayFast    9   // High brightness
+#define PWMDelayLong    27  // Low brightness
+#define PWMDelayMid     18  // Mid brightness
+#define PWMDelayFast    3   // High brightness
 
 // Light constants
 #define PWM_MAX         255
@@ -20,7 +20,7 @@
 #define KeyPin	PB2
 #define LedPin	PB1
 
-#define KEY_POLL_TIMEOUT    99 // ms
+#define KEY_POLL_TIMEOUT    495 // ms
 
 // *************** Pseudo functions ********************
 #define KEY_IS_DOWN()   bit_is_set (PINB, KeyPin)
