@@ -1,4 +1,4 @@
-update=19/09/2010 23:49:39
+update=22/09/2010 13:33:49
 version=1
 last_client=pcbnew
 [general]
@@ -56,9 +56,9 @@ NetIExt=net
 EquName1=devcms
 [pcbnew]
 version=1
-PadDrlX=0
-PadDimH=630
-PadDimV=472
+PadDrlX=320
+PadDimH=660
+PadDimV=660
 BoardThickness=630
 SgPcb45=1
 TxtPcbV=800
