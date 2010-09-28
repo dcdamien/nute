@@ -22,9 +22,10 @@
 int main(void) {
     GeneralInit();
 
-    LCD_GotoXY(0,0);
-    
-    DisplayDrawChar(0, 0, 'a');
+    //LCD_GotoXY(0,0);
+
+    LCD_PrintString(0, 0, "А");
+    //DisplayDrawChar(0, 0, 'a');
 
     //DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2)|(1<<PA3)|(1<<PA4); // DEBUG
 
@@ -33,7 +34,6 @@ int main(void) {
 //        wdt_reset();    // Reset watchdog
         //CC_Task();
         //LED_Task();
-//        LCD_Task();
         //Battery_Task();
     } // while
 }

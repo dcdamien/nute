@@ -3,10 +3,6 @@
 #include "lcd_font.h"
 #include <util/delay.h>
 
-void LCD_Task(void) {
-
-}
-
 void LCD_Init(void) {
     LCD_DDR |= (1<<LCD_SCLK)|(1<<LCD_XCS)|(1<<LCD_XRES)|(1<<LCD_SDA);
     LCD_SCLK_LO();
@@ -35,6 +31,12 @@ void LCD_Clear(void) {
     //Lcd_Write(CMD,0xAF);  // display ON
 }
 
+void LCD_PrintString (uint8_t x, const uint8_t y, const char *S) {
+    LCD_GotoXY(x, y);
+    while (*S != '\0')
+        LCD_DrawChar(*S++);
+}
+
 void LCD_GotoXY(uint8_t x, uint8_t y) {
     LCD_Write(LCD_CMD,(0xB0|(y&0x0F)));         // Y axis initialisation: 0100 yyyy
     LCD_Write(LCD_CMD,(0x00|(x&0x0F)));         // X axis initialisation: 0000 xxxx ( x3 x2 x1 x0)
@@ -42,15 +44,15 @@ void LCD_GotoXY(uint8_t x, uint8_t y) {
 }
 
 // ============================ Inner use ======================================
-uint8_t DisplayDrawChar (uint8_t x, uint8_t y, uint8_t AChar) {
-    LCD_GotoXY(x, y);
-    uint8_t tmp;
-    for(uint8_t i=0; i<5; i++) {
-        tmp = pgm_read_byte(&lcd_A[i]);
-        LCD_Write(LCD_DATA, tmp);
+void LCD_DrawChar(uint16_t AChar) {
+    uint16_t indx = (AChar<<2) + (AChar<<1);
+    prog_uint8_t *PointerFont = &Font_6x8_Data[indx];
+    for(uint8_t i=0; i<6; i++) {
+        AChar =  pgm_read_byte(PointerFont);
+        LCD_Write(LCD_DATA, AChar);
+        PointerFont++;
     }
-    return 0;
-}
+ }
 
 void LCD_Write(uint8_t AType, uint8_t AByte) {
     LCD_SCLK_LO();
