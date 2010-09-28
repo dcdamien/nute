@@ -36,14 +36,12 @@
 // =============================== Prototypes ==================================
 void LCD_Init(void);
 
-void LCD_Task(void);
-
 void LCD_Clear(void);
 void LCD_GotoXY(uint8_t x, uint8_t y);
-
+void LCD_PrintString (uint8_t x, const uint8_t y, const char *S);
 
 // Inner use
-uint8_t DisplayDrawChar (uint8_t x, uint8_t y, uint8_t AChar);
+void LCD_DrawChar(uint16_t AChar);
 
 void LCD_Write(uint8_t AType, uint8_t AByte);
 
