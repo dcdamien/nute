@@ -9,6 +9,7 @@
 #define	LCD110X_H
 
 #include <avr/io.h>
+#include <stdbool.h>
 
 // ================================ Defines ====================================
 #define LCD_DDR     DDRD
@@ -37,11 +38,12 @@
 void LCD_Init(void);
 
 void LCD_Clear(void);
-void LCD_GotoXY(uint8_t x, uint8_t y);
-void LCD_PrintString (uint8_t x, const uint8_t y, const char *S);
+void LCD_PrintString(const uint8_t x, const uint8_t y, const char *S, bool AInvert);
+void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInvert);
 
 // Inner use
-void LCD_DrawChar(uint16_t AChar);
+void LCD_GotoXY(uint8_t x, uint8_t y);
+void LCD_DrawChar(uint8_t AChar, bool AInvert);
 
 void LCD_Write(uint8_t AType, uint8_t AByte);
 
