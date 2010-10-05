@@ -25,8 +25,9 @@ int main(void) {
 
     //LCD_GotoXY(0,0);
 
-    LCD_PrintString(0, 0, "Aiya Feanaro!", true);
-    LCD_DrawImage(0, 2, LCD_ImgGauge, false);
+    LCD_PrintString(0, 0, "Aiya Feanaro!", false);
+    LCD_DrawGauge(5);
+    LCD_GaugeValue(95);
     //DisplayDrawChar(0, 0, 'a');
 
     //DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2)|(1<<PA3)|(1<<PA4); // DEBUG

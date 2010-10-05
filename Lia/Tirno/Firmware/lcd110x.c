@@ -3,6 +3,10 @@
 #include "lcd_font.h"
 #include <util/delay.h>
 
+// ============================= Types & vars ==================================
+uint8_t GaugeY;
+
+// ============================ Implementation =================================
 void LCD_Init(void) {
     LCD_DDR |= (1<<LCD_SCLK)|(1<<LCD_XCS)|(1<<LCD_XRES)|(1<<LCD_SDA);
     LCD_SCLK_LO();
@@ -50,6 +54,21 @@ void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInve
     } // fy
 
 }
+
+// ============================= Special =======================================
+// Special
+FORCE_INLINE void LCD_DrawGauge(const uint8_t y) {
+    LCD_DrawImage(0, y, LCD_ImgGauge, false);
+    GaugeY = y;
+}
+void LCD_GaugeValue(const uint8_t AValue) {
+    LCD_GotoXY(1, GaugeY+1);
+    for(uint8_t x=1; x<95; x++) {
+        if(x < AValue) LCD_Write(LCD_DATA, 0x7E);
+        else LCD_Write(LCD_DATA, 0x00);
+    }
+}
+
 
 // ============================ Inner use ======================================
 void LCD_GotoXY(uint8_t x, uint8_t y) {
