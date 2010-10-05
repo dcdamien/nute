@@ -10,6 +10,7 @@
 
 #include <avr/io.h>
 #include <stdbool.h>
+#include <avr/pgmspace.h>
 
 // ================================ Defines ====================================
 #define LCD_DDR     DDRD
@@ -40,6 +41,10 @@ void LCD_Init(void);
 void LCD_Clear(void);
 void LCD_PrintString(const uint8_t x, const uint8_t y, const char *S, bool AInvert);
 void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInvert);
+
+// Special
+void LCD_DrawGauge(const uint8_t y);
+void LCD_GaugeValue(const uint8_t AValue);
 
 // Inner use
 void LCD_GotoXY(uint8_t x, uint8_t y);
