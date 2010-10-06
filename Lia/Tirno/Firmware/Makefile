@@ -29,6 +29,7 @@ SRC = $(TARGET).c \
 delay_util.c \
 lcd110x.c \
 lcd_font.c \
+keys.c \
 # cc2500.c \
 # battery.c
 

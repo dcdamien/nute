@@ -2,7 +2,7 @@
  * File:   lcd110x.h
  * Author: Kreyl Laurelindo
  *
- * Created on 24 РЎРµРЅС‚СЏР±СЂСЊ 2010 Рі., 14:25
+ * Created on 24 Сентябрь 2010 г., 14:25
  */
 
 #ifndef LCD110X_H
@@ -34,11 +34,15 @@
 #define LCD_CMD     0
 #define LCD_DATA    1
 
+// =============================== Common use ==================================
+#define LCD_STR_HEIGHT  8
+#define LCD_STR_WIDTH   18
 
 // =============================== Prototypes ==================================
 void LCD_Init(void);
 
 void LCD_Clear(void);
+void LCD_DrawChar(uint8_t AChar, bool AInvert);
 void LCD_PrintString(const uint8_t x, const uint8_t y, const char *S, bool AInvert);
 void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInvert);
 
@@ -48,7 +52,6 @@ void LCD_GaugeValue(const uint8_t AValue);
 
 // Inner use
 void LCD_GotoXY(uint8_t x, uint8_t y);
-void LCD_DrawChar(uint8_t AChar, bool AInvert);
 
 void LCD_Write(uint8_t AType, uint8_t AByte);
 
