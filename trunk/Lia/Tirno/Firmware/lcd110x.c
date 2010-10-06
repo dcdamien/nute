@@ -69,14 +69,6 @@ void LCD_GaugeValue(const uint8_t AValue) {
     }
 }
 
-
-// ============================ Inner use ======================================
-void LCD_GotoXY(uint8_t x, uint8_t y) {
-    LCD_Write(LCD_CMD,(0xB0|(y&0x0F)));         // Y axis initialisation: 0100 yyyy
-    LCD_Write(LCD_CMD,(0x00|(x&0x0F)));         // X axis initialisation: 0000 xxxx ( x3 x2 x1 x0)
-    LCD_Write(LCD_CMD,(0x10|((x>>4)&0x07))); // X axis initialisation: 0010 0xxx  ( x6 x5 x4)
-}
-
 void LCD_DrawChar(uint8_t AChar, bool AInvert) {
     uint16_t indx = (AChar<<2) + (AChar<<1);
     uint8_t b;
@@ -88,6 +80,14 @@ void LCD_DrawChar(uint8_t AChar, bool AInvert) {
         PointerFont++;
     }
  }
+
+// ============================ Inner use ======================================
+void LCD_GotoXY(uint8_t x, uint8_t y) {
+    LCD_Write(LCD_CMD,(0xB0|(y&0x0F)));         // Y axis initialisation: 0100 yyyy
+    LCD_Write(LCD_CMD,(0x00|(x&0x0F)));         // X axis initialisation: 0000 xxxx ( x3 x2 x1 x0)
+    LCD_Write(LCD_CMD,(0x10|((x>>4)&0x07))); // X axis initialisation: 0010 0xxx  ( x6 x5 x4)
+}
+
 
 void LCD_Write(uint8_t AType, uint8_t AByte) {
     LCD_SCLK_LO();

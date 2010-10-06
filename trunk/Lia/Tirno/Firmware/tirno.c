@@ -2,42 +2,65 @@
  * File:   tirno.c
  * Author: Laurelindo
  *
- * Created on 27 06 2010 Рі., 0:30
+ * Created on 27 06 2010 г., 0:30
  */
 #include <avr/io.h>
 #include <stdbool.h>
 #include <avr/wdt.h>
-//#include <avr/eeprom.h>
+#include <avr/eeprom.h>
 #include <util/delay.h>
 #include "tirno.h"
-//#include "delay_util.h"
+#include "delay_util.h"
 //#include "battery.h"
 #include "common.h"
 //#include "cc2500.h"
 #include "lcd110x.h"
 #include "lcd_font.h"
+#include "keys.h"
 
 // =============================== Types =======================================
+// Locket
+struct Locket_t {
+    uint8_t Addr;
+    uint16_t Channel;
+    char S[LCD_STR_WIDTH];
+};
+struct {
+    struct Locket_t L[LOCKET_COUNT];
+    uint8_t Indx;
+} EL;
+
+
+enum State_t EState;
 
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
 
-    //LCD_GotoXY(0,0);
+    SetState(StateList);
 
-    LCD_PrintString(0, 0, "Aiya Feanaro!", false);
-    LCD_DrawGauge(5);
-    LCD_GaugeValue(95);
+    uint16_t FTimer;
+    bool c=true;
+    //LCD_PrintString(0, 0, "Aiya Feanaro!", false);
+    //LCD_DrawGauge(5);
+    //LCD_GaugeValue(95);
     //DisplayDrawChar(0, 0, 'a');
 
     //DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2)|(1<<PA3)|(1<<PA4); // DEBUG
 
 //    sei();
     while (1) {
-//        wdt_reset();    // Reset watchdog
+        wdt_reset();    // Reset watchdog
         //CC_Task();
         //LED_Task();
+        Keys_Task();
         //Battery_Task();
+        if(DelayElapsed(&FTimer, 1000)) {
+            LCD_GotoXY(90, 0);
+            if(c) LCD_DrawChar('*', false);
+            else  LCD_DrawChar(' ', false);
+            c = !c;
+        }
     } // while
 }
 
@@ -45,11 +68,21 @@ FORCE_INLINE void GeneralInit(void) {
     //wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
 
-    // Setup timer
-//    DelayInit();
+    // Init lockets
+    uint16_t eeaddr = 0;
+    for(uint8_t i=0; i<LOCKET_COUNT; i++) {
+        eeprom_read_block(&L[i], (void*)eeaddr, sizeof(struct Locket_t));
+        if(L[i].S[0] == 0xFF)
+            L[i].S[0] = '.';
+            L[i].S[1] = '.';
+            L[i].S[2] = '.';
+            L[i].S[3] = 0;
+        eeaddr += sizeof(struct Locket_t);
+    }
 
+    DelayInit();
     LCD_Init();
-
+    sei();
 
 
     // LED init
@@ -73,6 +106,26 @@ FORCE_INLINE void GeneralInit(void) {
     // Battery
     //BatteryInit();
 }
+
+void SetState(enum State_t AState) {
+    LCD_Clear();
+    EState = AState;
+    switch(AState) {
+        case StateList:
+            DisplayList(0); // Display list of lockets
+            // Display pseudo-buttons
+            LCD_PrintString(0, 7, "Поиск", true);
+            LCD_PrintString(66, 7, "Опции", true);
+
+            break;
+
+        case StateSearch:
+            break;
+    } // switch
+}
+
+
+
 
 // ============================== Tasks ========================================
 //void CC_Task (void) {
@@ -108,6 +161,17 @@ FORCE_INLINE void GeneralInit(void) {
 
 
 // ============================== Events =======================================
+void EVENT_KeyDown(void) {
+    switch(EState) {
+        case StateList: // Move down by the list
+            if(EL.Indx < LOCKET_COUNT-1) EL.Indx++;
+            
+            break;
+
+        case StateSearch:
+            break;
+    } // switch
+}
 /*
 FORCE_INLINE void EVENT_NewPacket(void) {
     if (CC.RX_Pkt.CommandID == PKT_ID_CALL) {
@@ -182,26 +246,15 @@ ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
     else CC_ENTER_IDLE();   // Non-zero cycle
     PORTA &= ~(1<<PA1);// DEBUG
 }
- * Lcd_Write(CMD,0x20); // write VOP register
-Lcd_Write(CMD,0x90);
-Lcd_Write(CMD,0xA4); // all on/normal display
-Lcd_Write(CMD,0x2F); // Power control set(charge pump on/off)
-Lcd_Write(CMD,0x40); // set start row address = 0
-Lcd_Write(CMD,0xb0); // set Y-address = 0
-Lcd_Write(CMD,0x10); // set X-address, upper 3 bits
-Lcd_Write(CMD,0x0);  // set X-address, lower 4 bits
-Lcd_Write(CMD,0xC8); // mirror Y axis (about X axis)
-Lcd_Write(CMD,0xa1); // Invert screen in horizontal axis
-Lcd_Write(CMD,0xac); // set initial row (R0) of the display
-Lcd_Write(CMD,0x07);
-Lcd_Write(CMD,0xF9); //
-Lcd_Write(CMD,0xaf); // display ON/OFF
-
-Lcd_Clear(); // clear LCD
-Lcd_Write(CMD,0xa7); // invert display
-_delay_ms(500);                // 1/2 Sec delay
-Lcd_Write(CMD,0xa6); // normal display (non inverted)
-_delay_ms(1000);               // 1 Sec delay
 
 */
 
+// ============================= Inner use =====================================
+void DisplayList(uint8_t StartElement) {
+    uint8_t i = StartElement;
+    for(uint8_t y=0; y<LCD_STR_HEIGHT-1; y++) { // -1, because we need place for menu
+        if(i >= LOCKET_COUNT) return;
+        LCD_PrintString(0, y, L[i].S, (y==0));
+        i++;
+    }
+}

@@ -8,7 +8,11 @@
 #ifndef _TIRNO_H
 #define	_TIRNO_H
 
+#include <avr/io.h>
+#include <inttypes.h>
+
 // =============================== General =====================================
+#define LOCKET_COUNT        9
 #define PKT_ID_CALL         0xCA
 
 #define CORMA_CHANNEL       7
@@ -39,10 +43,19 @@
 #define LED_ON_PERIOD   99 // ms
 #define LED_OFF_PERIOD  999 // ms
 
+// =============================== Types =======================================
+// States
+enum State_t {StateList, StateSearch};
+
 
 // =============================== Prototypes ==================================
 // General
 void GeneralInit(void);
+
+void SetState(enum State_t);
+
+// Inner use
+void DisplayList(uint8_t StartElement);
 
 // Tasks
 void CC_Task (void);
@@ -50,6 +63,12 @@ void LED_Task(void);
 
 // Events
 void EVENT_NewPacket(void);
+// Keys
+void EVENT_KeyUp(void);
+void EVENT_KeyDown(void);
+void EVENT_KeyLeft(void);
+void EVENT_KeyRight(void);
+
 
 #endif	/* _CALMA3C_H */
 
