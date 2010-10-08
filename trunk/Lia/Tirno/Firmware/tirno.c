@@ -72,11 +72,11 @@ FORCE_INLINE void GeneralInit(void) {
     uint16_t eeaddr = 0;
     for(uint8_t i=0; i<LOCKET_COUNT; i++) {
         eeprom_read_block(&L[i], (void*)eeaddr, sizeof(struct Locket_t));
-        if(L[i].S[0] == 0xFF)
-            L[i].S[0] = '.';
-            L[i].S[1] = '.';
-            L[i].S[2] = '.';
-            L[i].S[3] = 0;
+        if(EL.L[i].S[0] == 0xFF)
+            EL.L[i].S[0] = '.';
+            EL.L[i].S[1] = '.';
+            EL.L[i].S[2] = '.';
+            EL.L[i].S[3] = 0;
         eeaddr += sizeof(struct Locket_t);
     }
 
@@ -254,7 +254,7 @@ void DisplayList(uint8_t StartElement) {
     uint8_t i = StartElement;
     for(uint8_t y=0; y<LCD_STR_HEIGHT-1; y++) { // -1, because we need place for menu
         if(i >= LOCKET_COUNT) return;
-        LCD_PrintString(0, y, L[i].S, (y==0));
+        LCD_PrintString(0, y, EL.L[i].S, (y==0));
         i++;
     }
 }
