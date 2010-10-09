@@ -28,6 +28,7 @@ struct Locket_t {
 struct {
     struct Locket_t L[LOCKET_COUNT];
     uint8_t Indx;
+    uint8_t TopIndx;    // Indx of locket at top of screen
 } EL;
 
 
@@ -51,11 +52,12 @@ int main(void) {
 //    sei();
     while (1) {
         wdt_reset();    // Reset watchdog
+        Keys_Task();
         //CC_Task();
         //LED_Task();
-        Keys_Task();
         //Battery_Task();
-        if(DelayElapsed(&FTimer, 1000)) {
+
+        if(DelayElapsed(&FTimer, 400)) {
             LCD_GotoXY(90, 0);
             if(c) LCD_DrawChar('*', false);
             else  LCD_DrawChar(' ', false);
@@ -71,17 +73,18 @@ FORCE_INLINE void GeneralInit(void) {
     // Init lockets
     uint16_t eeaddr = 0;
     for(uint8_t i=0; i<LOCKET_COUNT; i++) {
-        eeprom_read_block(&L[i], (void*)eeaddr, sizeof(struct Locket_t));
+        eeprom_read_block(&EL.L[i], (void*)eeaddr, sizeof(struct Locket_t));
         if(EL.L[i].S[0] == 0xFF)
-            EL.L[i].S[0] = '.';
-            EL.L[i].S[1] = '.';
-            EL.L[i].S[2] = '.';
+            EL.L[i].S[0] = 'L';
+            EL.L[i].S[1] = '-';
+            EL.L[i].S[2] = 'a'+i;
             EL.L[i].S[3] = 0;
         eeaddr += sizeof(struct Locket_t);
     }
 
     DelayInit();
     LCD_Init();
+    KeysInit();
     sei();
 
 
@@ -107,23 +110,30 @@ FORCE_INLINE void GeneralInit(void) {
     //BatteryInit();
 }
 
+// ============================ States =========================================
 void SetState(enum State_t AState) {
     LCD_Clear();
     EState = AState;
     switch(AState) {
         case StateList:
             DisplayList(0); // Display list of lockets
-            // Display pseudo-buttons
-            LCD_PrintString(0, 7, "Поиск", true);
-            LCD_PrintString(66, 7, "Опции", true);
-
             break;
 
         case StateSearch:
+            LCD_PrintString(0, 0, EL.L[EL.Indx].S, false);
+            LCD_PrintString_P(0, 2, PSTR("dBm:"), false);
+            LCD_PrintString_P(0, 7, PSTR("Список"), true);
+            LCD_DrawGauge(4);
             break;
     } // switch
 }
 
+void HandleList(void) {
+    
+}
+void HandleSearch(void) {
+
+}
 
 
 
@@ -161,17 +171,67 @@ void SetState(enum State_t AState) {
 
 
 // ============================== Events =======================================
-void EVENT_KeyDown(void) {
+void EVENT_KeyUp(void) {
     switch(EState) {
         case StateList: // Move down by the list
-            if(EL.Indx < LOCKET_COUNT-1) EL.Indx++;
-            
+            if(EL.Indx > 0) EL.Indx--;
+            if(EL.Indx < EL.TopIndx) {    // Top of screen, draw previous items
+                LCD_Clear();
+                DisplayList(EL.Indx-6);
+            }
+            else {
+                LCD_PrintString(LIST_INDENT, (EL.Indx - EL.TopIndx +1), EL.L[EL.Indx+1].S, false);   // Unhighlight previous element
+                LCD_PrintString(LIST_INDENT,  EL.Indx - EL.TopIndx    , EL.L[EL.Indx  ].S, true);    // Highlight current element
+            }
             break;
 
         case StateSearch:
             break;
     } // switch
 }
+void EVENT_KeyDown(void) {
+    switch(EState) {
+        case StateList: // Move down by the list
+            if(EL.Indx < LOCKET_COUNT-1) EL.Indx++;
+            // Handle more than 7 lockets
+            if(EL.Indx > (EL.TopIndx + 6)) {    // Bottom of screen, draw next items
+                LCD_Clear();
+                DisplayList(EL.Indx);
+            }
+            else {
+                LCD_PrintString(LIST_INDENT, (EL.Indx - EL.TopIndx - 1), EL.L[EL.Indx-1].S, false);  // Unhighlight previous element
+                LCD_PrintString(LIST_INDENT,  EL.Indx - EL.TopIndx     , EL.L[EL.Indx  ].S, true);   // Highlight current element
+            }
+            break;
+
+        case StateSearch:
+            break;
+    } // switch
+}
+void EVENT_KeyLeft(void) {
+    switch(EState) {
+        case StateList:
+            // Blink button
+            LCD_PrintString_P(0, 7, PSTR("     "), false);
+            _delay_ms(150);
+            LCD_PrintString_P(0, 7, PSTR("Поиск"), true);
+            _delay_ms(200);
+            SetState(StateSearch);
+            break;
+        case StateSearch:
+            // Blink button
+            LCD_PrintString_P(0, 7, PSTR("      "), false);
+            _delay_ms(150);
+            LCD_PrintString_P(0, 7, PSTR("Список"), true);
+            _delay_ms(200);
+            SetState(StateList);
+            break;
+    } // switch
+}
+void EVENT_KeyRight(void) {
+
+}
+
 /*
 FORCE_INLINE void EVENT_NewPacket(void) {
     if (CC.RX_Pkt.CommandID == PKT_ID_CALL) {
@@ -252,9 +312,14 @@ ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
 // ============================= Inner use =====================================
 void DisplayList(uint8_t StartElement) {
     uint8_t i = StartElement;
+    EL.TopIndx = StartElement;
     for(uint8_t y=0; y<LCD_STR_HEIGHT-1; y++) { // -1, because we need place for menu
-        if(i >= LOCKET_COUNT) return;
-        LCD_PrintString(0, y, EL.L[i].S, (y==0));
+        if(i >= LOCKET_COUNT) break;
+        LCD_PrintUint(0, y, i);
+        LCD_PrintString(LIST_INDENT, y, EL.L[i].S, (i==EL.Indx));
         i++;
     }
+    // Display pseudo-buttons
+    LCD_PrintString_P(0, 7, PSTR("Поиск"), true);
+    LCD_PrintString_P(66, 7, PSTR("Опции"), true);
 }

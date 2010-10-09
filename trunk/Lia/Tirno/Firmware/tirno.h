@@ -11,8 +11,11 @@
 #include <avr/io.h>
 #include <inttypes.h>
 
+// ================================ List =======================================
+#define LOCKET_COUNT    12
+#define LIST_INDENT     14  // Indent of list
+
 // =============================== General =====================================
-#define LOCKET_COUNT        9
 #define PKT_ID_CALL         0xCA
 
 #define CORMA_CHANNEL       7
@@ -53,6 +56,8 @@ enum State_t {StateList, StateSearch};
 void GeneralInit(void);
 
 void SetState(enum State_t);
+void HandleList(void);
+void HandleSearch(void);
 
 // Inner use
 void DisplayList(uint8_t StartElement);
