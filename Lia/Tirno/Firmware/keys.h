@@ -24,6 +24,8 @@
 #define KEY_LEFT_PRESSED()  bit_is_clear(KEYS_PIN, KEY_LEFT)
 #define KEY_RIGHT_PRESSED() bit_is_clear(KEYS_PIN, KEY_RIGHT)
 
+enum KeyPressed_t {None, Down, Up, Right, Left};
+
 // =============================== Prototypes ==================================
 void Keys_Task(void);
 void KeysInit(void);

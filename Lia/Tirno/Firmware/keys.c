@@ -11,13 +11,31 @@ struct {
 } EKeys;
 
 void Keys_Task(void) {
-    if(!DelayElapsed(&EKeys.Timer, 250)) return;
+    if(!DelayElapsed(&EKeys.Timer, 54)) return;
 
     if(KEY_DOWN_PRESSED() && !EKeys.KeyDownPressed) {
         EKeys.KeyDownPressed = true;
         EVENT_KeyDown();
     }
     else if(!KEY_DOWN_PRESSED() && EKeys.KeyDownPressed) EKeys.KeyDownPressed = false;
+
+    if(KEY_UP_PRESSED() && !EKeys.KeyUpPressed) {
+        EKeys.KeyUpPressed = true;
+        EVENT_KeyUp();
+    }
+    else if(!KEY_UP_PRESSED() && EKeys.KeyUpPressed) EKeys.KeyUpPressed = false;
+
+    if(KEY_LEFT_PRESSED() && !EKeys.KeyLeftPressed) {
+        EKeys.KeyLeftPressed = true;
+        EVENT_KeyLeft();
+    }
+    else if(!KEY_LEFT_PRESSED() && EKeys.KeyLeftPressed) EKeys.KeyLeftPressed = false;
+
+    if(KEY_RIGHT_PRESSED() && !EKeys.KeyRightPressed) {
+        EKeys.KeyRightPressed = true;
+        EVENT_KeyRight();
+    }
+    else if(!KEY_RIGHT_PRESSED() && EKeys.KeyRightPressed) EKeys.KeyRightPressed = false;
 }
 
 void KeysInit(void) {
