@@ -229,7 +229,18 @@ void EVENT_KeyLeft(void) {
     } // switch
 }
 void EVENT_KeyRight(void) {
+    switch(EState) {
+        case StateList:
+            // Blink button
+            LCD_PrintString_P(0, 7, PSTR("     "), false);
+            _delay_ms(150);
+            LCD_PrintString_P(0, 7, PSTR("Опции"), true);
+            _delay_ms(200);
+            // Display current item options
 
+            break;
+        default: break;
+    } // switch
 }
 
 /*
