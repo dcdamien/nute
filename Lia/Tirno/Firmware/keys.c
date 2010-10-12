@@ -1,7 +1,9 @@
 #include "keys.h"
 #include <stdbool.h>
 #include "delay_util.h"
+#include "menu.h"
 
+enum KeyPressed_t {None, Down, Up, Right, Left};
 struct {
     bool KeyDownPressed:1;
     bool KeyUpPressed:1;

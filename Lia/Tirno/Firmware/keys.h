@@ -8,7 +8,6 @@
 #ifndef KEYS_H
 #define	KEYS_H
 
-#include "tirno.h"
 #include <avr/io.h>
 
 #define KEYS_DDR    DDRA
@@ -23,8 +22,6 @@
 #define KEY_UP_PRESSED()    bit_is_clear(KEYS_PIN, KEY_UP)
 #define KEY_LEFT_PRESSED()  bit_is_clear(KEYS_PIN, KEY_LEFT)
 #define KEY_RIGHT_PRESSED() bit_is_clear(KEYS_PIN, KEY_RIGHT)
-
-enum KeyPressed_t {None, Down, Up, Right, Left};
 
 // =============================== Prototypes ==================================
 void Keys_Task(void);
