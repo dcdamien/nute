@@ -25,22 +25,12 @@ int main(void) {
 
     SetState(StateList);
 
-    uint16_t FTimer;
-    bool c=true;
-
     while (1) {
         wdt_reset();    // Reset watchdog
         Keys_Task();
         //CC_Task();
         //LED_Task();
         //Battery_Task();
-
-        if(DelayElapsed(&FTimer, 400)) {
-            LCD_GotoXY(90, 0);
-            if(c) LCD_DrawChar('*', false);
-            else  LCD_DrawChar(' ', false);
-            c = !c;
-        }
     } // while
 }
 
@@ -52,11 +42,13 @@ FORCE_INLINE void GeneralInit(void) {
     uint16_t eeaddr = 0;
     for(uint8_t i=0; i<LOCKET_COUNT; i++) {
         eeprom_read_block(&EL.L[i], (void*)eeaddr, sizeof(struct Locket_t));
-        if(EL.L[i].S[0] == 0xFF)
+        if(EL.L[i].S[0] == 0xFF) {
             EL.L[i].S[0] = 'L';
             EL.L[i].S[1] = '-';
             EL.L[i].S[2] = 'a'+i;
-            EL.L[i].S[3] = 0;
+            for(uint8_t j=3; j<LOCKET_NAME_L-1; j++) EL.L[i].S[j] = 'a'+j;
+            EL.L[i].S[LOCKET_NAME_L-1] = '\0';
+        }
         eeaddr += sizeof(struct Locket_t);
     }
 

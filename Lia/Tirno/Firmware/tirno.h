@@ -14,8 +14,8 @@
 #include "lcd_font.h"
 
 // ================================ List =======================================
-#define LOCKET_COUNT    12
-
+#define LOCKET_COUNT    11
+#define LOCKET_NAME_L   15
 // =============================== General =====================================
 #define PKT_ID_CALL         0xCA
 
@@ -52,7 +52,7 @@
 struct Locket_t {
     uint8_t Addr;
     uint16_t Channel;
-    char S[LCD_STR_WIDTH];
+    char S[LOCKET_NAME_L];
 };
 struct Lockets_t {
     struct Locket_t L[LOCKET_COUNT];
