@@ -39,18 +39,7 @@ FORCE_INLINE void GeneralInit(void) {
     ACSR = 1<<ACD;  // Disable analog comparator
 
     // Init lockets
-    uint16_t eeaddr = 0;
-    for(uint8_t i=0; i<LOCKET_COUNT; i++) {
-        eeprom_read_block(&EL.L[i], (void*)eeaddr, sizeof(struct Locket_t));
-        if(EL.L[i].S[0] == 0xFF) {
-            EL.L[i].S[0] = 'L';
-            EL.L[i].S[1] = '-';
-            EL.L[i].S[2] = 'a'+i;
-            for(uint8_t j=3; j<LOCKET_NAME_L-1; j++) EL.L[i].S[j] = 'a'+j;
-            EL.L[i].S[LOCKET_NAME_L-1] = '\0';
-        }
-        eeaddr += sizeof(struct Locket_t);
-    }
+    for(uint8_t i=0; i<LOCKET_COUNT; i++) eeReadLocket(i);
 
     DelayInit();
     LCD_Init();
@@ -189,3 +178,26 @@ ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
 
 */
 
+void eeReadLocket(uint8_t ID) {
+    uint16_t eeaddr = 0;
+    uint8_t i=0;
+    while(i++ < ID) eeaddr += sizeof(struct Locket_t);  // Get ee address
+    eeprom_read_block(&EL.L[ID], (void*)eeaddr, sizeof(struct Locket_t));
+    if(EL.L[ID].S[0] == 0xFF) {  // Handle uninitialized ee
+        EL.L[ID].S[0] = 'Ö';
+        EL.L[ID].S[1] = 'å';
+        EL.L[ID].S[2] = 'ë';
+        EL.L[ID].S[3] = 'ü';
+        EL.L[ID].S[4] = ' ';
+        EL.L[ID].S[5] = ID < 10? ('0') : ('1');
+        EL.L[ID].S[6] = ID < 10? ('0' + ID) : ('0' + ID - 10);
+        for(uint8_t j=7; j<LOCKET_NAME_L-1; j++) EL.L[ID].S[j] = ' ';
+        EL.L[ID].S[LOCKET_NAME_L-1] = '\0';
+    }
+}
+void eeWriteLocket(uint8_t ID) {
+    uint16_t eeaddr = 0;
+    uint8_t i=0;
+    while(i++ < ID) eeaddr += sizeof(struct Locket_t);  // Get ee address
+    eeprom_write_block(&EL.L[ID], (void*)eeaddr, sizeof(struct Locket_t));
+}

@@ -65,6 +65,8 @@ extern struct Lockets_t EL;
 // =============================== Prototypes ==================================
 // General
 void GeneralInit(void);
+void eeReadLocket(uint8_t ID);
+void eeWriteLocket(uint8_t ID);
 
 // Tasks
 void CC_Task (void);
