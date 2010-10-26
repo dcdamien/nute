@@ -26,6 +26,7 @@ void EVENT_KeyRight(void);
 // Inner use
 void DisplayList(uint8_t StartElement);
 
+uint8_t GetLetter(void);
 
 #endif	/* MENU_H */
 

@@ -5,7 +5,7 @@
 #include <avr/pgmspace.h>
 
 // =============================== Defines =====================================
-#define LIST_INDENT     12  // Indent of list
+#define LIST_INDENT     2  // Indent of list
 
 #define OPTIONS_COUNT   2
 #define OPTIONS_TOP     2
@@ -14,6 +14,19 @@
 prog_char Option0[] = "Переименовать";
 prog_char Option1[] = "Состыковать  ";
 prog_char *EOptions[] = {Option0, Option1};
+
+prog_char FLLetters[6][2] = {
+    {'а', 'п'},
+    {'р', 'я'},
+    {'a', 'p'},
+    {'q', 'z'},
+    {'0', '9'},
+    {' ', '/'},
+};
+
+struct {
+    uint8_t x, y, Letter;
+} ECursor;
 
 uint8_t EIndx;
 uint8_t CharIndx;   // Indx of choosen Char in string edited
@@ -40,7 +53,7 @@ void SetState(enum State_t AState) {
             LCD_PrintString(0, 0, EL.L[EL.Indx].S, false);  // Print current locket name
             // Display pseudo-buttons
             LCD_PrintString_P(0,  7, PSTR("  Ok  "), true);
-            LCD_PrintString_P(60, 7, PSTR("Отмена"), true);
+            LCD_PrintString_P(10, 7, PSTR("Отмена"), true);
             // Display options
             LCD_PrintString_P(0, OPTIONS_TOP,   EOptions[0], true);
             LCD_PrintString_P(0, OPTIONS_TOP+1, EOptions[1], false);
@@ -51,11 +64,11 @@ void SetState(enum State_t AState) {
             LCD_GotoXY(0, 0);
             // Print current locket name with first letter highlighted
             LCD_DrawChar(EL.L[EL.Indx].S[0], true);
-            LCD_PrintString(6, 0, &EL.L[EL.Indx].S[1], false);  
+            LCD_PrintString(1, 0, &EL.L[EL.Indx].S[1], false);
 
             // Display pseudo-buttons
             LCD_PrintString_P(0,  7, PSTR("Изменить"), true);
-            LCD_PrintString_P(60, 7, PSTR("Готово"), true);
+            LCD_PrintString_P(10, 7, PSTR("Готово"), true);
             EIndx = 0;
             CharIndx = 0;
             break;
@@ -66,7 +79,6 @@ void SetState(enum State_t AState) {
 
 // ============================== Events =======================================
 void EVENT_KeyUp(void) {
-    uint8_t FPlace;
     switch(EState) {
         case StateList: // Move down by the list
             if(EL.Indx > 0) EL.Indx--;
@@ -89,8 +101,7 @@ void EVENT_KeyUp(void) {
         case StateRename_ChoosePlace:
             if(CharIndx > 0) {
                 CharIndx--;
-                FPlace = (CharIndx << 1) + (CharIndx << 2); // 6*a == 4*a + 2*a
-                LCD_GotoXY(FPlace, 0);
+                LCD_GotoXYstr(CharIndx, 0);
                 LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], true);  // Highlight current char
                 LCD_DrawChar(EL.L[EL.Indx].S[CharIndx+1], false); // Unhighlight previous char
             }
@@ -100,7 +111,6 @@ void EVENT_KeyUp(void) {
     } // switch
 }
 void EVENT_KeyDown(void) {
-    uint8_t FPlace;
     switch(EState) {
         case StateList: // Move down by the list
             if(EL.Indx < LOCKET_COUNT-1) EL.Indx++;
@@ -123,8 +133,7 @@ void EVENT_KeyDown(void) {
 
         case StateRename_ChoosePlace:
             if(CharIndx < LOCKET_NAME_L-1) {
-                FPlace = (CharIndx << 1) + (CharIndx << 2); // 6*a == 4*a + 2*a
-                LCD_GotoXY(FPlace, 0);
+                LCD_GotoXYstr(CharIndx, 0);
                 LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], false); // Unhighlight previous char
                 CharIndx++;
                 LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], true); // Highlight current char
@@ -166,8 +175,9 @@ void EVENT_KeyLeft(void) {
             break;
 
         case StateRename_ChoosePlace:
-            // Blink button
+            // Setup buttons
             LCD_PrintString_P(0, 7, PSTR("        "), false);
+            LCD_PrintString_P(10, 7, PSTR("  ->  "), true);
             _delay_ms(150);
             LCD_PrintString_P(0, 7, PSTR("Выбрать"), true);
             EState = StateRename_ChooseLetter;
@@ -176,26 +186,39 @@ void EVENT_KeyLeft(void) {
             if((Choosen >= 'A') && (Choosen <= 'Z')) Choosen += 'a'-'A';    // Change to uppercase
             if((Choosen >= 'А') && (Choosen <= 'Я')) Choosen += 'а'-'А';    // Change to uppercase
             // Display alphabet
-            LCD_GotoXY(0, 1);
-            for(uint16_t c='а'; c<='р'; c++) LCD_DrawChar(c, (c == Choosen));
-            LCD_GotoXY(0, 2);
-            for(uint16_t c='с'; c<='я'; c++) LCD_DrawChar(c, (c == Choosen));
-            LCD_GotoXY(0, 3);
-            for(uint8_t c='a'; c<='r'; c++) LCD_DrawChar(c, (c == Choosen));
-            LCD_GotoXY(0, 4);
-            for(uint8_t c='s'; c<='z'; c++) LCD_DrawChar(c, (c == Choosen));
-            LCD_GotoXY(0, 5);
-            for(uint8_t c='('; c<='9'; c++) LCD_DrawChar(c, (c == Choosen));
+            uint8_t cMax, cMin;
+            for(uint8_t r=0; r<=5; r++) {   // Iterate rows
+            //uint8_t r = 0;
+                LCD_GotoXY(0, r+1);
+                cMax = pgm_read_byte(&FLLetters[r][1]);
+                cMin = pgm_read_byte(&FLLetters[r][0]);
+                for(uint16_t c = cMin; c <= cMax; c++)
+                    if(c == Choosen) {
+                        LCD_DrawChar(c, true);
+                        ECursor.x = c-cMin;
+                        ECursor.y = r+1;
+                        ECursor.Letter = c;
+                    }
+                    else LCD_DrawChar(c, false);
+            }// r
             break;
 
-        case StateRename_ChooseLetter:  // Choice done
+        case StateRename_ChooseLetter:  // Choice is done
             // Blink button
             LCD_PrintString_P(0, 7, PSTR("        "), false);
-            _delay_ms(150);
+            LCD_PrintString_P(10, 7, PSTR("Готово"), true);
+            _delay_ms(50);
+            // Remove letters
+            for(uint8_t i=1; i<=6; i++) LCD_PrintString_P(0, i, PSTR("                "), false);
             LCD_PrintString_P(0, 7, PSTR("Изменить"), true);
             EState = StateRename_ChoosePlace;
-            // Get selected letter
-
+            // Replace letter
+            if(CharIndx == 0) { // Change to uppercase
+                if((ECursor.Letter >= 'а') && (ECursor.Letter <= 'я')) EL.L[EL.Indx].S[CharIndx] = ECursor.Letter - ('a'-'A');
+                if((ECursor.Letter >= 'a') && (ECursor.Letter <= 'z')) EL.L[EL.Indx].S[CharIndx] = ECursor.Letter - ('a'-'A');
+            } else EL.L[EL.Indx].S[CharIndx] = ECursor.Letter;
+            LCD_GotoXYstr(CharIndx, 0);
+            LCD_DrawChar( EL.L[EL.Indx].S[CharIndx], true);
 
 
             break;
@@ -206,18 +229,18 @@ void EVENT_KeyRight(void) {
     switch(EState) {
         case StateList:
             // Blink button
-            LCD_PrintString_P(66, 7, PSTR("     "), false);
+            LCD_PrintString_P(11, 7, PSTR("     "), false);
             _delay_ms(150);
-            LCD_PrintString_P(66, 7, PSTR("Опции"), true);
+            LCD_PrintString_P(11, 7, PSTR("Опции"), true);
             _delay_ms(200);
             // Display current item options
             SetState(StateOptions);
             break;
         case StateOptions:
             // Blink button
-            LCD_PrintString_P(60, 7, PSTR("      "), false);
+            LCD_PrintString_P(10, 7, PSTR("      "), false);
             _delay_ms(150);
-            LCD_PrintString_P(60, 7, PSTR("Отмена"), true);
+            LCD_PrintString_P(10, 7, PSTR("Отмена"), true);
             _delay_ms(200);
             // Return to list
             SetState(StateList);
@@ -225,12 +248,22 @@ void EVENT_KeyRight(void) {
 
         case StateRename_ChoosePlace:
             // Blink button
-            LCD_PrintString_P(60, 7, PSTR("      "), false);
+            LCD_PrintString_P(10, 7, PSTR("      "), false);
             _delay_ms(150);
-            LCD_PrintString_P(60, 7, PSTR("Готово"), true);
+            LCD_PrintString_P(10, 7, PSTR("Готово"), true);
             _delay_ms(200);
             // Return to list
             SetState(StateList);
+            break;
+
+        case StateRename_ChooseLetter:              // Move cursor right
+            LCD_GotoXYstr(ECursor.x, ECursor.y);
+            LCD_DrawChar(ECursor.Letter, false);    // Unhighlight letter
+            if(ECursor.x == LCD_STR_WIDTH-1) ECursor.x = 0;
+            else ECursor.x++;
+            ECursor.Letter = GetLetter();           // Get new letter
+            LCD_GotoXYstr(ECursor.x, ECursor.y);
+            LCD_DrawChar(ECursor.Letter, true);     // Highlight letter
             break;
 
         default: break;
@@ -249,5 +282,9 @@ void DisplayList(uint8_t StartElement) {
     }
     // Display pseudo-buttons
     LCD_PrintString_P(0, 7, PSTR("Поиск"), true);
-    LCD_PrintString_P(66, 7, PSTR("Опции"), true);
+    LCD_PrintString_P(11, 7, PSTR("Опции"), true);
+}
+
+uint8_t GetLetter(void) {
+    return (ECursor.x + pgm_read_byte(&FLLetters[ECursor.y-1][0]));
 }
