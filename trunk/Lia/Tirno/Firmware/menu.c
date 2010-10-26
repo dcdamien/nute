@@ -19,8 +19,8 @@ prog_char FLLetters[6][2] = {
     {'а', 'п'},
     {'р', 'я'},
     {'a', 'p'},
-    {'q', 'z'},
-    {'0', '9'},
+    {'q', 0x80},
+    {'0', '?'},
     {' ', '/'},
 };
 
@@ -28,7 +28,7 @@ struct {
     uint8_t x, y, Letter;
 } ECursor;
 
-uint8_t EIndx;
+uint8_t EIndx;      // Options Indx
 uint8_t CharIndx;   // Indx of choosen Char in string edited
 enum State_t EState;
 
@@ -45,7 +45,7 @@ void SetState(enum State_t AState) {
         case StateSearch:
             LCD_PrintString(0, 0, EL.L[EL.Indx].S, false);  // Print current locket name
             LCD_PrintString_P(0, 2, PSTR("dBm:"), false);
-            LCD_PrintString_P(0, 7, PSTR("Список"), true);
+            LCD_PrintString_P(0, 7, PSTR("Отмена"), true);
             LCD_DrawGauge(4);
             break;
 
@@ -65,12 +65,19 @@ void SetState(enum State_t AState) {
             // Print current locket name with first letter highlighted
             LCD_DrawChar(EL.L[EL.Indx].S[0], true);
             LCD_PrintString(1, 0, &EL.L[EL.Indx].S[1], false);
-
             // Display pseudo-buttons
             LCD_PrintString_P(0,  7, PSTR("Изменить"), true);
             LCD_PrintString_P(10, 7, PSTR("Готово"), true);
             EIndx = 0;
             CharIndx = 0;
+            break;
+
+        case StatePair:
+            LCD_PrintString(0, 0, EL.L[EL.Indx].S, false);  // Print current locket name
+            LCD_PrintString_P(0, 1, PSTR("Стыковка"), false);
+            // Display pseudo-buttons
+            LCD_PrintString_P(0,  7, PSTR("  Ok  "), true);
+            LCD_PrintString_P(10, 7, PSTR("Отмена"), true);
             break;
 
         default: break;
@@ -107,6 +114,17 @@ void EVENT_KeyUp(void) {
             }
             break;
 
+        case StateRename_ChooseLetter:  // Move up
+            if(ECursor.y > 1) {
+                LCD_GotoXYstr(ECursor.x, ECursor.y);
+                LCD_DrawChar(ECursor.Letter, false);    // Unhighlight letter
+                ECursor.y--;
+                ECursor.Letter = GetLetter();           // Get new letter
+                LCD_GotoXYstr(ECursor.x, ECursor.y);
+                LCD_DrawChar(ECursor.Letter, true);     // Highlight letter
+            }
+            break;
+
         default: break;
     } // switch
 }
@@ -137,6 +155,17 @@ void EVENT_KeyDown(void) {
                 LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], false); // Unhighlight previous char
                 CharIndx++;
                 LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], true); // Highlight current char
+            }
+            break;
+
+        case StateRename_ChooseLetter:  // Move down
+            if(ECursor.y < LCD_STR_HEIGHT-2) {
+                LCD_GotoXYstr(ECursor.x, ECursor.y);
+                LCD_DrawChar(ECursor.Letter, false);    // Unhighlight letter
+                ECursor.y++;
+                ECursor.Letter = GetLetter();           // Get new letter
+                LCD_GotoXYstr(ECursor.x, ECursor.y);
+                LCD_DrawChar(ECursor.Letter, true);     // Highlight letter
             }
             break;
 
@@ -213,15 +242,25 @@ void EVENT_KeyLeft(void) {
             LCD_PrintString_P(0, 7, PSTR("Изменить"), true);
             EState = StateRename_ChoosePlace;
             // Replace letter
+            EL.L[EL.Indx].S[CharIndx] = ECursor.Letter;
             if(CharIndx == 0) { // Change to uppercase
                 if((ECursor.Letter >= 'а') && (ECursor.Letter <= 'я')) EL.L[EL.Indx].S[CharIndx] = ECursor.Letter - ('a'-'A');
                 if((ECursor.Letter >= 'a') && (ECursor.Letter <= 'z')) EL.L[EL.Indx].S[CharIndx] = ECursor.Letter - ('a'-'A');
-            } else EL.L[EL.Indx].S[CharIndx] = ECursor.Letter;
+            }
+            // Move one char right
             LCD_GotoXYstr(CharIndx, 0);
-            LCD_DrawChar( EL.L[EL.Indx].S[CharIndx], true);
-
-
+            if(CharIndx < LOCKET_NAME_L-1) {
+                LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], false);
+                CharIndx++;
+                LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], true);
+            }
+            else LCD_DrawChar(EL.L[EL.Indx].S[CharIndx], true);
             break;
+
+            case StatePair:
+
+                break;
+
         default: break;
     } // switch
 }
@@ -236,7 +275,10 @@ void EVENT_KeyRight(void) {
             // Display current item options
             SetState(StateOptions);
             break;
+
         case StateOptions:
+        case StatePair:
+        case StateSearch:
             // Blink button
             LCD_PrintString_P(10, 7, PSTR("      "), false);
             _delay_ms(150);
@@ -252,6 +294,7 @@ void EVENT_KeyRight(void) {
             _delay_ms(150);
             LCD_PrintString_P(10, 7, PSTR("Готово"), true);
             _delay_ms(200);
+            eeWriteLocket(EL.Indx); // Save to EEPROM
             // Return to list
             SetState(StateList);
             break;
