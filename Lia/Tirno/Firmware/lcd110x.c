@@ -33,14 +33,15 @@ void LCD_Clear(void) {
     for(uint16_t i=0;i<864;i++) LCD_WriteData(0x00);
 }
 
+
 void LCD_PrintString_P (const uint8_t x, const uint8_t y, const char *S, bool AInvert) {
-    LCD_GotoXY(x, y);
+    LCD_GotoXYstr(x, y);
     uint8_t FChar;
     while ((FChar = pgm_read_byte(S++)) != '\0')
         LCD_DrawChar(FChar, AInvert);
 }
 void LCD_PrintString (const uint8_t x, const uint8_t y, const char *S, bool AInvert) {
-    LCD_GotoXY(x, y);
+    LCD_GotoXYstr(x, y);
     while (*S != '\0')
         LCD_DrawChar(*S++, AInvert);
 }
@@ -63,7 +64,7 @@ void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber) {
     uint8_t digit = '0';
     bool ShouldPrint = false;
     const uint16_t FArr[9] = {10000, 1000, 100, 10};
-    LCD_GotoXY(x, y);
+    LCD_GotoXYstr(x, y);
     // Iterate until ANumber > 10
     for(uint8_t i=0; i<4; i++) {
         while (ANumber >= FArr[i]) {
@@ -80,6 +81,7 @@ void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber) {
     LCD_DrawChar('0'+ANumber, false);
 }
 
+
 // ============================= Special =======================================
 // Special
 FORCE_INLINE void LCD_DrawGauge(const uint8_t y) {
@@ -95,14 +97,11 @@ void LCD_GaugeValue(const uint8_t AValue) {
 }
 
 void LCD_DrawChar(uint8_t AChar, bool AInvert) {
-    uint16_t indx = (AChar<<2) + (AChar<<1);
     uint8_t b;
-    prog_uint8_t *PointerFont = &Font_6x8_Data[indx];
     for(uint8_t i=0; i<6; i++) {
-        b = pgm_read_byte(PointerFont);
+        b = pgm_read_byte(&Font_6x8_Data[AChar][i]);
         if(AInvert) b = ~b;
         LCD_WriteData(b);
-        PointerFont++;
     }
  }
 
@@ -112,7 +111,12 @@ void LCD_GotoXY(uint8_t x, uint8_t y) {
     LCD_WriteCmd(0x00|(x&0x0F));         // X axis initialisation: 0000 xxxx ( x3 x2 x1 x0)
     LCD_WriteCmd(0x10|((x>>4)&0x07));    // X axis initialisation: 0010 0xxx  ( x6 x5 x4)
 }
-
+void LCD_GotoXYstr(uint8_t x, uint8_t y) {
+    x = (x<<2)+(x<<1);                   // x=x*6
+    LCD_WriteCmd(0xB0|(y&0x0F));         // Y axis initialisation: 0100 yyyy
+    LCD_WriteCmd(0x00|(x&0x0F));         // X axis initialisation: 0000 xxxx ( x3 x2 x1 x0)
+    LCD_WriteCmd(0x10|((x>>4)&0x07));    // X axis initialisation: 0010 0xxx  ( x6 x5 x4)
+}
 
 FORCE_INLINE void LCD_WriteData(uint8_t AByte) {
     LCD_SCLK_LO();

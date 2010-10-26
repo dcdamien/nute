@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <avr/pgmspace.h>
 
+#include "common.h"
+
 // ================================ Defines ====================================
 #define LCD_DDR     DDRD
 #define LCD_PORT    PORTD
@@ -36,7 +38,7 @@
 
 // =============================== Common use ==================================
 #define LCD_STR_HEIGHT  8
-#define LCD_STR_WIDTH   18
+#define LCD_STR_WIDTH   16
 
 // =============================== Prototypes ==================================
 void LCD_Init(void);
@@ -48,13 +50,14 @@ void LCD_PrintString_P(const uint8_t x, const uint8_t y, const char *S, bool AIn
 void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInvert);
 void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber);
 
+void LCD_GotoXY(uint8_t x, uint8_t y);
+void LCD_GotoXYstr(uint8_t x, uint8_t y);
+
 // Special
 void LCD_DrawGauge(const uint8_t y);
 void LCD_GaugeValue(const uint8_t AValue);
 
 // Inner use
-void LCD_GotoXY(uint8_t x, uint8_t y);
-
 void LCD_WriteData(uint8_t AByte);
 void LCD_WriteCmd(uint8_t AByte);
 
