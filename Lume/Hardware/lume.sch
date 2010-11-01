@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 21/09/2010 09:47:36
+EESchema Schematic File Version 2  date 01/11/2010 14:06:39
 LIBS:Atmel_kl
 LIBS:Connectors_kl
 LIBS:Interface_kl
@@ -15,7 +15,7 @@ EELAYER END
 $Descr A3 16535 11700
 Sheet 1 1
 Title ""
-Date "21 sep 2010"
+Date "1 nov 2010"
 Rev ""
 Comp ""
 Comment1 ""
@@ -3657,8 +3657,6 @@ F 1 "PWRCONN" H 1750 9700 40  0000 C CNN
 	1    1750 9500
 	1    0    0    -1  
 $EndComp
-Text Notes 1700 2400 0    60   ~ 0
-Menu\nUp\nDown
 $Comp
 L GND #PWR022
 U 1 1 4C4991A9
@@ -3971,11 +3969,11 @@ Text Label 2650 3400 0    60   ~ 0
 LightSensor
 Text Label 2650 3300 0    60   ~ 0
 PowerOk
-Text Label 2900 2900 0    60   ~ 0
-KeyDown
-Text Label 2900 2600 0    60   ~ 0
-KeyUp
 Text Label 2900 2300 0    60   ~ 0
+KeyDown
+Text Label 2900 2900 0    60   ~ 0
+KeyUp
+Text Label 2900 2600 0    60   ~ 0
 KeyMenu
 Text Label 7900 4850 0    60   ~ 0
 M1A2
