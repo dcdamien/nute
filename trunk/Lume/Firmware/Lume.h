@@ -20,9 +20,9 @@
 #define KEYS_DDR    DDRC
 #define KEYS_PORT   PORTC
 #define KEYS_PIN    PINC
-#define KEY_MENU    PC0
-#define KEY_UP      PC1
-#define KEY_DOWN    PC2
+#define KEY_MENU    PC1
+#define KEY_UP      PC2
+#define KEY_DOWN    PC0
 
 #define KEYS_POLL_TIME 504
 

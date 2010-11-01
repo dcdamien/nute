@@ -12,7 +12,7 @@
 #include <stdbool.h>
 
 // ============================== Defines ======================================
-#define BRIGHTNESS_TRESHOLD 200 // About 4 V
+#define BRIGHTNESS_TRESHOLD 18 // About 1 V
 
 #define LUMI_P       PC4
 #define LUMI_DDR     DDRC
