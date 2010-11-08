@@ -1,4 +1,4 @@
-update=17/08/2010 21:18:10
+update=08/11/2010 11:09:16
 version=1
 last_client=pcbnew
 [general]
@@ -67,7 +67,7 @@ DrawLar=150
 EdgeLar=150
 TxtLar=120
 MSegLar=150
-LastNetListRead=
+LastNetListRead=lia.net
 [pcbnew/libraries]
 LibDir=
 LibName1=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Common_kl

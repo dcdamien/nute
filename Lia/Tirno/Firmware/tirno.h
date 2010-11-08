@@ -16,6 +16,7 @@
 // ================================ List =======================================
 #define LOCKET_COUNT    11
 #define LOCKET_NAME_L   15
+#define LOCKET_EE_ADDR  4
 // =============================== General =====================================
 #define PKT_ID_CALL         0xCA
 
@@ -61,6 +62,7 @@ struct Lockets_t {
 };
 
 extern struct Lockets_t EL;
+extern uint32_t EID;
 
 // =============================== Prototypes ==================================
 // General
