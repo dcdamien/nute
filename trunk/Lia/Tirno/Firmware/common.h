@@ -2,7 +2,7 @@
  * File:   common.h
  * Author: Kreyl Laurelindo
  *
- * Created on 9 Июнь 2010 г., 11:07
+ * Created on 9 �?юнь 2010 г., 11:07
  */
 
 #ifndef _COMMON_H

@@ -18,6 +18,7 @@
 #include "menu.h"
 
 struct Lockets_t EL; 
+uint32_t EID;
 
 // ============================== General ======================================
 int main(void) {
@@ -37,6 +38,9 @@ int main(void) {
 FORCE_INLINE void GeneralInit(void) {
     //wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
+
+    // Read self 32-bit serial
+    eeprom_read_block(&EID, 0, 4);
 
     // Init lockets
     for(uint8_t i=0; i<LOCKET_COUNT; i++) eeReadLocket(i);
@@ -179,7 +183,7 @@ ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
 */
 
 void eeReadLocket(uint8_t ID) {
-    uint16_t eeaddr = 0;
+    uint16_t eeaddr = LOCKET_EE_ADDR;
     uint8_t i=0;
     while(i++ < ID) eeaddr += sizeof(struct Locket_t);  // Get ee address
     eeprom_read_block(&EL.L[ID], (void*)eeaddr, sizeof(struct Locket_t));
@@ -196,7 +200,7 @@ void eeReadLocket(uint8_t ID) {
     }
 }
 void eeWriteLocket(uint8_t ID) {
-    uint16_t eeaddr = 0;
+    uint16_t eeaddr = LOCKET_EE_ADDR;
     uint8_t i=0;
     while(i++ < ID) eeaddr += sizeof(struct Locket_t);  // Get ee address
     eeprom_write_block(&EL.L[ID], (void*)eeaddr, sizeof(struct Locket_t));
