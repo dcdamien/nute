@@ -23,7 +23,9 @@
 #define ADC_POWER_OF_MEASURES   3   // Power of 2
 #define ADC_NUMBER_OF_MEASURES  (1<<ADC_POWER_OF_MEASURES)
 
-#define ILedNominal     400 // 20 mA
+//#define ILedNominal     400 // 20 mA @ 1.1V reference
+//#define ILedNominal     640 // 800 mA @ 2.56V reference
+#define ILedNominal     128 // 160 mA @ 2.56V reference
 
 // ================================= Common ====================================
 // Pins

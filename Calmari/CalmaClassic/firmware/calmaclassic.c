@@ -184,8 +184,7 @@ FORCE_INLINE void PWMEnable(void){
     PLLCSR |= (1<<PLLE); // Set PLL enable
     loop_until_bit_is_set (PLLCSR, PLOCK); // wait until PLOCK become 1
     PLLCSR |= (1<<PCKE); // Enable PCK
-    // Set PWM mode; PCK is freq source. UnComment desired rows
-    // ********* SingleChannelVCC **********
+    // Single Channel VCC-based PWM
     TCCR1 = (1<<PWM1A)|(1<<COM1A1)|(1<<COM1A0)|(0<<CS13)|(0<<CS12)|(0<<CS11)|(1<<CS10);
 }
 FORCE_INLINE void PWMDisable(void){
@@ -205,9 +204,11 @@ bool MayChangePWM(void) {
     return false;
 }
 
-void ADC_Start(void) {
+FORCE_INLINE void ADC_Start(void) {
     // 1.1 V reference w/o capacitor, not left-adjusted, channel dif ADC2-ADC3 x20
-    ADMUX = (0<<REFS2)|(1<<REFS1)|(0<<REFS0)|(0<<ADLAR)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(1<<MUX0);
+//    ADMUX = (0<<REFS2)|(1<<REFS1)|(0<<REFS0)|(0<<ADLAR)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(1<<MUX0);
+    // 2.56 V reference w/o capacitor, not left-adjusted, channel dif ADC2-ADC3 x20
+    ADMUX = (1<<REFS2)|(1<<REFS1)|(0<<REFS0)|(0<<ADLAR)|(0<<MUX3)|(1<<MUX2)|(1<<MUX1)|(1<<MUX0);
     // Unipolar mode, not reversed polarity
     ADCSRB = (0<<BIN)|(0<<IPR);
     // Start first conversion
