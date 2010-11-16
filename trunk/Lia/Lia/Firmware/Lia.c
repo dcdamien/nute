@@ -14,17 +14,24 @@
 
 #include <util/delay.h>
 
-#define DEBUG_UART
+//#define DEBUG_UART
 #ifdef DEBUG_UART
 #include "uart_soft.h"
 #endif
 
 // ============================= Types =========================================
+/*
 struct {
     uint16_t Timer;
     bool JustEnteredRX;
     bool DeepSleep;
 } CC_Srv;
+*/
+
+struct {
+    uint8_t Address;
+    uint8_t Chnls[7], CurntCh;
+} ELia;
 
 // ============================== General ======================================
 int main(void) {
@@ -44,14 +51,21 @@ int main(void) {
 
 FORCE_INLINE void GeneralInit(void) {
     wdt_enable(WDTO_2S);
+    // Shutdown all unneeded
+    PRR = (1<<PRTWI)|(1<<PRSPI);
     ACSR = 1<<ACD;  // Disable analog comparator
     // Setup timer
     DelayInit();    // Time counter
+    // LED
+    #ifndef DEBUG_UART
+    //LED_DDR |= 1<<LED_P;
+    LED_OFF();
+    #endif
 
     // CC init
-    CC_Srv.JustEnteredRX = false;
-    CC_Srv.DeepSleep = false;
-    DelayReset(&CC_Srv.Timer);
+    //CC_Srv.JustEnteredRX = false;
+    //CC_Srv.DeepSleep = false;
+    //DelayReset(&CC_Srv.Timer);
     CC_Init();
     CC_SetAddress(4);   //Never changes in CC itself
 }
@@ -59,6 +73,7 @@ FORCE_INLINE void GeneralInit(void) {
 // ============================== Tasks ========================================
 void CC_Task (void) {
     // Handle packet if received
+/*
     if (CC.NewPacketReceived) {
         CC.NewPacketReceived = false;
         EVENT_NewPacket();
@@ -69,6 +84,7 @@ void CC_Task (void) {
         if (DelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
         else return;
     }
+*/
     // Do with CC what needed
     CC_GET_STATE();
     switch (CC.State){
@@ -79,7 +95,24 @@ void CC_Task (void) {
             CC_FLUSH_TX_FIFO();
             break;
 
-        case CC_STB_IDLE:   // Idle mode means that CC just has awaken
+        case CC_STB_IDLE:
+            // Transmit at once if IDLE
+            // Prepare Call packet
+            CC.TX_Pkt.Address = 0;      // Broadcast
+            CC.TX_Pkt.CommandID = PKT_ID_CALL;
+            CC.TX_Pkt.Data[0] = 0;
+            CC.TX_Pkt.Data[1] = 0;
+            CC.TX_Pkt.Data[2] = 0;
+            CC.TX_Pkt.Data[3] = 0;
+
+            CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+            CC_ENTER_TX();
+            LED_TOGGLE();
+            break;
+
+
+/*
+ * // Idle mode means that CC just has awaken
             CC_ENTER_RX();
             CC_Srv.JustEnteredRX = true;
             break;
@@ -99,6 +132,7 @@ void CC_Task (void) {
                 }// if timer
             }// if not RX
             break;
+*/
 
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
@@ -107,6 +141,7 @@ void CC_Task (void) {
 
 
 // ============================== Events =======================================
+/*
 FORCE_INLINE void EVENT_NewPacket(void) {
     #ifdef DEBUG_UART
     UARTSendUint(CC.RX_Pkt.PacketID);
@@ -126,3 +161,4 @@ FORCE_INLINE void EVENT_NewPacket(void) {
     #endif
 }
 
+*/

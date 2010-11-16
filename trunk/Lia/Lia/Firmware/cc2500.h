@@ -17,10 +17,6 @@
 #include "cc2500_rf_settings.h"
 #include "common.h"
 
-// ==================== Application-specific defins ============================
-// Channels to use
-#define CC_CHANNEL      0
-
 // ================================== Defins ===================================
 // Ports
 #define CC_DDR  DDRD
@@ -40,7 +36,6 @@
 #define CC_MOSI_LO  CC_PORT &= ~(1<<CC_MOSI)
 #define CC_CS_HI    CC_PORT |=  (1<<CC_CS)
 #define CC_CS_LO    CC_PORT &= ~(1<<CC_CS)
-
 #define CC_MISO_IS_HI( )    bit_is_set(CC_PIN, CC_MISO)
 #define CC_GDO0_IS_HI( )    bit_is_set(CC_PIN, CC_GDO0)
 
@@ -48,16 +43,6 @@
 #define CC_GDO0_IRQ_DISABLE( )  EIMSK &= ~(1<<INT0)
 
 // =============================== Variables ===================================
-#define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-3
-struct CC_Packet_t{
-    uint8_t Address;
-    uint8_t PacketID;
-    uint8_t CommandID;
-    uint8_t Data[CC_PKT_DATA_LENGTH];
-    uint8_t RSSI;
-    uint8_t LQI;
-};
-
 struct CC_t {
     uint8_t State;
     union { // RX packet
@@ -82,15 +67,15 @@ void CC_SetChannel(uint8_t AChannel);
 void CC_SetAddress(uint8_t AAdress);
 
 // Middle level
-uint8_t CC_ReadRegister (uint8_t ARegAddr);
-void CC_WriteRegister (uint8_t ARegAddr, uint8_t AData);
-void CC_WriteStrobe (uint8_t AStrobe);
+uint8_t CC_ReadRegister(uint8_t ARegAddr);
+void CC_WriteRegister(uint8_t ARegAddr, uint8_t AData);
+void CC_WriteStrobe(uint8_t AStrobe);
 
 // Inner use
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength);
 void CC_WriteBurst_P(uint8_t ARegAddr, prog_uint8_t *PData, uint8_t ALength);
-void CC_WriteTX (uint8_t *PData, uint8_t ALength);
-void CC_ReadRX  (uint8_t *PData, uint8_t ALength);
+void CC_WriteTX(uint8_t *PData, uint8_t ALength);
+void CC_ReadRX (uint8_t *PData, uint8_t ALength);
 void CC_RfConfig(void);
 
 // low-level
