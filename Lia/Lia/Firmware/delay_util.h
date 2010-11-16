@@ -19,9 +19,5 @@ void DelayInit(void);
 bool DelayElapsed(uint16_t *AVar, const uint16_t ADelay);
 void DelayReset(uint16_t *AVar);
 
-//void PrintTime (struct Time_t *ATime);
-
-//void IncSecond (struct Time_t *ATime);
-
 #endif	/* _TIME_UTILS_H */
 
