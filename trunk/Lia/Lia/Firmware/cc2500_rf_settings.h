@@ -11,8 +11,8 @@
 #include "pkt_settings.h"
 
 // Bitrate
-#define CC_BITRATE_2K4
-//#define CC_BITRATE_10K
+//#define CC_BITRATE_2K4
+#define CC_BITRATE_10K
 //#define CC_BITRATE_250K
 
 // ============================ Common use values ==============================
