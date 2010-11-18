@@ -11,7 +11,7 @@
 #define	PKT_SETTINGS_H
 
 // ============================= Defines =======================================
-#define CC_PKT_LENGTH       6   // Data size = 4
+#define CC_PKT_LENGTH       4
 #define CC_PKT_DATA_LENGTH  CC_PKT_LENGTH-2
 
 #define PKT_ID_CALL     0xCA

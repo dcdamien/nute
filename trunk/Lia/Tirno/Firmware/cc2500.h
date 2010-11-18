@@ -1,5 +1,5 @@
 /* 
- * File:   cc2500.h of Corma (ATmega16)
+ * File:   cc2500.h of NeldeCalma
  * Author: Laurelindo
  *
  * Created on 11 Декабрь 2009 г., 2:08
@@ -19,42 +19,52 @@
 
 // ================================== Defins ===================================
 // Ports
+#ifdef __AVR_ATmega88__
+#define CC_DDR  DDRD
+#define CC_PORT PORTD
+#define CC_PIN  PIND
+
+#define CC_GDO0 PD2
+#define CC_CS   PD7
+#define CC_MOSI PD1
+#define CC_MISO PD0
+#define CC_SCLK PD4
+#elif defined __AVR_ATmega16A__
 #define CC_DDR  DDRB
 #define CC_PORT PORTB
 #define CC_PIN  PINB
 
 #define CC_GDO0 PB2
-#define CC_GDO2 PB3
 #define CC_CS   PB4
 #define CC_MOSI PB5
 #define CC_MISO PB6
-#define CC_SCLK PB7
+#define CC_SCLK PB7 
+#endif
 
 // =========================== Pseudo functions ================================
-#define CC_SCLK_HI  CC_PORT |=  (1<<CC_SCLK)
-#define CC_SCLK_LO  CC_PORT &= ~(1<<CC_SCLK)
-#define CC_MOSI_HI  CC_PORT |=  (1<<CC_MOSI)
-#define CC_MOSI_LO  CC_PORT &= ~(1<<CC_MOSI)
-#define CC_CS_HI    CC_PORT |=  (1<<CC_CS)
-#define CC_CS_LO    CC_PORT &= ~(1<<CC_CS)
-
+#define CC_SCLK_HI( )       CC_PORT |=  (1<<CC_SCLK)
+#define CC_SCLK_LO( )       CC_PORT &= ~(1<<CC_SCLK)
+#define CC_MOSI_HI( )       CC_PORT |=  (1<<CC_MOSI)
+#define CC_MOSI_LO( )       CC_PORT &= ~(1<<CC_MOSI)
+#define CC_CS_HI( )         CC_PORT |=  (1<<CC_CS)
+#define CC_CS_LO( )         CC_PORT &= ~(1<<CC_CS)
 #define CC_MISO_IS_HI( )    bit_is_set(CC_PIN, CC_MISO)
 #define CC_GDO0_IS_HI( )    bit_is_set(CC_PIN, CC_GDO0)
 
+#ifdef __AVR_ATmega88__
+#define CC_GDO0_IRQ_ENABLE( )   EIMSK |=  (1<<INT0)
+#define CC_GDO0_IRQ_DISABLE( )  EIMSK &= ~(1<<INT0)
+
+#define CC_IRQ_vect             INT0_vect
+
+#elif defined __AVR_ATmega16A__
 #define CC_GDO0_IRQ_ENABLE( )   GICR |=  (1<<INT2)
 #define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
 
-// =============================== Variables ===================================
-struct CC_Packet_t {
-    uint8_t ToAddr;
-    uint8_t CommandID;
-    uint8_t SenderAddr;
-    uint8_t SenderCycle;
-    uint16_t SenderTime;
-    uint8_t RSSI;
-    uint8_t LQI;
-};
+#define CC_IRQ_vect             INT2_vect
+#endif
 
+// =============================== Variables ===================================
 struct CC_t {
     uint8_t State;
     union { // RX packet
@@ -66,6 +76,7 @@ struct CC_t {
         struct CC_Packet_t TX_Pkt;
     };
     bool NewPacketReceived;
+    bool TransmitEnable;
 };
 
 extern struct CC_t CC;
@@ -77,19 +88,16 @@ void CC_Init(void);
 void CC_SetChannel(uint8_t AChannel);
 void CC_SetAddress(uint8_t AAdress);
 
-void CC_EnterRX(void);
-void CC_EnterTX(void);
-
 // Middle level
-uint8_t CC_ReadRegister (uint8_t ARegAddr);
-void CC_WriteRegister (uint8_t ARegAddr, uint8_t AData);
-void CC_WriteStrobe (uint8_t AStrobe);
+uint8_t CC_ReadRegister(uint8_t ARegAddr);
+void CC_WriteRegister(uint8_t ARegAddr, uint8_t AData);
+void CC_WriteStrobe(uint8_t AStrobe);
 
 // Inner use
 void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength);
 void CC_WriteBurst_P(uint8_t ARegAddr, prog_uint8_t *PData, uint8_t ALength);
-void CC_WriteTX (uint8_t *PData, uint8_t ALength);
-void CC_ReadRX  (uint8_t *PData, uint8_t ALength);
+void CC_WriteTX(uint8_t *PData, uint8_t ALength);
+void CC_ReadRX (uint8_t *PData, uint8_t ALength);
 void CC_RfConfig(void);
 
 // low-level

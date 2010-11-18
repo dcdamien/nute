@@ -8,36 +8,36 @@
 #ifndef _CC_RF_SETTINGS_H
 #define	_CC_RF_SETTINGS_H
 
+#include "pkt_settings.h"
+
 // Bitrate
 //#define CC_BITRATE_2K4
 #define CC_BITRATE_10K
 //#define CC_BITRATE_250K
 
 // ============================ Common use values ==============================
-#define CC_PKT_LENGTH       6   // for this exact application
 #define CC_TX_FIFO_SIZE     33
 #define CC_RX_FIFO_SIZE     32
 
 // =================================== Power ===================================
-//#define CC_PATABLE0_VALUE   0x00    // -55 dBm
-//#define CC_PATABLE0_VALUE   0x50    // -30 dBm
-//#define CC_PATABLE0_VALUE   0x44    // -28 dBm
 #define CC_PATABLE0_VALUE   0xFE    // 0 dBm
 //#define CC_PATABLE0_VALUE   0xFF    // +1 dBm
 
 
 // ================================= Frequency =================================
-#define CC_FREQ2_VALUE      0x5D        // Frequency control word, high byte.
-#define CC_FREQ1_VALUE      0x93        // Frequency control word, middle byte.
-#define CC_FREQ0_VALUE      0xB1        // Frequency control word, low byte.
+#define CC_FREQ2_VALUE      0x5C        // Frequency control word, high byte.
+#define CC_FREQ1_VALUE      0x4E        // Frequency control word, middle byte.
+#define CC_FREQ0_VALUE      0xC5        // Frequency control word, low byte.
 
 // =================================== Common ==================================
-#define CC_MDMCFG1_VALUE    0b10100010  // FEC=1, Preamble length=010 => 4bytes, Ch spacing=10=2
+#define CC_MDMCFG0_VALUE    0x98        // Mantissa of channel spacing - RF studio
+
+//#define CC_MDMCFG1_VALUE    0b10100010  // FEC=1, Preamble length=010 => 4bytes, Ch spacing=10=2
+#define CC_MDMCFG1_VALUE    0b10100011  // FEC=1, Preamble length=010 => 4bytes, Ch spacing=11=3
 //#define CC_MDMCFG1_VALUE    0b00100010  // FEC=0, Preamble length=010 => 4bytes, Ch spacing=10=2
 //#define CC_MDMCFG1_VALUE    0b11000010  // FEC=1, Preamble length=100 => 8bytes, Ch spacing=10=2
 
-//#define CC_MCSM0_VALUE      0x18        // Calibrate at IDLE->RX,TX
-#define CC_MCSM0_VALUE      0x28        // Calibrate at RX->IDLE, TX->IDLE
+#define CC_MCSM0_VALUE      0x18        // Calibrate at IDLE->RX,TX
 #define CC_MCSM1_VALUE      0b00001100  // Channel is always clear, RX->RX,   TX->IDLE
 //#define CC_MCSM1_VALUE      0b00001111  // Channel is always clear, RX->RX,   TX->RX
 //#define CC_MCSM1_VALUE      0b00000000  // Channel is always clear, RX->IDLE, TX->IDLE
@@ -47,8 +47,7 @@
 #define CC_IOCFG2_VALUE     0x0E        // GDO2 - Carrier sence
 #define CC_IOCFG0_VALUE     0x06        // GDO0 - Asserts when sync word has been sent / received, and de-asserts at the end of the packet. In RX, the pin will de-assert
                                         // when the optional address check fails or the RX FIFO overflows.
-// *** ! *** 0x07 cannot be used with CC2400=0. Use 0x06 instead. (CC2400=1 makes data whitening impossible).
-//define CC_IOCFG0_VALUE     0x07        // GDO0 - Asserts when a packet has been received with CRC OK. De-asserts when the first byte is read from the RX FIFO.
+// *** ! *** 0x07 cannot be used with PKTCTRL0.CC2400==0. Use 0x06 instead. (CC2400=1 makes data whitening impossible).
 
 //#define CC_PKTCTRL1_VALUE   0b00000110  // PQT=0, CRC autoflush=0, Append=1, Address check = 10 (check, 0 is broadcast)
 #define CC_PKTCTRL1_VALUE   0b00001110  // PQT=0, CRC autoflush=1, Append=1, Address check = 10 (check, 0 is broadcast)
@@ -66,7 +65,6 @@
 #define CC_MDMCFG4_VALUE    0x78        // Modem configuration: channel bandwidth
 #define CC_MDMCFG3_VALUE    0x93        // Modem configuration.
 #define CC_MDMCFG2_VALUE    0x03        // Filter, modulation format, Manchester coding, SYNC_MODE=011 => 30/32 sync word bits
-#define CC_MDMCFG0_VALUE    0xF8        // Modem configuration.
 
 #define CC_DEVIATN_VALUE    0x44        // Modem deviation setting - RF studio
 #define CC_FREND1_VALUE     0x56        // Front end RX configuration - RF studio
@@ -99,7 +97,6 @@
 #define CC_MDMCFG4_VALUE    0x86        // Modem configuration: channel bandwidth
 #define CC_MDMCFG3_VALUE    0x83        // Modem configuration.
 #define CC_MDMCFG2_VALUE    0x03        // Filter, modulation format, Manchester coding, SYNC_MODE=011 => 30/32 sync word bits
-#define CC_MDMCFG0_VALUE    0xF8        // Modem configuration.
 
 #define CC_DEVIATN_VALUE    0x44        // Modem deviation setting - RF studio
 #define CC_FREND1_VALUE     0x56        // Front end RX configuration - RF studio

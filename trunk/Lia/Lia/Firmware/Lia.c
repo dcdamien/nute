@@ -29,6 +29,7 @@ struct {
 */
 
 struct {
+    uint8_t ID2, ID1;   // Tirno's ID
     uint8_t Address;
     uint8_t Chnls[7], CurntCh;
 } ELia;
@@ -102,8 +103,8 @@ void CC_Task (void) {
             CC.TX_Pkt.CommandID = PKT_ID_CALL;
             CC.TX_Pkt.Data[0] = 0;
             CC.TX_Pkt.Data[1] = 0;
-            CC.TX_Pkt.Data[2] = 0;
-            CC.TX_Pkt.Data[3] = 0;
+//            CC.TX_Pkt.Data[2] = 0;
+//            CC.TX_Pkt.Data[3] = 0;
 
             CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
             CC_ENTER_TX();
