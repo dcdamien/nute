@@ -29,6 +29,7 @@
 #define CC_MOSI PD1
 #define CC_MISO PD0
 #define CC_SCLK PD4
+
 #elif defined __AVR_ATmega16A__
 #define CC_DDR  DDRB
 #define CC_PORT PORTB
@@ -87,6 +88,7 @@ extern struct CC_t CC;
 void CC_Init(void);
 void CC_SetChannel(uint8_t AChannel);
 void CC_SetAddress(uint8_t AAdress);
+int8_t CC_RSSI2dBm(void);
 
 // Middle level
 uint8_t CC_ReadRegister(uint8_t ARegAddr);
