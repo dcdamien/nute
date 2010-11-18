@@ -18,8 +18,12 @@
 #include "menu.h"
 
 struct Lockets_t EL; 
-uint32_t EID;
-uint8_t PktCounter;
+
+struct {
+    uint16_t ID;
+    bool PktRcvd;
+} ETirno;
+
 
 // ============================== General ======================================
 int main(void) {
@@ -35,15 +39,16 @@ int main(void) {
         Keys_Task();
         CC_Task();
 
+        // Clear dBm
         if(EState == StateSearch) {
-            if(DelayElapsed(&FTimer, 500)) {
-                LCD_PrintString(5, 2, "   ", false);
-                LCD_PrintUint(5, 2, PktCounter);
-                PktCounter = 0;
+            if(DelayElapsed(&FTimer, 1000)) {
+                if(!ETirno.PktRcvd) {
+                    LCD_PrintString(5, 2, "     ", false);
+                    LCD_GaugeValue(1);
+                }
+                ETirno.PktRcvd = false;
             }
         }
-        //PktCounter++;
-
         //Battery_Task();
     } // while
 }
@@ -52,8 +57,8 @@ FORCE_INLINE void GeneralInit(void) {
     //wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
 
-    // Read self 32-bit serial
-    eeprom_read_block(&EID, 0, 4);
+    // Read self 16-bit serial
+    ETirno.ID = eeprom_read_word(0);
 
     // Init lockets
     for(uint8_t i=0; i<LOCKET_COUNT; i++) eeReadLocket(i);
@@ -63,11 +68,7 @@ FORCE_INLINE void GeneralInit(void) {
     KeysInit();
     sei();
 
-    // LED init
-    //LED_DDR |= (1<<LED_P);
-
     // CC init
-    PktCounter = 0;
     CC_Init();
     //CC_SetChannel(0);
     CC_SetAddress(4);   //Never changes in CC itself
@@ -94,8 +95,7 @@ void CC_Task (void) {
     // Handle packet if received
     if (CC.NewPacketReceived) {
         CC.NewPacketReceived = false;
-        //EVENT_NewPacket();
-        PktCounter++;
+        EVENT_NewPacket();
     }
 
     // Do with CC what needed
@@ -198,7 +198,17 @@ ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
 
 // ============================== Events =======================================
 FORCE_INLINE void EVENT_NewPacket(void) {
-   //PktCounter++;
+    if(EState == StateSearch) {
+        ETirno.PktRcvd = true;
+        LCD_PrintString(5, 2, "     ", false);
+        int8_t RSSI = CC_RSSI2dBm();
+        LCD_PrintInt(5, 2, RSSI);
+        // Draw gauge
+        RSSI += 100;
+        if(RSSI > 95) RSSI = 95;
+        if (RSSI < 1) RSSI = 1;
+        LCD_GaugeValue(RSSI);
+    }
 }
 
 // ========================= Service routines ==================================

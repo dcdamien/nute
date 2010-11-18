@@ -61,6 +61,11 @@ FORCE_INLINE void CC_SetAddress(uint8_t AAddress) {
     CC_WriteRegister(CC_ADDR, AAddress);
 }
 
+int8_t CC_RSSI2dBm(void) {
+    #define RSSI_OFFSET 69  // Got from datasheet
+    return ((CC.RX_Pkt.RSSI /2) - RSSI_OFFSET);
+}
+
 // ============================= Inner use =====================================
 FORCE_INLINE void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){

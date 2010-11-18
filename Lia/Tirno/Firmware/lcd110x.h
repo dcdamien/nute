@@ -49,6 +49,8 @@ void LCD_PrintString(const uint8_t x, const uint8_t y, const char *S, bool AInve
 void LCD_PrintString_P(const uint8_t x, const uint8_t y, const char *S, bool AInvert);
 void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInvert);
 void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber);
+void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber);
+
 
 void LCD_GotoXY(uint8_t x, uint8_t y);
 void LCD_GotoXYstr(uint8_t x, uint8_t y);

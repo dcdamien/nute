@@ -80,7 +80,14 @@ void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber) {
     // Print last digit
     LCD_DrawChar('0'+ANumber, false);
 }
-
+void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber) {
+    LCD_GotoXYstr(x, y);
+    if(ANumber < 0) {
+        LCD_DrawChar('-', false);
+        LCD_PrintUint(x+1, y, -ANumber);
+    }
+    else LCD_PrintUint(x, y, -ANumber);
+}
 
 // ============================= Special =======================================
 // Special
@@ -90,10 +97,8 @@ FORCE_INLINE void LCD_DrawGauge(const uint8_t y) {
 }
 void LCD_GaugeValue(const uint8_t AValue) {
     LCD_GotoXY(1, GaugeY+1);
-    for(uint8_t x=1; x<95; x++) {
-        if(x < AValue) LCD_WriteData(0x7E);
-        else LCD_WriteData(0x00);
-    }
+    for(uint8_t x=1; x<AValue; x++)  LCD_WriteData(0x7E);
+    for(uint8_t x=AValue; x<95; x++) LCD_WriteData(0x00);
 }
 
 void LCD_DrawChar(uint8_t AChar, bool AInvert) {

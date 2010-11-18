@@ -20,13 +20,11 @@
 #endif
 
 // ============================= Types =========================================
-/*
 struct {
     uint16_t Timer;
     bool JustEnteredRX;
     bool DeepSleep;
 } CC_Srv;
-*/
 
 struct {
     uint8_t ID2, ID1;   // Tirno's ID
@@ -66,9 +64,9 @@ FORCE_INLINE void GeneralInit(void) {
     // CC init
     //CC_Srv.JustEnteredRX = false;
     //CC_Srv.DeepSleep = false;
-    //DelayReset(&CC_Srv.Timer);
+    DelayReset(&CC_Srv.Timer);
     CC_Init();
-    CC_SetAddress(4);   //Never changes in CC itself
+    CC_SetAddress(4);
 }
 
 // ============================== Tasks ========================================
@@ -98,17 +96,17 @@ void CC_Task (void) {
 
         case CC_STB_IDLE:
             // Transmit at once if IDLE
-            // Prepare Call packet
-            CC.TX_Pkt.Address = 0;      // Broadcast
-            CC.TX_Pkt.CommandID = PKT_ID_CALL;
-            CC.TX_Pkt.Data[0] = 0;
-            CC.TX_Pkt.Data[1] = 0;
-//            CC.TX_Pkt.Data[2] = 0;
-//            CC.TX_Pkt.Data[3] = 0;
+            if(DelayElapsed(&CC_Srv.Timer, 270)) {
+                // Prepare Call packet
+                CC.TX_Pkt.Address = 0;      // Broadcast
+                CC.TX_Pkt.CommandID = PKT_ID_CALL;
+                CC.TX_Pkt.Data[0] = 0;
+                CC.TX_Pkt.Data[1] = 0;
 
-            CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
-            CC_ENTER_TX();
-            LED_TOGGLE();
+                CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+                CC_ENTER_TX();
+                LED_TOGGLE();
+            }
             break;
 
 
