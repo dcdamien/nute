@@ -52,11 +52,13 @@ extern uint32_t EID;
 void GeneralInit(void);
 void eeReadLocket(uint8_t ID);
 void eeWriteLocket(uint8_t ID);
+//void CC_Call(void);
 
 // Tasks
 void CC_Task (void);
 
 // Events
+void EVENT_StartingSearch(void);
 void EVENT_NewPacket(void);
 
 

@@ -4,7 +4,6 @@
 #include <util/delay.h>
 
 // ============================= Types & vars ==================================
-uint8_t GaugeY;
 
 // ============================ Implementation =================================
 void LCD_Init(void) {
@@ -91,12 +90,11 @@ void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber) {
 
 // ============================= Special =======================================
 // Special
-FORCE_INLINE void LCD_DrawGauge(const uint8_t y) {
-    LCD_DrawImage(0, y, LCD_ImgGauge, false);
-    GaugeY = y;
+FORCE_INLINE void LCD_DrawGauge(void) {
+    LCD_DrawImage(0, GAUGE_Y, LCD_ImgGauge, false);
 }
 void LCD_GaugeValue(const uint8_t AValue) {
-    LCD_GotoXY(1, GaugeY+1);
+    LCD_GotoXY(1, GAUGE_Y+1);
     for(uint8_t x=1; x<AValue; x++)  LCD_WriteData(0x7E);
     for(uint8_t x=AValue; x<95; x++) LCD_WriteData(0x00);
 }

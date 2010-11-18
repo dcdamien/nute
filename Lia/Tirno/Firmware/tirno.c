@@ -20,8 +20,9 @@
 struct Lockets_t EL; 
 
 struct {
-    uint16_t ID;
+    uint8_t ID[3];
     bool PktRcvd;
+    uint16_t CC_Timer;
 } ETirno;
 
 
@@ -57,8 +58,11 @@ FORCE_INLINE void GeneralInit(void) {
     //wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
 
-    // Read self 16-bit serial
-    ETirno.ID = eeprom_read_word(0);
+    // Read self serial
+    //eeprom_read_block(ETirno.ID, 0, 3);
+    ETirno.ID[0] = 0;   // DEBUG
+    ETirno.ID[1] = 0;
+    ETirno.ID[2] = 0;
 
     // Init lockets
     for(uint8_t i=0; i<LOCKET_COUNT; i++) eeReadLocket(i);
@@ -72,7 +76,7 @@ FORCE_INLINE void GeneralInit(void) {
     CC_Init();
     //CC_SetChannel(0);
     CC_SetAddress(4);   //Never changes in CC itself
-    CC_ENTER_RX();
+    //CC_ENTER_RX();
 
 
     // Setup Timer1: cycle timings
@@ -90,8 +94,9 @@ FORCE_INLINE void GeneralInit(void) {
 }
 
 // ============================== Tasks ========================================
+#define TX_PERIOD   270
+#define RX_PERIOD   200
 void CC_Task (void) {
-    //PktCounter++;
     // Handle packet if received
     if (CC.NewPacketReceived) {
         CC.NewPacketReceived = false;
@@ -108,11 +113,25 @@ void CC_Task (void) {
             CC_FLUSH_TX_FIFO();
             break;
 
-/*
-        case CC_STB_RX:
-            PORTA |= (1<<PA4);
+        case CC_STB_IDLE:
+            if(EState == StateSearch) { // No deal if we are not in search
+                // Check if time to TX
+                if(DelayElapsed(&ETirno.CC_Timer, TX_PERIOD)) {
+                    // Prepare Call packet
+                    CC.TX_Pkt.Address = ETirno.ID[0];
+                    CC.TX_Pkt.CommandID = PKT_ID_CALL;
+                    CC.TX_Pkt.Data[0] = ETirno.ID[2];
+                    CC.TX_Pkt.Data[1] = ETirno.ID[1];
+                    CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+                    CC_ENTER_TX();  // will switch to RX automatically (ref. to RF settings)
+                } // if time
+            } // if search
             break;
-*/
+
+        case CC_STB_RX:
+            // Get out if time has come
+            if(DelayElapsed(&ETirno.CC_Timer, RX_PERIOD)) CC_ENTER_IDLE();
+            break;
 
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             break;
@@ -209,6 +228,12 @@ FORCE_INLINE void EVENT_NewPacket(void) {
         if (RSSI < 1) RSSI = 1;
         LCD_GaugeValue(RSSI);
     }
+}
+
+// Setup CC to search here
+void EVENT_StartingSearch(void) {
+    DelayReset(&ETirno.CC_Timer);
+    // Packet will be sent in time, no need to hurry
 }
 
 // ========================= Service routines ==================================

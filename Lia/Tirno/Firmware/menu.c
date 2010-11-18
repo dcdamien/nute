@@ -46,7 +46,8 @@ void SetState(enum State_t AState) {
             LCD_PrintString(0, 0, EL.L[EL.Indx].S, false);  // Print current locket name
             LCD_PrintString_P(0, 2, PSTR("dBm:"), false);
             LCD_PrintString_P(0, 7, PSTR("Список"), true);
-            LCD_DrawGauge(4);
+            LCD_DrawGauge();
+            EVENT_StartingSearch();
             break;
 
         case StateOptions:

@@ -22,6 +22,7 @@
 #define LED_PORT        PORTD
 #define LED_P           PD3
 #define LED_TOGGLE()    LED_PORT ^=  (1<<LED_P)
+#define LED_ON()        LED_PORT |=  (1<<LED_P)
 #define LED_OFF()       LED_PORT &= ~(1<<LED_P)
 
 
@@ -33,7 +34,7 @@ void GeneralInit(void);
 void CC_Task (void);
 
 // Events
-//void EVENT_NewPacket(void);
+void EVENT_NewPacket(void);
 
 #endif	/* _CALMA3C_H */
 
