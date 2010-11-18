@@ -14,6 +14,8 @@
 // States
 enum State_t {StateList, StateSearch, StateOptions, StateRename_ChoosePlace, StateRename_ChooseLetter, StatePair};
 
+extern enum State_t EState;
+
 // ============================ Prototypes =====================================
 void SetState(enum State_t);
 

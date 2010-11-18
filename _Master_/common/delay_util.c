@@ -10,7 +10,7 @@ FORCE_INLINE void DelayInit(void) {
     TCCR0A = (1<<WGM01);                    // CTC mode
     TCCR0B = (0<<CS02)|(1<<CS01)|(0<<CS00); // 1 MHz/8 = 125 kHz
     OCR0A  = 125;                           // 125 kHz / 125 = 1000 compares per second
-    TIMSK |= (1<<OCIE0A);                   // Enable interrupt
+    TIMSK0 |= (1<<OCIE0A);                  // Enable interrupt
 }
 
 bool DelayElapsed(uint16_t *AVar, const uint16_t ADelay) {

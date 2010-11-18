@@ -13,12 +13,13 @@
 #include "delay_util.h"
 //#include "battery.h"
 #include "common.h"
-//#include "cc2500.h"
+#include "cc2500.h"
 #include "keys.h"
 #include "menu.h"
 
 struct Lockets_t EL; 
 uint32_t EID;
+uint8_t PktCounter;
 
 // ============================== General ======================================
 int main(void) {
@@ -26,11 +27,23 @@ int main(void) {
 
     SetState(StateList);
 
-    while (1) {
+    uint16_t FTimer;
+    DelayReset(&FTimer);
+
+    while(1) {
         wdt_reset();    // Reset watchdog
         Keys_Task();
-        //CC_Task();
-        //LED_Task();
+        CC_Task();
+
+        if(EState == StateSearch) {
+            if(DelayElapsed(&FTimer, 500)) {
+                LCD_PrintString(5, 2, "   ", false);
+                LCD_PrintUint(5, 2, PktCounter);
+                PktCounter = 0;
+            }
+        }
+        //PktCounter++;
+
         //Battery_Task();
     } // while
 }
@@ -50,14 +63,16 @@ FORCE_INLINE void GeneralInit(void) {
     KeysInit();
     sei();
 
-
     // LED init
     //LED_DDR |= (1<<LED_P);
 
     // CC init
-//    CC_Init();
-//    CC_SetChannel(CORMA_CHANNEL);
-//    CC_SetAddress(4);   //Never changes in CC itself
+    PktCounter = 0;
+    CC_Init();
+    //CC_SetChannel(0);
+    CC_SetAddress(4);   //Never changes in CC itself
+    CC_ENTER_RX();
+
 
     // Setup Timer1: cycle timings
 /*
@@ -74,15 +89,14 @@ FORCE_INLINE void GeneralInit(void) {
 }
 
 // ============================== Tasks ========================================
-//void CC_Task (void) {
-/*
+void CC_Task (void) {
+    //PktCounter++;
     // Handle packet if received
     if (CC.NewPacketReceived) {
         CC.NewPacketReceived = false;
-        EVENT_NewPacket();
+        //EVENT_NewPacket();
+        PktCounter++;
     }
-
-    // Check if sleeping
 
     // Do with CC what needed
     CC_GET_STATE();
@@ -94,16 +108,16 @@ FORCE_INLINE void GeneralInit(void) {
             CC_FLUSH_TX_FIFO();
             break;
 
+/*
         case CC_STB_RX:
             PORTA |= (1<<PA4);
             break;
+*/
 
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
-            PORTA &= ~(1<<PA4);
             break;
     }//Switch
-*/
-//}
+}
 
 /*
 FORCE_INLINE void EVENT_NewPacket(void) {
@@ -182,6 +196,12 @@ ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
 
 */
 
+// ============================== Events =======================================
+FORCE_INLINE void EVENT_NewPacket(void) {
+   //PktCounter++;
+}
+
+// ========================= Service routines ==================================
 void eeReadLocket(uint8_t ID) {
     uint16_t eeaddr = LOCKET_EE_ADDR;
     uint8_t i=0;

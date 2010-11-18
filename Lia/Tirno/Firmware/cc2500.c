@@ -7,37 +7,47 @@
 #include <avr/io.h>
 #include <inttypes.h>
 #include <util/atomic.h>
-#include <util/delay.h>
-#include "common/cc2500.h"
-#include "time_utils.h"
-
-#include "../corma.h"
-#include "../motor.h"
+#include "cc2500.h"
 
 struct CC_t CC;
 
 void CC_Init(void){
     // ******** Hardware init section *******
     // Interrupts
+
     CC_GDO0_IRQ_DISABLE();
+#ifdef __AVR_ATmega88__
+    EICRA |= (1<<ISC01)|(0<<ISC00); // Falling edge generates an interrupt
+    EIFR  |= (1<<INTF0);            // Clear IRQ flag
+#elif defined __AVR_ATmega16A__
     MCUCSR &= ~(1<<ISC2);   // Falling edge generates an interrupt
     GIFR   |= (1<<INTF2);   // Clear IRQ flag
+#endif
     // Setup ports
     CC_DDR  &= ~((1<<CC_GDO0)|(1<<CC_MISO));
     CC_DDR  |=   (1<<CC_CS)|(1<<CC_MOSI)|(1<<CC_SCLK);
     CC_PORT |=   (1<<CC_GDO0)|(CC_MISO); // Enable pull-ups
     // Set initial values
-    CC_SCLK_LO;
-    CC_CS_HI;
+    CC_SCLK_LO();
+    CC_CS_HI();
+#ifdef __AVR_ATmega88__
+    // Setup UART as SPI: all the same as above
+    UCSR0C = (1<<UMSEL01)|(1<<UMSEL00)|(0<<UDORD0)|(0<<UCPHA0)|(0<<UCPOL0);
+    UCSR0B = (1<<TXEN0)|(1<<RXEN0);
+    UBRR0 = 1;
+#elif defined __AVR_ATmega16A__
     // Setup SPI: MSB first, master, SCK idle low, f/4
     SPCR = (0<<SPIE)|(1<<SPE)|(0<<DORD)|(1<<MSTR)|(0<<CPOL)|(0<<CPHA)|(0<<SPR1)|(0<<SPR0);
-    SPSR = (1<<SPI2X); 
+    SPSR = (1<<SPI2X);
+#endif
 
     // ******* Firmware init section *******
     CC.NewPacketReceived = false;
     CC_RESET();
     CC_FLUSH_RX_FIFO();
     CC_RfConfig();
+
+    CC_GDO0_IRQ_ENABLE();
 }
 
 FORCE_INLINE void CC_SetChannel(uint8_t AChannel){
@@ -51,73 +61,63 @@ FORCE_INLINE void CC_SetAddress(uint8_t AAddress) {
     CC_WriteRegister(CC_ADDR, AAddress);
 }
 
-FORCE_INLINE void CC_EnterRX(void) {
-    CC_ENTER_RX();
-    CC_GDO0_IRQ_ENABLE();   // Enable RX interrupt
-}
-FORCE_INLINE void CC_EnterTX(void) {
-    CC_GDO0_IRQ_DISABLE();
-    CC_ENTER_TX();
-}
-
-
 // ============================= Inner use =====================================
-void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
+FORCE_INLINE void CC_WriteBurst(uint8_t ARegAddr, uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        CC_CS_LO;                                                   // Start transmission
-        while (CC_MISO_IS_HI());                                      // Wait for chip to become ready
+        CC_CS_LO();                                                   // Start transmission
+        while (CC_MISO_IS_HI());                                    // Wait for chip to become ready
         CC_WriteByte(ARegAddr|CC_WRITE_FLAG|CC_BURST_FLAG);         // Address with write & burst flags
         for (uint8_t i=0; i<ALength; i++) CC_WriteByte(*PData++);   // Write bytes themselves
-        CC_CS_HI;                                                   // End transmission
+        CC_CS_HI();                                                   // End transmission
     } // atomic
 }
-void CC_WriteBurst_P(uint8_t ARegAddr, prog_uint8_t *PData, uint8_t ALength){
+FORCE_INLINE void CC_WriteBurst_P(uint8_t ARegAddr, prog_uint8_t *PData, uint8_t ALength){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        CC_CS_LO;                                                   // Start transmission
+        CC_CS_LO();                                                   // Start transmission
         while (CC_MISO_IS_HI());                                      // Wait for chip to become ready
         CC_WriteByte(ARegAddr|CC_WRITE_FLAG|CC_BURST_FLAG);         // Address with write & burst flags
         for (uint8_t i=0; i<ALength; i++) CC_WriteByte(pgm_read_byte (PData++));   // Write bytes themselves
-        CC_CS_HI;                                                   // End transmission
+        CC_CS_HI();                                                   // End transmission
     } // atomic
 }
 
-void CC_WriteTX (uint8_t *PData, uint8_t ALength){
+FORCE_INLINE void CC_WriteTX (uint8_t *PData, uint8_t ALength){
     CC_WriteBurst(CC_FIFO, PData, ALength);
 }
 FORCE_INLINE void CC_ReadRX  (uint8_t *PData, uint8_t ALength){
-    CC_CS_LO;                                                   // Start transmission
-    while (CC_MISO_IS_HI());                                      // Wait for chip to become ready
+    CC_CS_LO();                                                   // Start transmission
+    while (CC_MISO_IS_HI());                                    // Wait for chip to become ready
     CC_WriteByte(CC_FIFO|CC_READ_FLAG|CC_BURST_FLAG);           // Address with read & burst flags
     for (uint8_t i=0; i<ALength; i++) *PData++ = CC_ReadByte(); // Write bytes themselves
-    CC_CS_HI;                                                   // End transmission
+    CC_CS_HI();                                                   // End transmission
 }
 
 uint8_t CC_ReadRegister (uint8_t ARegAddr){
     uint8_t FReply;
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        CC_CS_LO;                               // Start transmission
+        CC_CS_LO();                               // Start transmission
         while (CC_MISO_IS_HI());                // Wait for chip to become ready
         CC_WriteByte(ARegAddr | CC_READ_FLAG);  // Transmit header byte: set READ bit and BURST flag
-        FReply = CC_ReadByte();         // Read reply
-        CC_CS_HI;                               // End transmission
+        FReply = CC_ReadByte();                 // Read reply
+        CC_CS_HI();                               // End transmission
     }//atomic
     return FReply;
 }
 void CC_WriteRegister (uint8_t ARegAddr, uint8_t AData){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        CC_CS_LO;               // Start transmission
+        CC_CS_LO();               // Start transmission
         while (CC_MISO_IS_HI());// Wait for chip to become ready
         CC_WriteByte(ARegAddr); // Transmit header byte
         CC_WriteByte(AData);    // Write data
-        CC_CS_HI;               // End transmission
+        CC_CS_HI();               // End transmission
     }//atomic
 }
 void CC_WriteStrobe (uint8_t AStrobe){
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE){
-        CC_CS_LO;               // Start transmission
+        CC_CS_LO();               // Start transmission
         while (CC_MISO_IS_HI());// Wait for chip to become ready
         CC.State = CC_ReadWriteByte(AStrobe);  // Write strobe
-        CC_CS_HI;               // End transmission
+        CC_CS_HI();               // End transmission
         CC.State &= 0b01110000; // Mask needed bits
     } // atomic
 }
@@ -167,27 +167,31 @@ void CC_RfConfig(void){
 
 
 // ============================= Low level =====================================
-uint8_t CC_ReadWriteByte(uint8_t AByte){
+uint8_t CC_ReadWriteByte(uint8_t AByte) {
+#ifdef __AVR_ATmega88__
+    UDR0 = AByte;	// Start transmission
+    // Wait for transmission to complete
+    //while (bit_is_clear (UCSR0A, TXC0));    // Wait until transmission completed
+    while (bit_is_clear (UCSR0A, RXC0));    // Wait until reception completed
+    uint8_t Response = UDR0;
+    return Response;
+#elif defined __AVR_ATmega16A__
     SPDR = AByte;	// Start transmission
     // Wait for transmission to complete
     while (bit_is_clear (SPSR, SPIF));
     uint8_t Response = SPDR;
     return Response;
+#endif
 }
 
 // ============================ Interrupts =====================================
-ISR(INT2_vect) {
-    PORTA |= (1<<PA0); // DEBUG
+ISR(CC_IRQ_vect) {    // TODO: Carefully rewrite this handler, as it can easily destroy memory in case of RX_FIFO is bigger than PKT_LENGTH. Replace GDO_0 behavior, too.
+    //PORTC |= (1<<PC0); // DEBUG
     // Packet has been successfully recieved
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
-        //EVENT_NewPacket();
-        
     }
-    //
-    PORTA &= ~(1<<PA0);
-
-    
+    //PORTC &= ~(1<<PC0);
 }
