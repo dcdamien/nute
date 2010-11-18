@@ -56,7 +56,8 @@ void LCD_GotoXY(uint8_t x, uint8_t y);
 void LCD_GotoXYstr(uint8_t x, uint8_t y);
 
 // Special
-void LCD_DrawGauge(const uint8_t y);
+#define GAUGE_Y     4
+void LCD_DrawGauge(void);
 void LCD_GaugeValue(const uint8_t AValue);
 
 // Inner use

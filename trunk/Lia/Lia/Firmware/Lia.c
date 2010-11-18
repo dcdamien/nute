@@ -41,10 +41,15 @@ int main(void) {
     UARTSendString_P(PSTR("Lia is here\r"));
     #endif
 
+    uint16_t FTimer;
+    DelayReset(&FTimer);
+
     sei(); 
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
+
+        if(DelayElapsed(&FTimer, 500)) LED_OFF();
     } // while
 }
 
@@ -57,7 +62,7 @@ FORCE_INLINE void GeneralInit(void) {
     DelayInit();    // Time counter
     // LED
     #ifndef DEBUG_UART
-    //LED_DDR |= 1<<LED_P;
+    LED_DDR |= 1<<LED_P;
     LED_OFF();
     #endif
 
@@ -70,14 +75,17 @@ FORCE_INLINE void GeneralInit(void) {
 }
 
 // ============================== Tasks ========================================
-void CC_Task (void) {
+#define CC_RX_PERIOD    270
+#define CC_RX_DURATION  200
+
+void CC_Task(void) {
     // Handle packet if received
-/*
     if (CC.NewPacketReceived) {
         CC.NewPacketReceived = false;
         EVENT_NewPacket();
+        return;
     }
-
+/*
     // If in sleep mode, check if it is time to wake-up; otherwise return
     if (CC_Srv.DeepSleep) {
         if (DelayElapsed(&CC_Srv.Timer, CC_RX_OFF_DELAY)) CC_Srv.DeepSleep = false;
@@ -95,20 +103,14 @@ void CC_Task (void) {
             break;
 
         case CC_STB_IDLE:
-            // Transmit at once if IDLE
-            if(DelayElapsed(&CC_Srv.Timer, 270)) {
-                // Prepare Call packet
-                CC.TX_Pkt.Address = 0;      // Broadcast
-                CC.TX_Pkt.CommandID = PKT_ID_CALL;
-                CC.TX_Pkt.Data[0] = 0;
-                CC.TX_Pkt.Data[1] = 0;
-
-                CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
-                CC_ENTER_TX();
-                LED_TOGGLE();
-            }
+            // Enter RX if time has come
+            if(DelayElapsed(&CC_Srv.Timer, CC_RX_PERIOD)) CC_ENTER_RX();
             break;
 
+        case CC_STB_RX:
+            // Check if time to get out of RX
+            if(DelayElapsed(&CC_Srv.Timer, CC_RX_DURATION)) CC_ENTER_IDLE();
+            break;
 
 /*
  * // Idle mode means that CC just has awaken
@@ -140,9 +142,19 @@ void CC_Task (void) {
 
 
 // ============================== Events =======================================
-/*
 FORCE_INLINE void EVENT_NewPacket(void) {
-    #ifdef DEBUG_UART
+    if(CC.RX_Pkt.CommandID == PKT_ID_CALL) {
+        // Send Call packet
+        CC.TX_Pkt.Address = 0;      // Broadcast
+        CC.TX_Pkt.CommandID = PKT_ID_CALL;
+        CC.TX_Pkt.Data[0] = 0;
+        CC.TX_Pkt.Data[1] = 0;
+        CC_WriteTX (&CC.TX_PktArray[0], CC_PKT_LENGTH); // Write bytes to FIFO
+        CC_ENTER_TX();
+    }
+    DelayReset(&CC_Srv.Timer);
+
+#ifdef DEBUG_UART
     UARTSendUint(CC.RX_Pkt.PacketID);
     UARTSend(' ');
     UARTSendAsHex(CC.RX_Pkt.Data[1]);
@@ -159,5 +171,3 @@ FORCE_INLINE void EVENT_NewPacket(void) {
     UARTNewLine();
     #endif
 }
-
-*/
