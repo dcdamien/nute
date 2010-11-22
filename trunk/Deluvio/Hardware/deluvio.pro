@@ -1,4 +1,4 @@
-update=09/11/2010 23:50:40
+update=22/11/2010 03:12:18
 version=1
 last_client=pcbnew
 [general]
@@ -54,9 +54,9 @@ NetIExt=net
 EquName1=devcms
 [pcbnew]
 version=1
-PadDrlX=320
-PadDimH=600
-PadDimV=600
+PadDrlX=1260
+PadDimH=1969
+PadDimV=1969
 BoardThickness=630
 SgPcb45=1
 TxtPcbV=800
@@ -68,7 +68,7 @@ VEgarde=100
 DrawLar=150
 EdgeLar=150
 TxtLar=120
-MSegLar=150
+MSegLar=50
 LastNetListRead=deluvio.net
 [pcbnew/libraries]
 LibDir=
