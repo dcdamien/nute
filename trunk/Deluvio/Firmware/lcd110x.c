@@ -16,12 +16,14 @@ void LCD_Init(void) {
     _delay_ms(7);
     LCD_XRES_HI();
     // Initial commands
-    LCD_WriteCmd(0xA4);   // Set normal display mode
-    LCD_WriteCmd(0x2F);   // Charge pump on
-    LCD_WriteCmd(0x40);   // Set start row address = 0
-    //LCD_Write(LCD_CMD, 0xC8); // mirror Y axis
-    //LCD_Write(LCD_CMD, 0xA1); // Mirror X axis
-    LCD_WriteCmd(0xAF);   // display ON
+    LCD_WriteCmd(0xA4); // Set normal display mode
+    LCD_WriteCmd(0x2F); // Charge pump on
+    LCD_WriteCmd(0x40); // Set start row address = 0
+#ifdef LCD_UPSIDEDOWN
+    LCD_WriteCmd(0xC8); // mirror Y axis
+    LCD_WriteCmd(0xA1); // Mirror X axis
+#endif
+    LCD_WriteCmd(0xAF); // display ON
     LCD_Clear(); // clear LCD
 }
 

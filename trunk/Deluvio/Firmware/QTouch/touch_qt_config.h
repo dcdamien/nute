@@ -35,10 +35,6 @@
 #ifndef _TOUCH_CONFIG_H_
 #define _TOUCH_CONFIG_H_
 
-	
-
-
-
 /* 
 * Number of Channels(dependent on the library used).Please refer to the user guide
 * more information on selecting the number of channels.
