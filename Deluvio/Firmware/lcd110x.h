@@ -25,6 +25,10 @@
 #define LCD_XCS     PD7
 #define LCD_BCKLT   PD6
 
+// Uncomment this line, if image need to be turned uside down
+#define LCD_UPSIDEDOWN
+
+// =========================== Pseudo functions ================================
 #define LCD_SCLK_HI()   LCD_PORT |=  (1<<LCD_SCLK)
 #define LCD_SCLK_LO()   LCD_PORT &= ~(1<<LCD_SCLK)
 #define LCD_XCS_HI()    LCD_PORT |=  (1<<LCD_XCS)

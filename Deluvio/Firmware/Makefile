@@ -10,7 +10,7 @@ SRC = $(TARGET).c \
 delay_util.c \
 lcd110x.c \
 lcd_font.c \
-
+sensors.c 
 #keys.c \
 #menu.c \
 # battery.c
@@ -171,9 +171,7 @@ EXTRALIBDIRS =
 #LDFLAGS += $(patsubst %,-L%,$(EXTRALIBDIRS))
 #LDFLAGS = $(PRINTF_LIB) $(MATH_LIB)
 #LDFLAGS += -T linker_script.x
-
 LDFLAGS = -mmcu=$(MCU)
-LDFLAGS +=  -Wl,-Map=avr5g1_qt_example.map
 
 
 #---------------- Debugging Options ----------------
