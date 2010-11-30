@@ -2,7 +2,7 @@
  * File:   lcd110x.h
  * Author: Kreyl Laurelindo
  *
- * Created on 24 Сентябрь 2010 г., 14:25
+ * Created on 24 пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ 2010 пїЅ., 14:25
  */
 
 #ifndef LCD110X_H
@@ -22,7 +22,8 @@
 #define LCD_SCLK    PD2
 #define LCD_SDA     PD3
 #define LCD_XRES    PD4
-#define LCD_XCS     PD5
+#define LCD_XCS     PD7
+#define LCD_BCKLT   PD6
 
 #define LCD_SCLK_HI()   LCD_PORT |=  (1<<LCD_SCLK)
 #define LCD_SCLK_LO()   LCD_PORT &= ~(1<<LCD_SCLK)
@@ -32,6 +33,10 @@
 #define LCD_XRES_LO()   LCD_PORT &= ~(1<<LCD_XRES)
 #define LCD_SDA_HI()    LCD_PORT |=  (1<<LCD_SDA)
 #define LCD_SDA_LO()    LCD_PORT &= ~(1<<LCD_SDA)
+
+#define LCD_BCKLT_OFF() LCD_PORT |=  (1<<LCD_BCKLT)
+#define LCD_BCKLT_ON()  LCD_PORT &= ~(1<<LCD_BCKLT)
+
 
 #define LCD_CMD     0
 #define LCD_DATA    1

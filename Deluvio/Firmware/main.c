@@ -5,27 +5,73 @@
  * Created on 29 Ноябрь 2010 г., 19:48
  */
 
+#define QTOUCH_STUDIO_MASKS	1
+	#define NUMBER_OF_PORTS	1
+
+	#define SNS1	B
+	#define SNSK1	B
+
 #include "main.h"
 #include "touch_qt_config.h"
 #include "touch_api.h"
 #include <avr/interrupt.h>
+#include "lcd110x.h"
+
+/*----------------------------------------------------------------------------
+                                extern variables
+----------------------------------------------------------------------------*/
+/* This configuration data structure parameters if needs to be changed will be
+   changed in the qt_set_parameters function */
+extern qt_touch_lib_config_data_t qt_config_data;
+/* touch output - measurement data */
+extern qt_touch_lib_measure_data_t qt_measure_data;
+/* Get sensor delta values */
+extern int16_t qt_get_sensor_delta( uint8_t sensor);
+#ifdef QTOUCH_STUDIO_MASKS
+extern TOUCH_DATA_T SNS_array[2][2];
+extern TOUCH_DATA_T SNSK_array[2][2];
+#endif
+
+/* Output can be observed in the watch window using this pointer */
+qt_touch_lib_measure_data_t *pqt_measure_data = &qt_measure_data;
+
+
 
 /* flag set by timer ISR when it's time to measure touch */
 static volatile uint8_t time_to_measure_touch = 0u;
 
+volatile bool POn;
 /* current time, set by timer ISR */
 static volatile uint16_t current_time_ms_touch = 0u;
 /* Timer period in msec. */
 uint16_t qt_measurement_period_msec = 25u;
 
+
+
 int main(void) {
+    #ifdef QTOUCH_STUDIO_MASKS
+    SNS_array[0][0]= 0x55;
+    SNS_array[0][1]= 0x0;
+    SNS_array[1][0]= 0x0;
+    SNS_array[1][1]= 0x0;
+
+    SNSK_array[0][0]= 0xaa;
+    SNSK_array[0][1]= 0x0;
+    SNSK_array[1][0]= 0x0;
+    SNSK_array[1][1]= 0x0;
+    #endif
+
+    
+    
     GeneralInit();
+    
+    LCD_PrintString_P(0, 2, PSTR("Deluvio"), false); 
     /*status flags to indicate the re-burst for library*/
     uint16_t status_flag = 0u;
     uint16_t burst_flag = 0u;
 
     sei();
-
+    
     while(1) {
         if(time_to_measure_touch) {
             time_to_measure_touch = false;
@@ -34,10 +80,17 @@ int main(void) {
                 status_flag = qt_measure_sensors(current_time_ms_touch);
                 burst_flag  = status_flag & QTLIB_BURST_AGAIN;
             } while (burst_flag);
+                if (POn) PumpOn(Pump4);
+                else PumpOff(Pump4);
+                POn = !POn;
         } // if(time_to_measure_touch)
 
-        if(SensorIsTouched(0)) PumpOn(0);
-        else PumpOff(0);
+        if(SensorIsTouched(3)) 
+            LCD_BCKLT_ON();
+        else 
+            LCD_BCKLT_OFF();
+            //PumpOn(0);
+        //else PumpOff(0);
     } // while(1)
 }
 
@@ -46,7 +99,9 @@ FORCE_INLINE void GeneralInit(void) {
 
     // Pumps
     PUMP_DDR |= (1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P);
-    //
+    
+    LCD_Init();
+    
 }
 
 // Pumps
@@ -69,6 +124,8 @@ void PumpOff(enum pump_t APump) {
 
 // QTouch
 void QTouchInit(void) {
+    SFIOR |= (1<<PUD);
+    
     // Configure the Sensors as keys
     qt_enable_key( CHANNEL_0, AKS_GROUP_1, 10u, HYST_6_25 );
     qt_enable_key( CHANNEL_1, AKS_GROUP_1, 10u, HYST_6_25 );

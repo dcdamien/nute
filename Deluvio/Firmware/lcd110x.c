@@ -7,7 +7,8 @@
 
 // ============================ Implementation =================================
 void LCD_Init(void) {
-    LCD_DDR |= (1<<LCD_SCLK)|(1<<LCD_XCS)|(1<<LCD_XRES)|(1<<LCD_SDA);
+    LCD_DDR |= (1<<LCD_SCLK)|(1<<LCD_XCS)|(1<<LCD_XRES)|(1<<LCD_SDA)|(1<<LCD_BCKLT);
+    LCD_BCKLT_OFF();
     LCD_SCLK_LO();
     LCD_XCS_HI();
     // Reset display
