@@ -10,8 +10,9 @@ SRC = $(TARGET).c \
 delay_util.c \
 lcd110x.c \
 lcd_font.c \
-sensors.c 
-#keys.c \
+sensors.c \
+beep.c \
+time.c 
 #menu.c \
 # battery.c
 
