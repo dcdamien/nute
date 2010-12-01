@@ -5,30 +5,33 @@
 #include "touch_qt_config.h"
 #include "touch_api.h"
 
+#include "delay_util.h"
 
-/* This configuration data structure parameters if needs to be changed will be
-   changed in the qt_set_parameters function */
+// ============================= Variables =====================================
 extern qt_touch_lib_config_data_t qt_config_data;
 /* touch output - measurement data */
 extern qt_touch_lib_measure_data_t qt_measure_data;
 /* Get sensor delta values */
-extern int16_t qt_get_sensor_delta( uint8_t sensor);
+//extern int16_t qt_get_sensor_delta( uint8_t sensor);
+/* Output can be observed in the watch window using this pointer */
+qt_touch_lib_measure_data_t *pqt_measure_data = &qt_measure_data;
+/* current time, set by timer ISR */
+static volatile uint16_t current_time_ms_touch = 0u;
 
 #ifdef QTOUCH_STUDIO_MASKS
 extern TOUCH_DATA_T SNS_array[2][2];
 extern TOUCH_DATA_T SNSK_array[2][2];
 #endif
 
-/* Output can be observed in the watch window using this pointer */
-qt_touch_lib_measure_data_t *pqt_measure_data = &qt_measure_data;
-/* flag set by timer ISR when it's time to measure touch */
-static volatile uint8_t time_to_measure_touch = 0u;
-/* current time, set by timer ISR */
-static volatile uint16_t current_time_ms_touch = 0u;
-/* Timer period in msec. */
-uint16_t qt_measurement_period_msec = 25u;
+struct {
+    bool KeyDownPressed:1;
+    bool KeyUpPressed:1;
+    bool KeyMenuPressed:1;
+    bool KeyAquaPressed:1;
+    uint16_t Timer;
+} EKeys;
 
-
+// =========================== Implementation ==================================
 void QTouchInit(void) {
     SFIOR |= (1<<PUD);
     #ifdef QTOUCH_STUDIO_MASKS
@@ -61,23 +64,11 @@ void QTouchInit(void) {
 
     qt_init_sensing();  // initialise touch sensing
 
-    // configure timer ISR to fire regularly
-    /*  set timer compare value (how often timer ISR will fire) */
-    OCR1A = ( TICKS_PER_MS * qt_measurement_period_msec);
-    /*  enable timer ISR */
-    TIMSK |= (1u << OCIE1A);
-    /*  timer prescaler = system clock / 8  */
-    TCCR1B |= (1u << CS11);
-    /*  timer mode = CTC (count up to compare value, then reset)    */
-    TCCR1B |= (1u << WGM12);
-
-
     /*  Address to pass address of user functions   */
     /*  This function is called after the library has made capacitive measurements,
     *   but before it has processed them. The user can use this hook to apply filter
     *   functions to the measured signal values.(Possibly to fix sensor layout faults)    */
     qt_filter_callback = 0;
-
 }
 
 void Task_Sensors(void) {
@@ -85,26 +76,42 @@ void Task_Sensors(void) {
     uint16_t status_flag = 0u;
     uint16_t burst_flag = 0u;
 
-    if(time_to_measure_touch) {
-        time_to_measure_touch = false;
+    if(DelayElapsed(&EKeys.Timer, QT_MEASUREMENT_PERIOD)) {
+        // update the current time 
+        current_time_ms_touch += QT_MEASUREMENT_PERIOD;
         do {
-            //  one time measure touch sensors
             status_flag = qt_measure_sensors(current_time_ms_touch);
             burst_flag  = status_flag & QTLIB_BURST_AGAIN;
         } while (burst_flag);
+
+        // ============= Check if key event triggered =========
+        if(SensorIsTouched(3) && !EKeys.KeyDownPressed) {
+            EKeys.KeyDownPressed = true;
+            EVENT_KeyDown();
+        }
+        else if(!SensorIsTouched(3) && EKeys.KeyDownPressed) EKeys.KeyDownPressed = false;
+
+        if(SensorIsTouched(2) && !EKeys.KeyUpPressed) {
+            EKeys.KeyUpPressed = true;
+            EVENT_KeyUp();
+        }
+        else if(!SensorIsTouched(2) && EKeys.KeyUpPressed) EKeys.KeyUpPressed = false;
+
+        if(SensorIsTouched(1) && !EKeys.KeyMenuPressed) {
+            EKeys.KeyMenuPressed = true;
+            EVENT_KeyMenu();
+        }
+        else if(!SensorIsTouched(1) && EKeys.KeyMenuPressed) EKeys.KeyMenuPressed = false;
+
+        if(SensorIsTouched(0) && !EKeys.KeyAquaPressed) {
+            EKeys.KeyAquaPressed = true;
+            EVENT_KeyAqua();
+        }
+        else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) EKeys.KeyAquaPressed = false;
+
     } // if(time_to_measure_touch)
 }
 
 FORCE_INLINE bool SensorIsTouched(uint8_t ASensor) {
     return (qt_measure_data.qt_touch_status.sensor_states[0] & (1<<(ASensor)));
 }
-
-
-ISR(TIMER1_COMPA_vect) {
-    /*  set flag: it's time to measure touch    */
-    time_to_measure_touch = 1u;
-
-    /*  update the current time */
-    current_time_ms_touch += qt_measurement_period_msec;
-}
-

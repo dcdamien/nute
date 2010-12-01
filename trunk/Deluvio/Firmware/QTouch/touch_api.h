@@ -171,7 +171,7 @@ Clock speed (MHz) Cycle time (us) Suitable charge times
 *  TICKS_PER_MS = (CLK_FREQ/TIMER_PRESCALER)*(1/1000)
 *
 */
-#define TICKS_PER_MS                500u
+//#define TICKS_PER_MS                500u
 
 /* Initialization values for the Qtouch library parameters. */
 /*
