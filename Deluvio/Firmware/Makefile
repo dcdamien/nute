@@ -12,8 +12,8 @@ lcd110x.c \
 lcd_font.c \
 sensors.c \
 beep.c \
-time.c 
-#menu.c \
+time.c \
+menu.c 
 # battery.c
 
 

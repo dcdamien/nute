@@ -60,6 +60,7 @@ void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInve
 void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber);
 void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber);
 
+void LCD_PrintTime(uint8_t x, uint8_t y);
 
 void LCD_GotoXY(uint8_t x, uint8_t y);
 void LCD_GotoXYstr(uint8_t x, uint8_t y);

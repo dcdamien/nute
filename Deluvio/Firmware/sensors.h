@@ -2,7 +2,7 @@
  * File:   sensors.h
  * Author: Kreyl Laurelindo
  *
- * Created on 30 ������ 2010 �., 15:43
+ * Created on 30 ?????? 2010 ?., 15:43
  */
 
 #ifndef SENSORS_H
@@ -10,6 +10,7 @@
 
 #include <stdbool.h>
 #include <inttypes.h>
+#include "menu.h"
 
 // ================================= Defines ===================================
 // Ports & pins
@@ -21,6 +22,17 @@
 // Measurement period in msec.
 #define QT_MEASUREMENT_PERIOD   25
 
+// ========================= Variables & types =================================
+struct Keys_t {
+    bool KeyDownPressed:1;
+    bool KeyUpPressed:1;
+    bool KeyMenuPressed:1;
+    bool KeyAquaPressed:1;
+    uint16_t Timer;
+};
+
+extern struct Keys_t EKeys;
+
 // ================================ Prototypes =================================
 void QTouchInit(void);
 bool SensorIsTouched(uint8_t ASensor);
@@ -31,6 +43,7 @@ void EVENT_KeyDown(void);
 void EVENT_KeyUp(void);
 void EVENT_KeyMenu(void);
 void EVENT_KeyAqua(void);
+void EVENT_AnyKey(void);    // triggered first if any key pressed
 //void EVENT_KeyAquaDepressed(void);
 
 

@@ -2,9 +2,8 @@
  * File:   main.c
  * Author: Kreyl Laurelindo
  *
- * Created on 29-11-2010 Рі., 19:48
+ * Created on 29-11-2010 г., 19:48
  */
-
 
 #include "main.h"
 #include <avr/interrupt.h>
@@ -13,18 +12,23 @@
 #include "delay_util.h"
 #include "beep.h"
 #include "time.h"
+#include "menu.h"
 
 int main(void) {
     GeneralInit();
     
-    LCD_PrintString_P(0, 2, PSTR("Deluvio"), false); 
+    //LCD_PrintString_P(0, 2, PSTR("Ага"), false);
     //Beep(2);
 
     sei();
+
+    SetState(StIdle);
     
     while(1) {
         Task_Sensors();
         Task_Beep();
+        Task_Time();
+        Task_Menu();
     } // while(1)
 }
 
@@ -47,48 +51,12 @@ void PumpOn(enum pump_t APump) {
         case Pump4: PUMP_PORT |= (1<<PUMP4P);
     }
 }
-void PumpOff(enum pump_t APump) {
-    switch (APump) {
-        case Pump1: PUMP_PORT &= ~(1<<PUMP1P);
-        case Pump2: PUMP_PORT &= ~(1<<PUMP2P);
-        case Pump3: PUMP_PORT &= ~(1<<PUMP3P);
-        case Pump4: PUMP_PORT &= ~(1<<PUMP4P);
-    }
-}
-
-// Time
-void PrintTime(uint8_t x, uint8_t y) {
-    LCD_GotoXYstr(x, y);
-    
-}
 
 // ============================= Events ========================================
-// Key events
-void EVENT_KeyDown(void) {
-    Beep(1);
-    LCD_GotoXY(0,0);
-    LCD_DrawChar('D', false);
-}
-void EVENT_KeyUp(void) {
-    Beep(1);
-    LCD_GotoXY(0,0);
-    LCD_DrawChar('U', false);
-}
-void EVENT_KeyMenu(void) {
-    Beep(1);
-    LCD_GotoXY(0,0);
-    LCD_DrawChar('M', false);
-}
-void EVENT_KeyAqua(void) {
-    Beep(1);
-    LCD_GotoXY(0,0);
-    LCD_DrawChar('A', false);
-}
-
 // Time events
-void EVENT_NewHour(void) {
-
-}
 void EVENT_NewMinute(void) {
-    
+    if(EState == StIdle) {
+        LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y);
+        if(!Time.IsSetCorrectly) LCD_PrintString_P(0, PRINT_TIME_Y+2, PSTR("Установите время"), false);
+    }
 }
