@@ -2,6 +2,7 @@
 #include "common.h"
 #include "lcd_font.h"
 #include <util/delay.h>
+#include "time.h"
 
 // ============================= Types & vars ==================================
 
@@ -89,6 +90,30 @@ void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber) {
         LCD_PrintUint(x+1, y, -ANumber);
     }
     else LCD_PrintUint(x, y, -ANumber);
+}
+
+void LCD_PrintTime(uint8_t x, uint8_t y) {
+    LCD_GotoXYstr(x, y);
+    // Print hours
+    uint8_t t = Time.Hour;
+    uint8_t digit = '0';
+    while(t >= 10) {
+        digit++;
+        t -= 10;
+    }
+    LCD_DrawChar(digit, false);
+    LCD_DrawChar('0'+t, false);
+    // Print delimiter
+    LCD_DrawChar(':', false);
+    // Print minutes
+    t = Time.Minute;
+    digit = '0';
+    while(t >= 10) {
+        digit++;
+        t -= 10;
+    }
+    LCD_DrawChar(digit, false);
+    LCD_DrawChar('0'+t, false);
 }
 
 // ============================= Special =======================================

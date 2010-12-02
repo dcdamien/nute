@@ -23,13 +23,7 @@ extern TOUCH_DATA_T SNS_array[2][2];
 extern TOUCH_DATA_T SNSK_array[2][2];
 #endif
 
-struct {
-    bool KeyDownPressed:1;
-    bool KeyUpPressed:1;
-    bool KeyMenuPressed:1;
-    bool KeyAquaPressed:1;
-    uint16_t Timer;
-} EKeys;
+struct Keys_t EKeys;
 
 // =========================== Implementation ==================================
 void QTouchInit(void) {
@@ -87,24 +81,28 @@ void Task_Sensors(void) {
         // ============= Check if key event triggered =========
         if(SensorIsTouched(3) && !EKeys.KeyDownPressed) {
             EKeys.KeyDownPressed = true;
+            EVENT_AnyKey();
             EVENT_KeyDown();
         }
         else if(!SensorIsTouched(3) && EKeys.KeyDownPressed) EKeys.KeyDownPressed = false;
 
         if(SensorIsTouched(2) && !EKeys.KeyUpPressed) {
             EKeys.KeyUpPressed = true;
+            EVENT_AnyKey();
             EVENT_KeyUp();
         }
         else if(!SensorIsTouched(2) && EKeys.KeyUpPressed) EKeys.KeyUpPressed = false;
 
         if(SensorIsTouched(1) && !EKeys.KeyMenuPressed) {
             EKeys.KeyMenuPressed = true;
+            EVENT_AnyKey();
             EVENT_KeyMenu();
         }
         else if(!SensorIsTouched(1) && EKeys.KeyMenuPressed) EKeys.KeyMenuPressed = false;
 
         if(SensorIsTouched(0) && !EKeys.KeyAquaPressed) {
             EKeys.KeyAquaPressed = true;
+            EVENT_AnyKey();
             EVENT_KeyAqua();
         }
         else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) EKeys.KeyAquaPressed = false;
