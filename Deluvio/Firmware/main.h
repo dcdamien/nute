@@ -32,7 +32,7 @@
 #define PUMP_MAX_DURATION   3600
 
 enum PumpDelayMode_t {ModeDays, ModeHours};
-enum PumpState_t {PmpIdle, PmpMustPump, PmpPumping};
+enum PumpState_t {PmpIdle, PmpMustPump, PmpBeeping, PmpPumping};
 struct pump_t {
     bool Enabled;
     enum PumpDelayMode_t DelayMode;
@@ -41,7 +41,7 @@ struct pump_t {
     uint8_t StartHour;
     uint16_t Duration;
     enum PumpState_t State;
-    uint16_t SecondCounter;
+    uint16_t Counter;
 };
 
 extern struct pump_t Pumps[PUMP_COUNT];

@@ -50,8 +50,8 @@ FORCE_INLINE void GeneralInit(void) {
     }
     // DEBUG
     Pumps[0].Enabled = true;
-    Pumps[0].Duration = 1800;
-    Pumps[0].Period = 3;
+    Pumps[0].Duration = 300;
+    Pumps[0].Period = 1;
     Pumps[0].PeriodLeft = 1;
     Pumps[0].DelayMode = ModeHours;
 }
@@ -76,20 +76,29 @@ void PumpOffAll(void) {
 
 FORCE_INLINE void Task_Pump(void) {
     for(uint8_t i=0; i<PUMP_COUNT; i++) {
-        // Switch on needed pump
+        // Beep if time to pump
         if(Pumps[i].Enabled && (Pumps[i].State == PmpMustPump) && !IsPumping) {
-            Pumps[i].State = PmpPumping;
-            // Reset second counter
-            Time.SecondPassed = false;
-            Pumps[i].SecondCounter = 0;
-            PumpOn(i+1);
+            Pumps[i].State = PmpBeeping;
+            IsPumping = true;
+            Beep(BEEP_LONG);
+            DelayReset(&Pumps[i].Counter);
+        }
+        // Switch on needed pump
+        if(Pumps[i].State == PmpBeeping) {
+            if(DelayElapsed(&Pumps[i].Counter, 999)) {  // Hope beep was finished now
+                Pumps[i].State = PmpPumping;
+                // Reset second counter
+                Time.SecondPassed = false;
+                Pumps[i].Counter = 0;
+                PumpOn(i+1);
+            }
         }
         // Check if time to shutdown
         if(Pumps[i].State == PmpPumping) {
             if(Time.SecondPassed) {
                 Time.SecondPassed = false;
-                Pumps[i].SecondCounter++;
-                if(Pumps[i].SecondCounter >= Pumps[i].Duration) {
+                Pumps[i].Counter++;
+                if(Pumps[i].Counter >= Pumps[i].Duration) {
                     PumpOffAll();
                     Pumps[i].State = PmpIdle;
                 }
