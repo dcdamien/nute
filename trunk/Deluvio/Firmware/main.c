@@ -43,6 +43,11 @@ FORCE_INLINE void GeneralInit(void) {
     // Pumps
     PUMP_DDR |= (1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P);
     Pumps[0].Enabled = true;
+    for(uint8_t i=0; i<PUMP_COUNT; i++) {
+        Pumps[i].Period = 1;
+        Pumps[i].Duration = 1;
+    }
+
 }
 
 // Pumps
