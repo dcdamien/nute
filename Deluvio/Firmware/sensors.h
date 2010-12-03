@@ -22,6 +22,9 @@
 // Measurement period in msec.
 #define QT_MEASUREMENT_PERIOD   25
 
+#define KEY_REPEAT_TIMEOUT      702 // Time before repeat
+#define KEY_REPEAT_DELAY        252 // Time between repeat
+
 // ========================= Variables & types =================================
 struct Keys_t {
     bool KeyDownPressed:1;
@@ -29,6 +32,8 @@ struct Keys_t {
     bool KeyMenuPressed:1;
     bool KeyAquaPressed:1;
     uint16_t Timer;
+    uint16_t KeypressTimer;
+    uint16_t KeypressDelay;
 };
 
 extern struct Keys_t EKeys;
@@ -45,6 +50,9 @@ void EVENT_KeyMenu(void);
 void EVENT_KeyAqua(void);
 void EVENT_AnyKey(void);    // triggered first if any key pressed
 //void EVENT_KeyAquaDepressed(void);
+
+// Inner use
+void KeyAnyKey(void);
 
 
 #endif	/* SENSORS_H */
