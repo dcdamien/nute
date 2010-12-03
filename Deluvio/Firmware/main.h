@@ -32,23 +32,32 @@
 #define PUMP_MAX_DURATION   3600
 
 enum PumpDelayMode_t {ModeDays, ModeHours};
+enum PumpState_t {PmpIdle, PmpMustPump, PmpPumping};
 struct pump_t {
     bool Enabled;
     enum PumpDelayMode_t DelayMode;
     uint8_t Period;
+    uint8_t PeriodLeft;
     uint8_t StartHour;
     uint16_t Duration;
+    enum PumpState_t State;
+    uint16_t SecondCounter;
 };
 
 extern struct pump_t Pumps[PUMP_COUNT];
+extern bool IsPumping;
 
 // ============================== Prototypes ===================================
 void GeneralInit(void);
 
 void PumpOn(uint8_t APump);
-#define PUMP_OFF_ALL( ) PUMP_PORT &= ~((1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P));
+void PumpOffAll(void);
+void Task_Pump(void);
 
+void EVENT_NewSecond(void);
 void EVENT_NewMinute(void);
+void EVENT_NewHour(void);
+void EVENT_NewDay(void);
 
 #endif	/* MAIN_H */
 
