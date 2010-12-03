@@ -43,12 +43,17 @@ FORCE_INLINE void GeneralInit(void) {
     TimeInit();
     // Pumps
     PUMP_DDR |= (1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P);
-    Pumps[0].Enabled = true;
     for(uint8_t i=0; i<PUMP_COUNT; i++) {
         Pumps[i].Period = 1;
         Pumps[i].PeriodLeft = 1;
         Pumps[i].Duration = 1;
     }
+    // DEBUG
+    Pumps[0].Enabled = true;
+    Pumps[0].Duration = 1800;
+    Pumps[0].Period = 3;
+    Pumps[0].PeriodLeft = 1;
+    Pumps[0].DelayMode = ModeHours;
 }
 
 // Pumps
@@ -77,14 +82,14 @@ FORCE_INLINE void Task_Pump(void) {
             // Reset second counter
             Time.SecondPassed = false;
             Pumps[i].SecondCounter = 0;
-            PumpOn(i);
+            PumpOn(i+1);
         }
         // Check if time to shutdown
         if(Pumps[i].State == PmpPumping) {
             if(Time.SecondPassed) {
                 Time.SecondPassed = false;
                 Pumps[i].SecondCounter++;
-                if(Pumps[i].SecondCounter >= Pumps[EMenu.Pump-1].Duration) {
+                if(Pumps[i].SecondCounter >= Pumps[i].Duration) {
                     PumpOffAll();
                     Pumps[i].State = PmpIdle;
                 }
@@ -106,8 +111,9 @@ FORCE_INLINE void EVENT_NewHour(void) {
         // Decrease PeriodLeft counter for hours mode
         if(Pumps[i].DelayMode == ModeHours) if(Pumps[i].PeriodLeft > 0) Pumps[i].PeriodLeft--;
         // Check if time to wake-up and pump
-        if((Pumps[i].Period == 0) && ((Pumps[i].DelayMode == ModeHours) || (Pumps[i].StartHour == Time.Hour))) {
+        if((Pumps[i].PeriodLeft == 0) && ((Pumps[i].DelayMode == ModeHours) || (Pumps[i].StartHour == Time.Hour))) {
             Pumps[i].State = PmpMustPump;
+            Pumps[i].PeriodLeft = Pumps[i].Period;
             MaySleep = false;
         }
     }
