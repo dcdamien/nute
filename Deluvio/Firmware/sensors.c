@@ -81,14 +81,18 @@ void Task_Sensors(void) {
         // ============= Check if key event triggered =========
         if(SensorIsTouched(3) && !EKeys.KeyDownPressed) {
             EKeys.KeyDownPressed = true;
-            KeyAnyKey();
+            DelayReset(&EKeys.KeypressTimer);
+            EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
+            EVENT_AnyKey();
             EVENT_KeyDown();
         }
         else if(!SensorIsTouched(3) && EKeys.KeyDownPressed) EKeys.KeyDownPressed = false;
 
         if(SensorIsTouched(2) && !EKeys.KeyUpPressed) {
             EKeys.KeyUpPressed = true;
-            KeyAnyKey();
+            DelayReset(&EKeys.KeypressTimer);
+            EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
+            EVENT_AnyKey();
             EVENT_KeyUp();
         }
         else if(!SensorIsTouched(2) && EKeys.KeyUpPressed) EKeys.KeyUpPressed = false;
@@ -103,7 +107,7 @@ void Task_Sensors(void) {
 
         if(SensorIsTouched(0) && !EKeys.KeyAquaPressed) {
             EKeys.KeyAquaPressed = true;
-            KeyAnyKey();
+            EVENT_AnyKey();
             EVENT_KeyAqua();
         }
         else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) EKeys.KeyAquaPressed = false;
@@ -119,20 +123,9 @@ void Task_Sensors(void) {
             EVENT_AnyKey();
             EVENT_KeyDown();
         }
-        if(EKeys.KeyAquaPressed) if(DelayElapsed(&EKeys.KeypressTimer, EKeys.KeypressDelay)) {
-            EKeys.KeypressDelay = KEY_REPEAT_DELAY;
-            EVENT_AnyKey();
-            EVENT_KeyAqua();
-        }
     } // if(time_to_measure_touch)
 }
 
 FORCE_INLINE bool SensorIsTouched(uint8_t ASensor) {
     return (qt_measure_data.qt_touch_status.sensor_states[0] & (1<<(ASensor)));
-}
-
-FORCE_INLINE void KeyAnyKey(void) {
-    DelayReset(&EKeys.KeypressTimer);
-    EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
-    EVENT_AnyKey();
 }

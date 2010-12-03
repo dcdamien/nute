@@ -28,6 +28,9 @@
 #define PUMP3P      PA6
 #define PUMP4P      PA7
 
+// Max pump ON duration, s
+#define PUMP_MAX_DURATION   3600
+
 enum PumpDelayMode_t {ModeDays, ModeHours};
 struct pump_t {
     bool Enabled;
