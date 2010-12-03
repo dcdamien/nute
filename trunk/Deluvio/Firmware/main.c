@@ -14,6 +14,8 @@
 #include "time.h"
 #include "menu.h"
 
+struct pump_t Pumps[PUMP_COUNT];
+
 int main(void) {
     GeneralInit();
     
@@ -40,23 +42,22 @@ FORCE_INLINE void GeneralInit(void) {
     TimeInit();
     // Pumps
     PUMP_DDR |= (1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P);
+    Pumps[0].Enabled = true;
 }
 
 // Pumps
-void PumpOn(enum pump_t APump) {
+void PumpOn(uint8_t APump) {
     switch (APump) {
-        case Pump1: PUMP_PORT |= (1<<PUMP1P);
-        case Pump2: PUMP_PORT |= (1<<PUMP2P);
-        case Pump3: PUMP_PORT |= (1<<PUMP3P);
-        case Pump4: PUMP_PORT |= (1<<PUMP4P);
+        case 1: PUMP_PORT |= (1<<PUMP1P); break;
+        case 2: PUMP_PORT |= (1<<PUMP2P); break;
+        case 3: PUMP_PORT |= (1<<PUMP3P); break;
+        case 4: PUMP_PORT |= (1<<PUMP4P); break;
+        default: break;
     }
 }
 
 // ============================= Events ========================================
 // Time events
 void EVENT_NewMinute(void) {
-    if(EState == StIdle) {
-        LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y);
-        if(!Time.IsSetCorrectly) LCD_PrintString_P(0, PRINT_TIME_Y+2, PSTR("Установите время"), false);
-    }
+    if(EState == StIdle) LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y, false, false, false);
 }

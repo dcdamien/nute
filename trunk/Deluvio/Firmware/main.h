@@ -27,12 +27,22 @@
 #define PUMP2P      PA5
 #define PUMP3P      PA6
 #define PUMP4P      PA7
-enum pump_t {Pump1=1, Pump2=2, Pump3=3, Pump4=4};
+
+enum PumpDelayMode_t {ModeDays, ModeHours};
+struct pump_t {
+    bool Enabled;
+    enum PumpDelayMode_t DelayMode;
+    uint8_t Period;
+    uint8_t StartHour;
+    uint16_t Duration;
+};
+
+extern struct pump_t Pumps[PUMP_COUNT];
 
 // ============================== Prototypes ===================================
 void GeneralInit(void);
 
-void PumpOn(enum pump_t APump);
+void PumpOn(uint8_t APump);
 #define PUMP_OFF_ALL( ) PUMP_PORT &= ~((1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P));
 
 void EVENT_NewMinute(void);

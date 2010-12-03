@@ -63,7 +63,7 @@ void LCD_DrawImage(const uint8_t x, const uint8_t y, prog_uint8_t *I, bool AInve
 
 }
 
-void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber) {
+void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber, bool AInvert) {
     uint8_t digit = '0';
     bool ShouldPrint = false;
     const uint16_t FArr[9] = {10000, 1000, 100, 10};
@@ -75,24 +75,37 @@ void LCD_PrintUint(const uint8_t x, const uint8_t y, uint16_t ANumber) {
             ANumber -= FArr[i];
         }
         if((digit != '0') || ShouldPrint) {
-                LCD_DrawChar(digit, false);
+                LCD_DrawChar(digit, AInvert);
                 ShouldPrint = true;
         }
         digit = '0';
     }
     // Print last digit
-    LCD_DrawChar('0'+ANumber, false);
+    LCD_DrawChar('0'+ANumber, AInvert);
 }
-void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber) {
+void LCD_PrintInt(const uint8_t x, const uint8_t y, int16_t ANumber, bool AInvert) {
     LCD_GotoXYstr(x, y);
     if(ANumber < 0) {
-        LCD_DrawChar('-', false);
-        LCD_PrintUint(x+1, y, -ANumber);
+        LCD_DrawChar('-', AInvert);
+        LCD_PrintUint(x+1, y, -ANumber, AInvert);
     }
-    else LCD_PrintUint(x, y, -ANumber);
+    else LCD_PrintUint(x, y, -ANumber, AInvert);
+}
+// Print uint ANumber, 0<=ANumber<=99
+void LCD_PrintUint0_99(const uint8_t x, const uint8_t y, uint8_t ANumber, bool AInvert) {
+    uint8_t digit = '0';
+    LCD_GotoXYstr(x, y);
+    while(ANumber >= 10) {
+        digit++;
+        ANumber -= 10;
+    }
+    LCD_DrawChar(digit, AInvert);
+    LCD_DrawChar('0'+ANumber, AInvert);
 }
 
-void LCD_PrintTime(uint8_t x, uint8_t y) {
+
+
+void LCD_PrintTime(uint8_t x, uint8_t y, bool InvertHours, bool InvertMinTens, bool InvertMinUnits) {
     LCD_GotoXYstr(x, y);
     // Print hours
     uint8_t t = Time.Hour;
@@ -101,8 +114,8 @@ void LCD_PrintTime(uint8_t x, uint8_t y) {
         digit++;
         t -= 10;
     }
-    LCD_DrawChar(digit, false);
-    LCD_DrawChar('0'+t, false);
+    LCD_DrawChar(digit, InvertHours);
+    LCD_DrawChar('0'+t, InvertHours);
     // Print delimiter
     LCD_DrawChar(':', false);
     // Print minutes
@@ -112,8 +125,8 @@ void LCD_PrintTime(uint8_t x, uint8_t y) {
         digit++;
         t -= 10;
     }
-    LCD_DrawChar(digit, false);
-    LCD_DrawChar('0'+t, false);
+    LCD_DrawChar(digit, InvertMinTens);
+    LCD_DrawChar('0'+t, InvertMinUnits);
 }
 
 // ============================= Special =======================================
