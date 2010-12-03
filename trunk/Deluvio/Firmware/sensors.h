@@ -51,9 +51,6 @@ void EVENT_KeyAqua(void);
 void EVENT_AnyKey(void);    // triggered first if any key pressed
 //void EVENT_KeyAquaDepressed(void);
 
-// Inner use
-void KeyAnyKey(void);
-
 
 #endif	/* SENSORS_H */
 

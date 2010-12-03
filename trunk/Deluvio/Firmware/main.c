@@ -47,7 +47,6 @@ FORCE_INLINE void GeneralInit(void) {
         Pumps[i].Period = 1;
         Pumps[i].Duration = 1;
     }
-
 }
 
 // Pumps
