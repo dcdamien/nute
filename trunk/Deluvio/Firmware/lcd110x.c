@@ -3,6 +3,7 @@
 #include "lcd_font.h"
 #include <util/delay.h>
 #include "time.h"
+#include <util/atomic.h>
 
 // ============================= Types & vars ==================================
 
@@ -163,36 +164,40 @@ void LCD_GotoXYstr(uint8_t x, uint8_t y) {
 }
 
 FORCE_INLINE void LCD_WriteData(uint8_t AByte) {
-    LCD_SCLK_LO();
-    LCD_XCS_LO();   // Select chip
-    // Send "Data" bit
-    LCD_SDA_HI();
-    LCD_SCLK_HI();
-    LCD_SCLK_LO();
-    // Send byte
-    for(uint8_t i=0; i<8; i++) {
-        if(AByte & 0x80) LCD_SDA_HI();
-        else LCD_SDA_LO();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        LCD_SCLK_LO();
+        LCD_XCS_LO();   // Select chip
+        // Send "Data" bit
+        LCD_SDA_HI();
         LCD_SCLK_HI();
         LCD_SCLK_LO();
-        AByte <<= 1;
-    }
-    LCD_XCS_HI();
+        // Send byte
+        for(uint8_t i=0; i<8; i++) {
+            if(AByte & 0x80) LCD_SDA_HI();
+            else LCD_SDA_LO();
+            LCD_SCLK_HI();
+            LCD_SCLK_LO();
+            AByte <<= 1;
+        }
+        LCD_XCS_HI();
+    } // Atomic
 }
 void LCD_WriteCmd(uint8_t AByte) {
-    LCD_SCLK_LO();
-    LCD_XCS_LO();   // Select chip
-    // Send "Cmd" bit
-    LCD_SDA_LO();
-    LCD_SCLK_HI();
-    LCD_SCLK_LO();
-    // Send byte
-    for(uint8_t i=0; i<8; i++) {
-        if(AByte & 0x80) LCD_SDA_HI();
-        else LCD_SDA_LO();
+    ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
+        LCD_SCLK_LO();
+        LCD_XCS_LO();   // Select chip
+        // Send "Cmd" bit
+        LCD_SDA_LO();
         LCD_SCLK_HI();
         LCD_SCLK_LO();
-        AByte <<= 1;
-    }
-    LCD_XCS_HI();
+        // Send byte
+        for(uint8_t i=0; i<8; i++) {
+            if(AByte & 0x80) LCD_SDA_HI();
+            else LCD_SDA_LO();
+            LCD_SCLK_HI();
+            LCD_SCLK_LO();
+            AByte <<= 1;
+        }
+        LCD_XCS_HI();
+    } // Atomic
 }
