@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include <avr/interrupt.h>
+#include <avr/wdt.h>
 #include "lcd110x.h"
 #include "sensors.h"
 #include "delay_util.h"
@@ -20,9 +21,6 @@ bool MaySleep, IsPumping;
 int main(void) {
     GeneralInit();
     
-    //LCD_PrintString_P(0, 2, PSTR("Рур"), false);
-    //Beep(2);
-
     sei();
 
     SetState(StIdle);
@@ -36,6 +34,8 @@ int main(void) {
 }
 
 FORCE_INLINE void GeneralInit(void) {
+    wdt_enable(WDTO_2S);
+
     QTouchInit();
     DelayInit();
     BeepInit();
@@ -54,6 +54,10 @@ FORCE_INLINE void GeneralInit(void) {
     Pumps[0].Period = 1;
     Pumps[0].PeriodLeft = 1;
     Pumps[0].DelayMode = ModeHours;
+}
+
+void Task_Sleep(void) {
+    
 }
 
 // Pumps
