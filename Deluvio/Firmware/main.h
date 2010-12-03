@@ -54,6 +54,8 @@ void PumpOn(uint8_t APump);
 void PumpOffAll(void);
 void Task_Pump(void);
 
+void Task_Sleep(void);
+
 void EVENT_NewSecond(void);
 void EVENT_NewMinute(void);
 void EVENT_NewHour(void);
