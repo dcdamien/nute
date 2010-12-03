@@ -4,6 +4,7 @@
 #include <avr/io.h>
 #include "touch_qt_config.h"
 #include "touch_api.h"
+#include "beep.h"
 
 #include "delay_util.h"
 
@@ -70,6 +71,8 @@ FORCE_INLINE void Task_Sensors(void) {
     uint16_t status_flag = 0u;
     uint16_t burst_flag = 0u;
 
+    // Disable sensors during beeping, as beeping make powerful interference
+    if(EBeep.IsYelling) return;
     if(DelayElapsed(&EKeys.Timer, QT_MEASUREMENT_PERIOD)) {
         // update the current time 
         current_time_ms_touch += QT_MEASUREMENT_PERIOD;
