@@ -65,8 +65,8 @@ void QTouchInit(void) {
     qt_filter_callback = 0;
 }
 
-void Task_Sensors(void) {
-    /*status flags to indicate the re-burst for library*/
+FORCE_INLINE void Task_Sensors(void) {
+    // status flags to indicate the re-burst for library
     uint16_t status_flag = 0u;
     uint16_t burst_flag = 0u;
 
