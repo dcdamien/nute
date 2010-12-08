@@ -67,6 +67,15 @@ int main(void) {
 
 FORCE_INLINE void GeneralInit(void) {
     wdt_enable(WDTO_2S);
+    // Disable all unneeded
+    ACSR = (1<<ACD);
+    DDRC  |=   (1<<PC0)|(1<<PC1);
+    PORTC &= ~((1<<PC0)|(1<<PC1));
+    DDRA  |=   (1<<PA2);
+    PORTA &=  ~(1<<PA2);
+    DDRD  |=   (1<<PD0)|(1<<PD1);
+    PORTD &= ~((1<<PD0)|(1<<PD1));
+    // Different modules init
     QTouchInit();
     DelayInit();
     BeepInit();
@@ -76,6 +85,7 @@ FORCE_INLINE void GeneralInit(void) {
     PWROK_DDR &= ~(1<<PWROK_P);
     // Water sensor
     WATER_SNS_DDR &= ~(1<<WATER_SNS_P);
+    WATER_SNS_DDR |=  (1<<WATER_PWR_P);
     WATER_SNS_ON();
     // Pumps
     PUMP_DDR |= (1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P);
@@ -135,6 +145,7 @@ FORCE_INLINE void Task_Sleep(void) {
 // Pumps
 void PumpOn(uint8_t APump) {
     IsPumping = true;
+/*
     switch (APump) {
         case 1: PUMP_PORT |= (1<<PUMP1P); break;
         case 2: PUMP_PORT |= (1<<PUMP2P); break;
@@ -144,6 +155,7 @@ void PumpOn(uint8_t APump) {
             IsPumping = false;
             break;
     }
+*/
 }
 void PumpOffAll(void) {
     IsPumping = false;
