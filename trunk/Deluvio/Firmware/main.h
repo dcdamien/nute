@@ -35,9 +35,10 @@
 #define WATER_SNS_PORT  PORTA
 #define WATER_SNS_PIN   PINA
 #define WATER_SNS_P     PA1
+#define WATER_PWR_P     PA0
 #define WATER_EMPTY()   bit_is_clear(WATER_SNS_PIN, WATER_SNS_P)
-#define WATER_SNS_OFF() WATER_SNS_PORT &= ~(1<<WATER_SNS_P)
-#define WATER_SNS_ON()  WATER_SNS_PORT |=  (1<<WATER_SNS_P)
+#define WATER_SNS_OFF() WATER_SNS_PORT &= ~(1<<WATER_PWR_P)
+#define WATER_SNS_ON()  WATER_SNS_PORT |=  (1<<WATER_PWR_P)
 
 enum PumpDelayMode_t {ModeDays, ModeHours};
 enum PumpState_t {PmpIdle, PmpMustPump, PmpBeeping, PmpPumping};
