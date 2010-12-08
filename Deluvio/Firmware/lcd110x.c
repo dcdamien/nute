@@ -5,8 +5,6 @@
 #include "time.h"
 #include <util/atomic.h>
 
-// ============================= Types & vars ==================================
-
 // ============================ Implementation =================================
 void LCD_Init(void) {
     LCD_DDR |= (1<<LCD_SCLK)|(1<<LCD_XCS)|(1<<LCD_XRES)|(1<<LCD_SDA)|(1<<LCD_BCKLT);
@@ -28,6 +26,14 @@ void LCD_Init(void) {
     LCD_WriteCmd(0xAF); // display ON
     LCD_Clear(); // clear LCD
 }
+void LCD_Shutdown(void) {
+    LCD_BCKLT_OFF();
+    LCD_XRES_LO();
+    LCD_SCLK_LO();
+    LCD_XCS_LO();
+    LCD_SDA_LO();
+}
+
 
 void LCD_Clear(void) {
     LCD_WriteCmd(0x40); // Y = 0

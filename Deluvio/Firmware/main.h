@@ -17,7 +17,7 @@
 #define PWROK_PORT  PORTA
 #define PWROK_PIN   PINA
 #define PWROK_P     PA3
-#define POWER_OK()  bit_is_set (PWROK_PIN, PWROK_P)
+#define POWER_OK()  bit_is_set(PWROK_PIN, PWROK_P)
 
 // Pumps
 #define PUMP_COUNT  4
@@ -27,9 +27,17 @@
 #define PUMP2P      PA5
 #define PUMP3P      PA6
 #define PUMP4P      PA7
-
 // Max pump ON duration, s
 #define PUMP_MAX_DURATION   3600
+
+// Water sensor
+#define WATER_SNS_DDR   DDRA
+#define WATER_SNS_PORT  PORTA
+#define WATER_SNS_PIN   PINA
+#define WATER_SNS_P     PA1
+#define WATER_EMPTY()   bit_is_clear(WATER_SNS_PIN, WATER_SNS_P)
+#define WATER_SNS_OFF() WATER_SNS_PORT &= ~(1<<WATER_SNS_P)
+#define WATER_SNS_ON()  WATER_SNS_PORT |=  (1<<WATER_SNS_P)
 
 enum PumpDelayMode_t {ModeDays, ModeHours};
 enum PumpState_t {PmpIdle, PmpMustPump, PmpBeeping, PmpPumping};
@@ -54,9 +62,10 @@ void PumpOn(uint8_t APump);
 void PumpOffAll(void);
 void Task_Pump(void);
 
+void CheckWater(void);
+
 void Task_Sleep(void);
 
-void EVENT_NewSecond(void);
 void EVENT_NewMinute(void);
 void EVENT_NewHour(void);
 void EVENT_NewDay(void);

@@ -10,14 +10,10 @@
 
 // ============================= Variables =====================================
 extern qt_touch_lib_config_data_t qt_config_data;
-/* touch output - measurement data */
+// touch output - measurement data
 extern qt_touch_lib_measure_data_t qt_measure_data;
-/* Get sensor delta values */
-//extern int16_t qt_get_sensor_delta( uint8_t sensor);
-/* Output can be observed in the watch window using this pointer */
-qt_touch_lib_measure_data_t *pqt_measure_data = &qt_measure_data;
-/* current time, set by timer ISR */
-static volatile uint16_t current_time_ms_touch = 0u;
+// current time, needed for sensors measuring
+uint16_t current_time_ms_touch = 0u;
 
 #ifdef QTOUCH_STUDIO_MASKS
 extern TOUCH_DATA_T SNS_array[2][2];
@@ -67,68 +63,81 @@ void QTouchInit(void) {
 }
 
 FORCE_INLINE void Task_Sensors(void) {
-    // status flags to indicate the re-burst for library
-    uint16_t status_flag = 0u;
-    uint16_t burst_flag = 0u;
-
-    // Disable sensors during beeping, as beeping make powerful interference
+    // Disable sensors when beeping, as beeping makes powerful interference
     if(EBeep.IsYelling) return;
     if(DelayElapsed(&EKeys.Timer, QT_MEASUREMENT_PERIOD)) {
-        // update the current time 
+        // update the current time
         current_time_ms_touch += QT_MEASUREMENT_PERIOD;
-        do {
-            status_flag = qt_measure_sensors(current_time_ms_touch);
-            burst_flag  = status_flag & QTLIB_BURST_AGAIN;
-        } while (burst_flag);
+        SensorsMeasure();
+    }
+}
 
-        // ============= Check if key event triggered =========
-        if(SensorIsTouched(3) && !EKeys.KeyDownPressed) {
-            EKeys.KeyDownPressed = true;
-            DelayReset(&EKeys.KeypressTimer);
-            EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
-            EVENT_AnyKey();
-            EVENT_KeyDown();
-        }
-        else if(!SensorIsTouched(3) && EKeys.KeyDownPressed) EKeys.KeyDownPressed = false;
+void SensorsMeasure(void) {
+    // status flags to indicate the re-burst for library
+    uint16_t status_flag = 0u;
+    bool burst_flag = false;
+    do {
+        status_flag = qt_measure_sensors(current_time_ms_touch);
+        burst_flag  = status_flag & QTLIB_BURST_AGAIN;
+    } while (burst_flag);
+    // ============= Check if key event triggered =========
+    if(SensorIsTouched(3) && !EKeys.KeyDownPressed) {
+        EKeys.KeyDownPressed = true;
+        DelayReset(&EKeys.KeypressTimer);
+        EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
+        EVENT_AnyKey();
+        EVENT_KeyDown();
+    }
+    else if(!SensorIsTouched(3) && EKeys.KeyDownPressed) EKeys.KeyDownPressed = false;
 
-        if(SensorIsTouched(2) && !EKeys.KeyUpPressed) {
-            EKeys.KeyUpPressed = true;
-            DelayReset(&EKeys.KeypressTimer);
-            EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
-            EVENT_AnyKey();
-            EVENT_KeyUp();
-        }
-        else if(!SensorIsTouched(2) && EKeys.KeyUpPressed) EKeys.KeyUpPressed = false;
+    if(SensorIsTouched(2) && !EKeys.KeyUpPressed) {
+        EKeys.KeyUpPressed = true;
+        DelayReset(&EKeys.KeypressTimer);
+        EKeys.KeypressDelay = KEY_REPEAT_TIMEOUT;
+        EVENT_AnyKey();
+        EVENT_KeyUp();
+    }
+    else if(!SensorIsTouched(2) && EKeys.KeyUpPressed) EKeys.KeyUpPressed = false;
 
-        // For MENU key, no need to repeat it when holding long
-        if(SensorIsTouched(1) && !EKeys.KeyMenuPressed) {
-            EKeys.KeyMenuPressed = true;
-            EVENT_AnyKey();
-            EVENT_KeyMenu();
-        }
-        else if(!SensorIsTouched(1) && EKeys.KeyMenuPressed) EKeys.KeyMenuPressed = false;
+    // For MENU key, no need to repeat it when holding long
+    if(SensorIsTouched(1) && !EKeys.KeyMenuPressed) {
+        EKeys.KeyMenuPressed = true;
+        EVENT_AnyKey();
+        EVENT_KeyMenu();
+    }
+    else if(!SensorIsTouched(1) && EKeys.KeyMenuPressed) EKeys.KeyMenuPressed = false;
 
-        if(SensorIsTouched(0) && !EKeys.KeyAquaPressed) {
-            EKeys.KeyAquaPressed = true;
-            EVENT_AnyKey();
-            EVENT_KeyAqua();
-        }
-        else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) EKeys.KeyAquaPressed = false;
+    if(SensorIsTouched(0) && !EKeys.KeyAquaPressed) {
+        EKeys.KeyAquaPressed = true;
+        EVENT_AnyKey();
+        EVENT_KeyAqua();
+    }
+    else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) EKeys.KeyAquaPressed = false;
 
-        // ============= Check if continuous keypress =========
-        if(EKeys.KeyUpPressed) if(DelayElapsed(&EKeys.KeypressTimer, EKeys.KeypressDelay)) {
-            EKeys.KeypressDelay = KEY_REPEAT_DELAY;
-            EVENT_AnyKey();
-            EVENT_KeyUp();
-        }
-        if(EKeys.KeyDownPressed) if(DelayElapsed(&EKeys.KeypressTimer, EKeys.KeypressDelay)) {
-            EKeys.KeypressDelay = KEY_REPEAT_DELAY;
-            EVENT_AnyKey();
-            EVENT_KeyDown();
-        }
-    } // if(time_to_measure_touch)
+    // ============= Check if continuous keypress =========
+    if(EKeys.KeyUpPressed) if(DelayElapsed(&EKeys.KeypressTimer, EKeys.KeypressDelay)) {
+        EKeys.KeypressDelay = KEY_REPEAT_DELAY;
+        EVENT_AnyKey();
+        EVENT_KeyUp();
+    }
+    if(EKeys.KeyDownPressed) if(DelayElapsed(&EKeys.KeypressTimer, EKeys.KeypressDelay)) {
+        EKeys.KeypressDelay = KEY_REPEAT_DELAY;
+        EVENT_AnyKey();
+        EVENT_KeyDown();
+    }
+}
+
+bool QTouchActivityDetected(void) {
+    // status flags to indicate the re-burst for library
+    uint16_t status_flag = 0u;
+    bool burst_flag = false;
+    do {
+        status_flag = qt_measure_sensors(current_time_ms_touch);
+        burst_flag  = status_flag & QTLIB_BURST_AGAIN;
+    } while (burst_flag);
+    return (qt_measure_data.qt_touch_status.sensor_states[0] != 0x00);
 }
 
 FORCE_INLINE bool SensorIsTouched(uint8_t ASensor) {
-    return (qt_measure_data.qt_touch_status.sensor_states[0] & (1<<(ASensor)));
+    return (qt_measure_data.qt_touch_status.sensor_states[0] & (1<<ASensor));
 }
