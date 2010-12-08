@@ -37,10 +37,14 @@ struct Keys_t {
 };
 
 extern struct Keys_t EKeys;
+extern uint16_t current_time_ms_touch;
 
 // ================================ Prototypes =================================
 void QTouchInit(void);
+bool QTouchActivityDetected(void);
+
 bool SensorIsTouched(uint8_t ASensor);
+void SensorsMeasure(void);
 
 void Task_Sensors(void);
 

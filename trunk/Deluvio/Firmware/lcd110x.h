@@ -51,6 +51,7 @@
 
 // =============================== Prototypes ==================================
 void LCD_Init(void);
+void LCD_Shutdown(void);
 
 void LCD_Clear(void);
 void LCD_DrawChar(uint8_t AChar, bool AInvert);
