@@ -16,6 +16,7 @@
 #include "beep.h"
 #include "time.h"
 #include "menu.h"
+//#include "battery.h"
 
 struct pump_t Pumps[PUMP_COUNT];
 bool IsPumping;
