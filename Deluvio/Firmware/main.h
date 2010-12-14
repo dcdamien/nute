@@ -36,7 +36,7 @@
 #define WATER_SNS_PIN   PINA
 #define WATER_SNS_P     PA1
 #define WATER_PWR_P     PA0
-#define WATER_EMPTY()   bit_is_clear(WATER_SNS_PIN, WATER_SNS_P)
+#define WATER_TANK_IS_EMPTY()   bit_is_clear(WATER_SNS_PIN, WATER_SNS_P)
 #define WATER_SNS_OFF() WATER_SNS_PORT &= ~(1<<WATER_PWR_P)
 #define WATER_SNS_ON()  WATER_SNS_PORT |=  (1<<WATER_PWR_P)
 
@@ -54,7 +54,7 @@ struct pump_t {
 };
 
 extern struct pump_t Pumps[PUMP_COUNT];
-extern bool IsPumping;
+extern bool IsPumping, PumpsSettingsChanged;
 
 // ============================== Prototypes ===================================
 void GeneralInit(void);
@@ -62,8 +62,11 @@ void GeneralInit(void);
 void PumpOn(uint8_t APump);
 void PumpOffAll(void);
 void Task_Pump(void);
+void PumpsLoad(void);
+void PumpsSave(void);
 
 void CheckWater(void);
+void CheckBattery(void);
 
 void Task_Sleep(void);
 
