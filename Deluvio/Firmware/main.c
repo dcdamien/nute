@@ -19,20 +19,27 @@
 #include "menu.h"
 #include "battery.h"
 #include "messages.h"
+#include "images.h"
 
 struct pump_t Pumps[PUMP_COUNT];
 bool IsPumping, PumpsSettingsChanged;
-struct {
-    bool MustSleep;
-    uint16_t Timer;
-} ESleep;
+bool MustSleep;
 
 // =============================== Implementation ==============================
 int main(void) {
     GeneralInit();
 
-//    LCD_PrintString_P(0, 2, PSTR("Ostranna BBS"), false);
-//    _delay_ms(1800);
+    // Show Logo
+    LCD_DrawImage(0, 0, ImageLogo, false);
+    // Repeat to allow watchdog to reset
+    _delay_ms(500);
+    wdt_reset();
+    _delay_ms(500);
+    wdt_reset();
+    _delay_ms(500);
+    wdt_reset();
+    _delay_ms(500);
+    wdt_reset(); 
 
     sei();
 
@@ -41,9 +48,9 @@ int main(void) {
     while(1) {
         if(POWER_OK()) {
             Task_Sensors();
-            Task_Beep();
             Task_Menu();
             Task_Pump();
+            Task_Beep();
             Task_Sleep();
             wdt_reset();
         }
@@ -98,21 +105,21 @@ FORCE_INLINE void GeneralInit(void) {
 FORCE_INLINE void Task_Sleep(void) {
     bool Blink = false;
     if(IsPumping || (EState != StIdle) || EBeep.IsYelling) return;     // Get out if in menu or if beeper beeps
-    if(!DelayElapsed(&ESleep.Timer, 2000)) return;  // Do not sleep immediately
     // Prepare to sleep
-    ESleep.MustSleep = true;
+    MustSleep = true;
+    LCD_BCKLT_OFF();
     set_sleep_mode(SLEEP_MODE_PWR_SAVE);    // Left timer2 enabled
     //cli();                                  // DEBUG: will sleep forever
     //set_sleep_mode(SLEEP_MODE_PWR_DOWN);    // DEBUG: will sleep forever
     sleep_enable();
-    while(ESleep.MustSleep) {    // Will get out of cycle either in case of pumping, or in case of keypress
+    while(MustSleep) {    // Will get out of cycle either in case of pumping, or in case of keypress
         wdt_disable();
         sleep_cpu();
         wdt_enable(WDTO_2S);
 
         // Check if key pressed
         current_time_ms_touch += 1000;  // As IRQ triggers every second
-        if(QTouchActivityDetected()) ESleep.MustSleep = false;
+        if(QTouchActivityDetected()) MustSleep = false;
 
         // Display blinking ':' to show time is passing
         LCD_GotoXYstr(PRINT_TIME_X+2, PRINT_TIME_Y);
@@ -120,13 +127,11 @@ FORCE_INLINE void Task_Sleep(void) {
         else      LCD_DrawChar(':', false);
         Blink = !Blink;
     } // While must sleep
-    DelayReset(&ESleep.Timer);
 }
 
 // ============================== Pumps ========================================
 void PumpOn(uint8_t APump) {
     IsPumping = true;
-/*
     switch (APump) {
         case 1: PUMP_PORT |= (1<<PUMP1P); break;
         case 2: PUMP_PORT |= (1<<PUMP2P); break;
@@ -136,7 +141,6 @@ void PumpOn(uint8_t APump) {
             IsPumping = false;
             break;
     }
-*/
 }
 void PumpOffAll(void) {
     IsPumping = false;
@@ -209,7 +213,7 @@ void CheckWater(void) {
     if(WATER_TANK_IS_EMPTY()) {
         LCD_PrintString_P(0, 0, PSTR(MSG_NO_WATER), false);
         Beep(BEEP_LONG);
-        ESleep.MustSleep = false;   // Get out of sleep cycle in Sleep_Task
+        MustSleep = false;   // Get out of sleep cycle in Sleep_Task
     }
 }
 void CheckBattery(void) {
@@ -219,7 +223,7 @@ void CheckBattery(void) {
         LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_DISCHARGED1), false);
         LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_DISCHARGED2), false);
         Beep(BEEP_LONG);
-        ESleep.MustSleep = false;
+        MustSleep = false;
     }
 }
 
@@ -236,7 +240,7 @@ FORCE_INLINE void EVENT_NewHour(void) {
     // Check if time is set
     if(!Time.IsSetCorrectly) {
         Beep(BEEP_LONG);
-        ESleep.MustSleep = false;
+        MustSleep = false;
         return;
     }
     CheckWater();
@@ -249,7 +253,7 @@ FORCE_INLINE void EVENT_NewHour(void) {
         if((Pumps[i].PeriodLeft == 0) && ((Pumps[i].DelayMode == ModeHours) || (Pumps[i].StartHour == Time.Hour))) {
             Pumps[i].State = PmpMustPump;
             Pumps[i].PeriodLeft = Pumps[i].Period;
-            ESleep.MustSleep = false;   // Get out of sleep cycle in Sleep_Task
+            MustSleep = false;   // Get out of sleep cycle in Sleep_Task
         }
     }
 }
