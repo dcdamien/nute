@@ -29,18 +29,6 @@ bool MustSleep;
 int main(void) {
     GeneralInit();
 
-    // Show Logo
-    LCD_DrawImage(0, 0, ImageLogo, false);
-    // Repeat to allow watchdog to reset
-    _delay_ms(500);
-    wdt_reset();
-    _delay_ms(500);
-    wdt_reset();
-    _delay_ms(500);
-    wdt_reset();
-    _delay_ms(500);
-    wdt_reset(); 
-
     sei();
 
     SetState(StIdle);
@@ -85,11 +73,19 @@ FORCE_INLINE void GeneralInit(void) {
     PORTA &=  ~(1<<PA2);
     DDRD  |=   (1<<PD0)|(1<<PD1);
     PORTD &= ~((1<<PD0)|(1<<PD1));
+    
     // Different modules init
+    LCD_Init();
+    // Show Logo
+    LCD_DrawImage(0, 0, ImageLogo, false);
+    for (uint8_t i=0; i<4; i++) { // Repeat to allow watchdog to reset
+        wdt_reset();
+        _delay_ms(500);
+    }
+    // Proceed with init
     QTouchInit();
     DelayInit();
     BeepInit();
-    LCD_Init();
     TimeInit();
     // Battery sensor init
     PWROK_DDR &= ~(1<<PWROK_P);
@@ -103,7 +99,6 @@ FORCE_INLINE void GeneralInit(void) {
 }
 
 FORCE_INLINE void Task_Sleep(void) {
-    bool Blink = false;
     if(IsPumping || (EState != StIdle) || EBeep.IsYelling) return;     // Get out if in menu or if beeper beeps
     // Prepare to sleep
     MustSleep = true;
@@ -116,16 +111,11 @@ FORCE_INLINE void Task_Sleep(void) {
         wdt_disable();
         sleep_cpu();
         wdt_enable(WDTO_2S);
+        wdt_reset();
 
         // Check if key pressed
         current_time_ms_touch += 1000;  // As IRQ triggers every second
         if(QTouchActivityDetected()) MustSleep = false;
-
-        // Display blinking ':' to show time is passing
-        LCD_GotoXYstr(PRINT_TIME_X+2, PRINT_TIME_Y);
-        if(Blink) LCD_DrawChar(' ', false);
-        else      LCD_DrawChar(':', false);
-        Blink = !Blink;
     } // While must sleep
 }
 
@@ -229,22 +219,32 @@ void CheckBattery(void) {
 
 // ============================= Events ========================================
 // Time events: recalled from interrupt. Do it quick!
+FORCE_INLINE void EVENT_NewSecond(void) {
+    static bool Blink = false;
+    if (((EState == StIdle) || (EState == StBacklight)) && POWER_OK()) {
+        // Display blinking ':' to show time is passing
+        LCD_GotoXYstr(PRINT_TIME_X+2, PRINT_TIME_Y);
+        if(Blink) LCD_DrawChar(' ', false);
+        else      LCD_DrawChar(':', false);
+        Blink = !Blink;
+    }
+}
 FORCE_INLINE void EVENT_NewMinute(void) {
-    if(EState == StIdle)
-        if(POWER_OK())
-            LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y, false, false, false);
+    if ((EState == StIdle) && POWER_OK())
+        LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y, false, false, false);
 }
 FORCE_INLINE void EVENT_NewHour(void) {
     // Must count time and check pumps even if power is not ok
-    if(EState != StIdle) return;    // Get out if not in menu
+    if (EState != StIdle) return;    // Get out if not in menu
     // Check if time is set
-    if(!Time.IsSetCorrectly) {
+    if (!Time.IsSetCorrectly && POWER_OK()) {
         Beep(BEEP_LONG);
         MustSleep = false;
         return;
     }
     CheckWater();
     CheckBattery();
+
     // Iterate pumps, switch on if needed
     for(uint8_t i=0; i<PUMP_COUNT; i++) if(Pumps[i].Enabled) {
         // Decrease PeriodLeft counter for hours mode
@@ -255,7 +255,7 @@ FORCE_INLINE void EVENT_NewHour(void) {
             Pumps[i].PeriodLeft = Pumps[i].Period;
             MustSleep = false;   // Get out of sleep cycle in Sleep_Task
         }
-    }
+    } // for i
 }
 FORCE_INLINE void EVENT_NewDay(void) {
     if((EState != StIdle) || !Time.IsSetCorrectly) return;
