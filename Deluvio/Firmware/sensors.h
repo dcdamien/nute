@@ -51,7 +51,9 @@ void Task_Sensors(void);
 void EVENT_KeyDown(void);
 void EVENT_KeyUp(void);
 void EVENT_KeyMenu(void);
-void EVENT_KeyAqua(void);
+void EVENT_KeyAquaPressed(void);
+void EVENT_KeyAquaDepressed(void);
+
 void EVENT_AnyKey(void);    // triggered first if any key pressed
 //void EVENT_KeyAquaDepressed(void);
 

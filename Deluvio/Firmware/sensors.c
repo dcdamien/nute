@@ -110,9 +110,12 @@ void SensorsMeasure(void) {
     if(SensorIsTouched(0) && !EKeys.KeyAquaPressed) {
         EKeys.KeyAquaPressed = true;
         EVENT_AnyKey();
-        EVENT_KeyAqua();
+        EVENT_KeyAquaPressed();
     }
-    else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) EKeys.KeyAquaPressed = false;
+    else if(!SensorIsTouched(0) && EKeys.KeyAquaPressed) {
+        EKeys.KeyAquaPressed = false;
+        EVENT_KeyAquaDepressed();
+    }
 
     // ============= Check if continuous keypress =========
     if(EKeys.KeyUpPressed) if(DelayElapsed(&EKeys.KeypressTimer, EKeys.KeypressDelay)) {
