@@ -6,8 +6,7 @@ uint16_t BatteryADCValue;
 
 // ============================= Implementation ================================
 void BatteryMeasure(void) {
-    BatteryADCValue = 1020;
-    return;
+    BatteryADCValue = 0;
     ADC_REF_ENABLE();
     ADC_START_MEASUREMENT();    // First fake measurement
     while(!ADC_MEASUREMENT_COMPLETED());

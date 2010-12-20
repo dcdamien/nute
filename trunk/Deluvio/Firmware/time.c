@@ -33,7 +33,7 @@ uint8_t TimeGetMinuteUnits(void) {
 // =========================== Interrupts ======================================
 // Time counter
 ISR(TIMER2_OVF_vect) {
-    wdt_enable(WDTO_500MS);
+    wdt_enable(WDTO_1S);
     if((EState == StSetTimeHours) || (EState == StSetTimeMinTens) || (EState == StSetTimeMinUnits)) return;
     Time.SecondPassed = true;
     Time.Second++;

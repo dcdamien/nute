@@ -8,8 +8,6 @@
 #include "messages.h"
 #include <avr/pgmspace.h>
 
-#include "uart.h"
-
 // ============================= Global variables ==============================
 enum State_t EState;
 struct {
@@ -57,7 +55,6 @@ void SetState(enum State_t AState) {
             LCD_BCKLT_OFF();
             EVENT_NewMinute();  // print time
             if(!Time.IsSetCorrectly) LCD_PrintString_P(0, PRINT_TIME_Y+2, PSTR(MSG_SET_CORRECT_TIME), false);
-            CheckWater();
             CheckBattery();
             // Save settings if needed
             if(PumpsSettingsChanged) PumpsSave();

@@ -14,8 +14,11 @@
 #define MSG_AUTO_ON             "Авто-включение"
 
 #define MSG_BATTERY_DISCHARGED1 "Батарея"
+#define MSG_BATTERY_OK1         "       "
 #define MSG_BATTERY_DISCHARGED2 "разряжена"
+#define MSG_BATTERY_OK2         "         "
 #define MSG_NO_WATER            "В баке нет воды"
+#define MSG_WATER_OK            "               "
 
 // Time 
 #define MSG_SET_CORRECT_TIME    "Установите время"
