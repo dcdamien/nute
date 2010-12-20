@@ -13,6 +13,8 @@
 #define MSG_MANUAL_ON           "Ручное включение"
 #define MSG_AUTO_ON             "Авто-включение"
 
+#define MSG_SHOW_BATTERY        "Заряд батареи"
+
 #define MSG_BATTERY_DISCHARGED1 "Батарея"
 #define MSG_BATTERY_OK1         "       "
 #define MSG_BATTERY_DISCHARGED2 "разряжена"

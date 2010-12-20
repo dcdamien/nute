@@ -3,6 +3,7 @@
 #include "lcd_font.h"
 #include <util/delay.h>
 #include "time.h"
+#include "images.h"
 #include <util/atomic.h>
 
 // ============================ Implementation =================================
@@ -139,8 +140,9 @@ void LCD_PrintTime(uint8_t x, uint8_t y, bool InvertHours, bool InvertMinTens, b
 // ============================= Special =======================================
 // Special
 FORCE_INLINE void LCD_DrawGauge(void) {
-    LCD_DrawImage(0, GAUGE_Y, LCD_ImgGauge, false);
+    LCD_DrawImage(0, GAUGE_Y, ImageGauge, false);
 }
+// Value from 1 to 94
 void LCD_GaugeValue(const uint8_t AValue) {
     LCD_GotoXY(1, GAUGE_Y+1);
     for(uint8_t x=1; x<AValue; x++)  LCD_WriteData(0x7E);

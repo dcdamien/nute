@@ -22,6 +22,7 @@
 #define BAT_NUMBER_OF_MEASURES  (1<<BAT_POWER_OF_MEASURES)
 
 #define BAT_U_DISCHARGED    616 // About 8 V
+#define BAT_U_FULL          924 // About 12 V
 
 // ============================== Types ========================================
 extern uint16_t BatteryADCValue;
@@ -41,6 +42,7 @@ extern uint16_t BatteryADCValue;
 
 // ============================ Prototypes =====================================
 void BatteryMeasure(void);
+uint8_t BatteryGaugeValue(void);
 
 #endif	/* _BATTERY_H */
 

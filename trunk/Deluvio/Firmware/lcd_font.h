@@ -12,9 +12,6 @@
 
 extern prog_uint8_t Font_6x8_Data[256][6];
 
-// ===== gauge01-ps =====
-extern prog_uint8_t LCD_ImgGauge[];
-
 
 #endif	/* LCD_FONT_H */
 

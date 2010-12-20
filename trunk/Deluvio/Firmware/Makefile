@@ -14,7 +14,8 @@ sensors.c \
 beep.c \
 time.c \
 menu.c \
-battery.c 
+battery.c \
+images.c
 
 # Output files directory
 OUTDIR = output

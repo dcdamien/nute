@@ -18,7 +18,7 @@
 
 // ============================ Types ==========================================
 // States
-enum State_t {StIdle, StBacklight, StShowChannel, StOfferSetTime, StManualAqua, \
+enum State_t {StIdle, StBacklight, StShowChannel, StOfferSetTime, StShowBattery, StManualAqua, \
 StSetEnable, StSetPeriodType, StSetPeriodValue, StSetPeriodLeft, StSetStartTime, StSetDuration, \
 StSetTimeHours, StSetTimeMinTens, StSetTimeMinUnits};
 
