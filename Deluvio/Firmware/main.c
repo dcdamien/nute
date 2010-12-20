@@ -209,28 +209,24 @@ void CheckWater(void) {
     WATER_SNS_ON();
     _delay_us(9);
     // Check if water state changed
-    if((!WATER_OK() && WaterOk) || (WATER_OK() && !WaterOk)) {
-        WaterOk = WATER_OK();
-        if(WaterOk) LCD_PrintString_P(0, 0, PSTR(MSG_WATER_OK), false);
-        else        LCD_PrintString_P(0, 0, PSTR(MSG_NO_WATER), false);
-    }
+    WaterOk = WATER_OK();
     WATER_SNS_OFF();
+    if(WaterOk) LCD_PrintString_P(0, 0, PSTR(MSG_WATER_OK), false);
+    else        LCD_PrintString_P(0, 0, PSTR(MSG_NO_WATER), false);
 }
 void CheckBattery(void) {
     if(!POWER_OK()) return;
     BatteryMeasure();
     // Check if battery state changed
-    if((!BATTERY_OK() && BatteryOk) || (BATTERY_OK() && !BatteryOk)) {
-        BatteryOk = BATTERY_OK();
-        if(BatteryOk) {
-            LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_OK1), false);
-            LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_OK2), false);
-        }
-        else {
-            LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_DISCHARGED1), false);
-            LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_DISCHARGED2), false);
-        }
-    } // if state changed
+    BatteryOk = BATTERY_OK();
+    if(BatteryOk) {
+        LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_OK1), false);
+        LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_OK2), false);
+    }
+    else {
+        LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_DISCHARGED1), false);
+        LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_DISCHARGED2), false);
+    }
 }
 
 // ============================= Events ========================================
@@ -262,7 +258,7 @@ FORCE_INLINE void EVENT_NewMinute(void) {
 }
 FORCE_INLINE void EVENT_NewHour(void) {
     // Must count time and check pumps even if power is not ok
-    if (EState != StIdle) return;    // Get out if not in menu
+    if((EState != StIdle) || !Time.IsSetCorrectly) return;
     // Iterate pumps, switch on if needed
     for(uint8_t i=0; i<PUMP_COUNT; i++) if(Pumps[i].Enabled) {
         // Decrease PeriodLeft counter for hours mode
