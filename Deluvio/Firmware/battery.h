@@ -26,7 +26,7 @@
 // ============================== Types ========================================
 extern uint16_t BatteryADCValue;
 
-#define BATTERY_IS_DISCHARGED()     BatteryADCValue <= BAT_U_DISCHARGED
+#define BATTERY_OK()                (BatteryADCValue >= BAT_U_DISCHARGED)
 #define ADC_MEASUREMENT_COMPLETED() bit_is_clear (ADCSRA, ADSC)
 // Enable ADC, no IRQ, CLK/8 = 1 Mhz/8 = 125 kHz
 //#define ADC_START_MEASUREMENT()     ADCSRA = (1<<ADEN)|(1<<ADSC)|(0<<ADATE)|(0<<ADIE)|(0<<ADPS2)|(1<<ADPS1)|(1<<ADPS0)

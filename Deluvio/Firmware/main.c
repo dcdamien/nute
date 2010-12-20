@@ -21,21 +21,15 @@
 #include "messages.h"
 #include "images.h"
 
-#include "uart.h"
-
 struct pump_t Pumps[PUMP_COUNT];
 bool IsPumping, PumpsSettingsChanged;
 bool MustSleep;
+volatile bool WaterOk = true, BatteryOk = false;
 
 // =============================== Implementation ==============================
 int main(void) {
     GeneralInit();
-
-    UARTInit();
-    UARTSendString_P(PSTR("\rDeluvio\r"));
-
     sei();
-
     SetState(StIdle);
     
     while(1) {
@@ -50,18 +44,20 @@ int main(void) {
         else {  // power failure, enter sleep mode
             LCD_Shutdown();
             PumpOffAll();
-            WATER_SNS_OFF();
             // Enter sleep
             set_sleep_mode(SLEEP_MODE_PWR_SAVE);    // Left timer2 enabled
             sleep_enable();
-            wdt_disable();  // To save energy
             // Circle here until power comes
             do {
+                // Disable watchdog
+                ATOMIC_BLOCK(ATOMIC_FORCEON) {
+                    wdt_reset();
+                    wdt_disable();
+                }
                 sleep_cpu();
             } while(!POWER_OK());
             // Power restored, reinit all needed
-            //wdt_enable(WDTO_1S);
-            WATER_SNS_ON();
+            wdt_enable(WDTO_1S);
             LCD_Init();
             SetState(StIdle);
         }
@@ -69,7 +65,7 @@ int main(void) {
 }
 
 FORCE_INLINE void GeneralInit(void) {
-    //wdt_enable(WDTO_1S);
+    wdt_enable(WDTO_1S);
     // Disable all unneeded
     ACSR = (1<<ACD);
     DDRC  |=   (1<<PC0)|(1<<PC1);
@@ -97,7 +93,10 @@ FORCE_INLINE void GeneralInit(void) {
     // Water sensor
     WATER_SNS_DDR &= ~(1<<WATER_SNS_P);
     WATER_SNS_DDR |=  (1<<WATER_PWR_P);
-    WATER_SNS_ON();
+    WATER_SNS_ON(); // Force check water after start
+    _delay_us(9);
+    WaterOk = !WATER_OK();
+    WATER_SNS_OFF();
     // Pumps
     PUMP_DDR |= (1<<PUMP1P)|(1<<PUMP2P)|(1<<PUMP3P)|(1<<PUMP4P);
     PumpsLoad();
@@ -105,23 +104,19 @@ FORCE_INLINE void GeneralInit(void) {
 
 FORCE_INLINE void Task_Sleep(void) {
     if(IsPumping || (EState != StIdle) || EBeep.IsYelling) return;     // Get out if in menu or if beeper beeps
-    UARTSend('s');
     // Prepare to sleep
     MustSleep = true;
     LCD_BCKLT_OFF();
     set_sleep_mode(SLEEP_MODE_PWR_SAVE);    // Left timer2 enabled
-    //cli();                                  // DEBUG: will sleep forever
-    //set_sleep_mode(SLEEP_MODE_PWR_DOWN);    // DEBUG: will sleep forever
     sleep_enable();
     while(MustSleep) {    // Will get out of cycle either in case of pumping, or in case of keypress
-        UARTSend('1');
+        // Disable watchdog
         ATOMIC_BLOCK(ATOMIC_FORCEON) {
             wdt_reset();
             wdt_disable();
         }
-        UARTSend('2');
         sleep_cpu();
-        UARTSend('w');
+        // Awake happened. WDT is setup in IRQ.
         // Check if key pressed
         current_time_ms_touch += 1000;  // As IRQ triggers every second
         if(QTouchActivityDetected()) MustSleep = false;
@@ -209,21 +204,31 @@ FORCE_INLINE void PumpsSave(void) {
 // ===================== Check water and battery ===============================
 void CheckWater(void) {
     if(!POWER_OK()) return;
-    if(WATER_TANK_IS_EMPTY()) {
-        LCD_PrintString_P(0, 0, PSTR(MSG_NO_WATER), false);
-        Beep(BEEP_LONG);
-        MustSleep = false;   // Get out of sleep cycle in Sleep_Task
+    WATER_SNS_ON();
+    _delay_us(9);
+    // Check if water state changed
+    if((!WATER_OK() && WaterOk) || (WATER_OK() && !WaterOk)) {
+        WaterOk = WATER_OK();
+        if(WaterOk) LCD_PrintString_P(0, 0, PSTR(MSG_WATER_OK), false);
+        else        LCD_PrintString_P(0, 0, PSTR(MSG_NO_WATER), false);
     }
+    WATER_SNS_OFF();
 }
 void CheckBattery(void) {
     if(!POWER_OK()) return;
     BatteryMeasure();
-    if(BATTERY_IS_DISCHARGED()) {
-        LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_DISCHARGED1), false);
-        LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_DISCHARGED2), false);
-        Beep(BEEP_LONG);
-        MustSleep = false;
-    }
+    // Check if battery state changed
+    if((!BATTERY_OK() && BatteryOk) || (BATTERY_OK() && !BatteryOk)) {
+        BatteryOk = BATTERY_OK();
+        if(BatteryOk) {
+            LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_OK1), false);
+            LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_OK2), false);
+        }
+        else {
+            LCD_PrintString_P(4, 1, PSTR(MSG_BATTERY_DISCHARGED1), false);
+            LCD_PrintString_P(3, 2, PSTR(MSG_BATTERY_DISCHARGED2), false);
+        }
+    } // if state changed
 }
 
 // ============================= Events ========================================
@@ -231,16 +236,27 @@ void CheckBattery(void) {
 FORCE_INLINE void EVENT_NewSecond(void) {
     static bool Blink = false;
     if (((EState == StIdle) || (EState == StBacklight)) && POWER_OK()) {
+        CheckWater();
         // Display blinking ':' to show time is passing
         LCD_GotoXYstr(PRINT_TIME_X+2, PRINT_TIME_Y);
         if(Blink) LCD_DrawChar(' ', false);
         else      LCD_DrawChar(':', false);
         Blink = !Blink;
-    }
+    } // if state
 }
 FORCE_INLINE void EVENT_NewMinute(void) {
-    if ((EState == StIdle) && POWER_OK())
+    if ((EState == StIdle) && POWER_OK()) {
         LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y, false, false, false);
+        CheckBattery();
+        // Beep if needed
+        if(!WaterOk || !BatteryOk) {
+            // Beep every 15 minutes
+            if ((Time.Minute == 1) || (Time.Minute == 15) || (Time.Minute == 30) || (Time.Minute == 45)) {
+                Beep(BEEP_LONG);
+                MustSleep = false;   // Get out of sleep cycle in Sleep_Task to beep correctly
+            } // if time
+        } // if not ok
+    } // if state
 }
 FORCE_INLINE void EVENT_NewHour(void) {
     // Must count time and check pumps even if power is not ok
@@ -251,9 +267,6 @@ FORCE_INLINE void EVENT_NewHour(void) {
         MustSleep = false;
         return;
     }
-    CheckWater();
-    CheckBattery();
-
     // Iterate pumps, switch on if needed
     for(uint8_t i=0; i<PUMP_COUNT; i++) if(Pumps[i].Enabled) {
         // Decrease PeriodLeft counter for hours mode
