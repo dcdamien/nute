@@ -8,6 +8,8 @@
 #include "messages.h"
 #include <avr/pgmspace.h>
 
+#include "uart.h"
+
 // ============================= Global variables ==============================
 enum State_t EState;
 struct {
@@ -302,8 +304,7 @@ void EVENT_KeyMenu(void) {
             break;
         case StSetTimeMinUnits:
             SetState(StOfferSetTime);
-            break;
-            
+            break;            
             
         default: break;
     } // switch

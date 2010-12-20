@@ -21,6 +21,8 @@
 #include "messages.h"
 #include "images.h"
 
+#include "uart.h"
+
 struct pump_t Pumps[PUMP_COUNT];
 bool IsPumping, PumpsSettingsChanged;
 bool MustSleep;
@@ -28,6 +30,9 @@ bool MustSleep;
 // =============================== Implementation ==============================
 int main(void) {
     GeneralInit();
+
+    UARTInit();
+    UARTSendString_P(PSTR("\rDeluvio\r"));
 
     sei();
 
@@ -55,7 +60,7 @@ int main(void) {
                 sleep_cpu();
             } while(!POWER_OK());
             // Power restored, reinit all needed
-            wdt_enable(WDTO_2S);
+            //wdt_enable(WDTO_1S);
             WATER_SNS_ON();
             LCD_Init();
             SetState(StIdle);
@@ -64,7 +69,7 @@ int main(void) {
 }
 
 FORCE_INLINE void GeneralInit(void) {
-    wdt_enable(WDTO_2S);
+    //wdt_enable(WDTO_1S);
     // Disable all unneeded
     ACSR = (1<<ACD);
     DDRC  |=   (1<<PC0)|(1<<PC1);
@@ -79,8 +84,8 @@ FORCE_INLINE void GeneralInit(void) {
     // Show Logo
     LCD_DrawImage(0, 0, ImageLogo, false);
     for (uint8_t i=0; i<4; i++) { // Repeat to allow watchdog to reset
-        wdt_reset();
         _delay_ms(500);
+        wdt_reset();
     }
     // Proceed with init
     QTouchInit();
@@ -100,6 +105,7 @@ FORCE_INLINE void GeneralInit(void) {
 
 FORCE_INLINE void Task_Sleep(void) {
     if(IsPumping || (EState != StIdle) || EBeep.IsYelling) return;     // Get out if in menu or if beeper beeps
+    UARTSend('s');
     // Prepare to sleep
     MustSleep = true;
     LCD_BCKLT_OFF();
@@ -108,11 +114,14 @@ FORCE_INLINE void Task_Sleep(void) {
     //set_sleep_mode(SLEEP_MODE_PWR_DOWN);    // DEBUG: will sleep forever
     sleep_enable();
     while(MustSleep) {    // Will get out of cycle either in case of pumping, or in case of keypress
-        wdt_disable();
+        UARTSend('1');
+        ATOMIC_BLOCK(ATOMIC_FORCEON) {
+            wdt_reset();
+            wdt_disable();
+        }
+        UARTSend('2');
         sleep_cpu();
-        wdt_enable(WDTO_2S);
-        wdt_reset();
-
+        UARTSend('w');
         // Check if key pressed
         current_time_ms_touch += 1000;  // As IRQ triggers every second
         if(QTouchActivityDetected()) MustSleep = false;
