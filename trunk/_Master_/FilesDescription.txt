@@ -1,0 +1,7 @@
+lia-Front.gtl      - GERBER-файл верхнего слоя платы (слой компонентов)
+lia-Back.gbl       - GERBER-файл нижнего слоя платы
+lia-Mask_Front.gts - GERBER-файл маски верхнего слоя платы (слоя компонентов)
+lia-Mask_Back.gbs  - GERBER-файл маски нижнего слоя платы 
+lia-PCB_Edges.gbr  - GERBER-файл контура платы
+lia.drl            - файл листа сверловки
+other_formats.xls  - заполненная карта заказа с сайта
