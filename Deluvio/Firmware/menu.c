@@ -7,6 +7,7 @@
 #include "time.h"
 #include "messages.h"
 #include <avr/pgmspace.h>
+#include "battery.h"
 
 // ============================= Global variables ==============================
 enum State_t EState;
@@ -66,6 +67,12 @@ void SetState(enum State_t AState) {
         case StOfferSetTime:
             LCD_PrintString_P(0, 0, PSTR(MSG_SETUP_TIME), false);
             LCD_PrintTime(PRINT_TIME_X, 4, false, false, false);
+            break;
+        case StShowBattery:
+            LCD_PrintString_P(0, 0, PSTR(MSG_SHOW_BATTERY), false);
+            BatteryMeasure();
+            LCD_DrawGauge();
+            LCD_GaugeValue(BatteryGaugeValue());
             break;
         case StManualAqua:
             LCD_PrintString_P(0, 0, PSTR(MSG_PUMP), false);
@@ -129,6 +136,9 @@ void EVENT_KeyUp(void) {
             }
             break;
         case StOfferSetTime:
+            SetState(StShowBattery);
+            break;
+        case StShowBattery:
             EMenu.Pump = 1;
             SetState(StShowChannel);
             break;
@@ -191,11 +201,14 @@ void EVENT_KeyUp(void) {
 void EVENT_KeyDown(void) {
     switch(EState) {
         case StShowChannel:
-            if(EMenu.Pump == 1) SetState(StOfferSetTime);
+            if(EMenu.Pump == 1) SetState(StShowBattery);
             else {
                 EMenu.Pump--;
                 SetState(StShowChannel);
             }
+            break;
+        case StShowBattery:
+            SetState(StOfferSetTime);
             break;
         case StOfferSetTime:
             EMenu.Pump = PUMP_COUNT;

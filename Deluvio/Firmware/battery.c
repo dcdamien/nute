@@ -24,3 +24,11 @@ void BatteryMeasure(void) {
         BatteryADCValue >>= BAT_POWER_OF_MEASURES;
     }
 }
+
+uint8_t BatteryGaugeValue(void) {
+    // Calculate gauge value
+    if (BatteryADCValue <= BAT_U_DISCHARGED) return 1;
+    if (BatteryADCValue >= BAT_U_FULL)       return 94;
+    uint16_t Result = ((BatteryADCValue - BAT_U_DISCHARGED) * 94) / (BAT_U_FULL - BAT_U_DISCHARGED);
+    return (uint8_t)Result;
+}

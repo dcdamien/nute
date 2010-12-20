@@ -90,6 +90,8 @@ FORCE_INLINE void GeneralInit(void) {
     TimeInit();
     // Battery sensor init
     PWROK_DDR &= ~(1<<PWROK_P);
+    BatteryMeasure();
+    BatteryOk = !BATTERY_OK();
     // Water sensor
     WATER_SNS_DDR &= ~(1<<WATER_SNS_P);
     WATER_SNS_DDR |=  (1<<WATER_PWR_P);
@@ -249,7 +251,7 @@ FORCE_INLINE void EVENT_NewMinute(void) {
         LCD_PrintTime(PRINT_TIME_X, PRINT_TIME_Y, false, false, false);
         CheckBattery();
         // Beep if needed
-        if(!WaterOk || !BatteryOk) {
+        if(!WaterOk || !BatteryOk || !Time.IsSetCorrectly) {
             // Beep every 15 minutes
             if ((Time.Minute == 1) || (Time.Minute == 15) || (Time.Minute == 30) || (Time.Minute == 45)) {
                 Beep(BEEP_LONG);
@@ -261,12 +263,6 @@ FORCE_INLINE void EVENT_NewMinute(void) {
 FORCE_INLINE void EVENT_NewHour(void) {
     // Must count time and check pumps even if power is not ok
     if (EState != StIdle) return;    // Get out if not in menu
-    // Check if time is set
-    if (!Time.IsSetCorrectly && POWER_OK()) {
-        Beep(BEEP_LONG);
-        MustSleep = false;
-        return;
-    }
     // Iterate pumps, switch on if needed
     for(uint8_t i=0; i<PUMP_COUNT; i++) if(Pumps[i].Enabled) {
         // Decrease PeriodLeft counter for hours mode
