@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 14/12/2010 12:19:43
+EESchema Schematic File Version 2  date 20/12/2010 14:51:39
 LIBS:Atmel_kl
 LIBS:Connectors_kl
 LIBS:display_kl
@@ -13,7 +13,7 @@ EELAYER END
 $Descr A3 16535 11700
 Sheet 1 1
 Title ""
-Date "14 dec 2010"
+Date "20 dec 2010"
 Rev ""
 Comp ""
 Comment1 ""
@@ -583,7 +583,7 @@ L C C?
 U 1 1 4D073656
 P 9150 6350
 F 0 "C?" H 9200 6450 50  0000 L CNN
-F 1 "0.1u" H 9200 6250 50  0000 L CNN
+F 1 "1u" H 9200 6250 50  0000 L CNN
 	1    9150 6350
 	0    1    1    0   
 $EndComp
