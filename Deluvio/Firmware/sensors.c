@@ -2,6 +2,7 @@
 #include "common.h"
 #include <avr/interrupt.h>
 #include <avr/io.h>
+#include <avr/wdt.h>
 #include "touch_qt_config.h"
 #include "touch_api.h"
 #include "beep.h"
@@ -73,13 +74,7 @@ FORCE_INLINE void Task_Sensors(void) {
 }
 
 void SensorsMeasure(void) {
-    // status flags to indicate the re-burst for library
-    uint16_t status_flag = 0u;
-    bool burst_flag = false;
-    do {
-        status_flag = qt_measure_sensors(current_time_ms_touch);
-        burst_flag  = status_flag & QTLIB_BURST_AGAIN;
-    } while (burst_flag);
+    QTouchActivityDetected();
     // ============= Check if key event triggered =========
     if(SensorIsTouched(3) && !EKeys.KeyDownPressed) {
         EKeys.KeyDownPressed = true;
@@ -137,6 +132,7 @@ bool QTouchActivityDetected(void) {
     do {
         status_flag = qt_measure_sensors(current_time_ms_touch);
         burst_flag  = status_flag & QTLIB_BURST_AGAIN;
+        wdt_reset();
     } while (burst_flag);
     return (qt_measure_data.qt_touch_status.sensor_states[0] != 0x00);
 }
