@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "delay_util.h"
 #include "uart.h"
+#include "si4432.h"
 
 #define LED1_PIN                         GPIO_Pin_9
 #define LED1_GPIO_PORT                   GPIOC
