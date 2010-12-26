@@ -21,7 +21,8 @@ OUTTYPE = binary
 PRJSRC = main.c \
 system_kl.c \
 delay_util.c \
-uart.c
+uart.c \
+si4432.c
 
 # List project include directories here
 PRJINCDIR =
@@ -56,7 +57,8 @@ LDSCRIPT_FLASH = lib/stm32_flash.ld
 SRC  = $(PRJSRC) \
 lib/src/stm32f10x_gpio.c \
 lib/src/stm32f10x_rcc.c \
-lib/src/stm32f10x_usart.c
+lib/src/stm32f10x_usart.c \
+lib/src/stm32f10x_spi.c
 
 # Startup ASM file here
 ASRC =lib/startup/startup_stm32f10x_md_vl.s

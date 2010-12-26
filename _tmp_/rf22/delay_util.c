@@ -1,8 +1,14 @@
 #include "delay_util.h"
+#include "system_kl.h"
 
 // Simple delay loop
 void DelayLoop (volatile uint32_t ACounter) {
     for (; ACounter != 0; ACounter--);
+}
+
+void Delay_ms (uint32_t Ams) {
+    uint32_t __ticks = (SystemCoreClock / 10000) * Ams;
+    DelayLoop (__ticks);
 }
 
 // Choose OCR value
