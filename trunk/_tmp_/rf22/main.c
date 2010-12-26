@@ -33,29 +33,28 @@ void LEDOff(void)
 }
 
 void SysTick_Handler (void) {
-  static uint32_t ticks, LedIsOn;
+  static uint32_t ticks;
 
-  if (ticks++ >= 18) {
+  if (ticks++ >= 11) {
     ticks = 0;
-    if(LedIsOn) LEDOff();
-    else LEDOn();
-    LedIsOn = !LedIsOn;
+    LED1_GPIO_PORT->ODR ^= GPIO_Pin_9;
 
-    UARTSend('a');
+    //SI_WriteRegister(0x25, 0x55);
+    //SI_ReadRegister(1);
+
+    //UARTSend('a');
   }
 }
 
-const char S[80] = " \rDevice started Device started Device started Device started Device started \r";
 
 int main(void) {
     LEDInit();
     UARTInit();
-
+    SI_Init();
     
-
-    UARTSendString(S);
-
     SysTick_Config(SystemCoreClock / 100);
 
-    while (1);
+    while (1) {
+        //UARTSend('a');
+    }
 }

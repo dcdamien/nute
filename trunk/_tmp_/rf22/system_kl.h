@@ -12,20 +12,14 @@
 
 // Clocks
 #define SYS_CLK_HSI_DIRECT  // Use HSI as system clock without PLL
-
-// Memory
-// Uncomment the following line if you need to relocate your vector Table in Internal SRAM.
-// #define VECT_TAB_SRAM
-#define VECT_TAB_OFFSET  0x0 //Vector Table base offset field. This value must be a multiple of 0x100.
+// APB2 divider
+#define SYS_APB2_CLK_DIVIDER    RCC_HCLK_Div2
 
 // ============================== Variables ====================================
 extern uint32_t SystemCoreClock;
 
 // ============================== Prototypes ===================================
 extern void SystemInit(void);
-#ifndef SYS_CLK_HSI_DIRECT
-static void SetSysClock(void);
-#endif
 
 #endif	/* SYSTEM_KL_H */
 

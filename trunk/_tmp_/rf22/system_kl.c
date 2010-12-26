@@ -35,20 +35,13 @@ void SystemInit (void) {
     RCC->CIR = 0x009F0000;      // Disable all interrupts and clear pending bits
 #endif /* STM32F10X_CL */
 
-#if defined (STM32F10X_HD) || (defined STM32F10X_XL) || (defined STM32F10X_HD_VL)
-    #ifdef DATA_IN_ExtSRAM
-        SystemInit_ExtMemCtl();
-    #endif /* DATA_IN_ExtSRAM */
-#endif
-    // Configure the System clock frequency, HCLK, PCLK2 and PCLK1 prescalers
-    // Configure the Flash Latency cycles and enable prefetch buffer
+    // ==== Setup clocks ====
 #ifndef SYS_CLK_HSI_DIRECT
-    SetSysClock();
+    // Setup sys clock
 #endif
+    // Setup peripheral clk
+    RCC_PCLK2Config(SYS_APB2_CLK_DIVIDER);
 
-#ifdef VECT_TAB_SRAM
-    SCB->VTOR = SRAM_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal SRAM. */
-#else
-    SCB->VTOR = FLASH_BASE | VECT_TAB_OFFSET; /* Vector Table Relocation in Internal FLASH. */
-#endif
+    // ==== Setup IRQ vector table ====
+    SCB->VTOR = FLASH_BASE;
 }
