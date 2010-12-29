@@ -28,6 +28,9 @@
 // Shutdown pin
 #define SI_SHUTDOWN()   (SI_GPIO->BSRR = SI_SDN)
 #define SI_SWITCH_ON()  (SI_GPIO->BRR  = SI_SDN)
+// NIRQ
+#define SI_NIRQ_IS_HI() (SI_GPIO & SI_NIRQ)
+#define SI_WAIT_IRQ()   while (SI_NIRQ_IS_HI())
 
 // ========================== Types and variables ==============================
 #define SI_PKT_DATA_LENGTH  4 //SI_PKT_LENGTH-3
@@ -58,6 +61,8 @@ extern struct Si_t SI;
 // ============================= Prototypes ====================================
 void SI_Init (void);
 
+void SI_FIFOWrite(uint8_t* PData, uint8_t ALen);
+void SI_FIFORead (uint8_t* PData, uint8_t ALen);
 
 void SI_WriteRegister (const uint8_t Addr, const uint8_t AData);
 uint8_t SI_ReadRegister (const uint8_t Addr);
