@@ -34,15 +34,16 @@
 #define SI_WAIT_IRQ()   while (SI_NIRQ_IS_HI())
 
 // ========================== Types and variables ==============================
-#define SI_PKT_DATA_LENGTH  4 //SI_PKT_LENGTH-3
+#define SI_PKT_MAX_LENGTH  252 // Total length of PktID+Cmd+Data
 struct SI_Packet_t {
     uint8_t PacketID;
     uint8_t CommandID;
-    uint8_t Data[SI_PKT_DATA_LENGTH];
+    uint8_t Data[SI_PKT_MAX_LENGTH-2];
 };
 
-struct Si_t {
+struct Sit {
     uint8_t State;
+    uint8_t DataLength;
     union {
         uint8_t RX_PktArray[sizeof(struct SI_Packet_t)];
         struct SI_Packet_t RX_Pkt;
@@ -55,20 +56,26 @@ struct Si_t {
 };
 
 
-extern struct Si_t Si;
+extern struct Sit Si;
 
 // ============================= Prototypes ====================================
-void SI_Init (void);
-void SI_SetMode (enum SiMode_t AMode);
+void SiInit (void);
+void SiTransmitPkt(void);
 
-void SI_FlushIRQs (void);
+void SiSetMode (uint8_t AMode);
+void SiSetReady (void);
+void SiSetIRQs (uint8_t AIRQ1, uint8_t AIRQ2);
+void SiSetPktTotalLength (uint8_t ALength);
 
-void SI_SetPacketLength (uint8_t ALength);
-void SI_FIFOWrite(uint8_t* PData, uint8_t ALen);
-void SI_FIFORead (uint8_t* PData, uint8_t ALen);
+void SiFlushIRQs (void);
+void SiPollIRQ2 (uint8_t AIRQ);
+//void SiWaitIRQ1 (uint8_t AIRQ1);
 
-void SI_WriteRegister (const uint8_t Addr, const uint8_t AData);
-uint8_t SI_ReadRegister (const uint8_t Addr);
+void SiFIFOWrite(uint8_t* PData, uint8_t ALen);
+void SiFIFORead (uint8_t* PData, uint8_t ALen);
+
+void SiWriteRegister (const uint8_t Addr, const uint8_t AData);
+uint8_t SiReadRegister (const uint8_t Addr);
 
 #endif	/* SI4432_H */
 
