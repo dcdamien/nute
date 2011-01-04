@@ -25,9 +25,8 @@ void Delay_ms (uint32_t Ams) {
 */
 
 //volatile uint16_t TickCounter;
-/*
 
-FORCE_INLINE void DelayInit(void) {
+void DelayInit(void) {
     // Millisecond timer initialization, with output compare interrupt enabled
 #ifdef __AVR_ATmega88__
     TCCR0A = (1<<WGM01);                    // CTC mode
@@ -41,6 +40,7 @@ FORCE_INLINE void DelayInit(void) {
 #endif
 }
 
+/*
 bool DelayElapsed(uint16_t *AVar, const uint16_t ADelay) {
     bool Result = false;
     ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
