@@ -1,4 +1,5 @@
 #include "stm32f10x.h"
+#include "main.h"
 #include "delay_util.h"
 #include "uart.h"
 #include "si4432.h"
@@ -59,18 +60,28 @@ LEDG_ON();
 LEDB_ON();
     while (1) {
         //UARTSend('a');
-        //Delay_ms(100);
-        if (BTN_IS_PRESSED()) LEDB_ON();
-        else LEDB_OFF();
+//        Delay_ms(100);
+        Task_Si();
+
+//        if (BTN_IS_PRESSED()) LEDB_ON();
+//        else LEDB_OFF();
     }
 }
 
 void GeneralInit(void) {
     LEDInit();
     UARTInit();
-    SI_Init();
+    //SI_Init();
     BtnInit();
+    DelayInit();
 
     SysTick_Config(SystemCoreClock / 100);
 
+}
+
+void Task_Si(void) {
+
+
+    // Prepare TX packet
+    
 }

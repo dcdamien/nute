@@ -4,7 +4,7 @@
 #include "si4432_rfconfig.h"
 
 // Variables
-struct Si_t SI;
+struct Si_t Si;
 
 // Local prototypes
 void SI_SPIInit (void);
@@ -15,19 +15,23 @@ uint8_t SI_ReadWriteByte (uint8_t AByte);
 // ============================ Implementation =================================
 void SI_Init (void) {
     SI_SPIInit();
-    SI.NewPacketReceived = false;
+    Si.NewPacketReceived = false;
     SI_SWITCH_ON();
-    Delay_ms(15);   // Wait at least 15ms before any initialization SPI commands are sent to the radio
-    // Read interrupt status registers to clear the interrupt flags and release NIRQ pin
-    SI_ReadRegister(0x03); //read the Interrupt Status1 register
-    SI_ReadRegister(0x04); //read the Interrupt Status2 register
-    // Perform software reset
-    SI_WriteRegister(0x07, 0x80);
-    SI_WAIT_IRQ();  // Wait for chip to become ready
-    // Read interrupt status registers to clear the interrupt flags and release NIRQ pin
-    SI_ReadRegister(0x03); //read the Interrupt Status1 register
-    SI_ReadRegister(0x04); //read the Interrupt Status2 register
+    Delay_ms(15);           // Wait at least 15ms before any initialization SPI commands are sent to the radio
+    SI_FlushIRQs();         // Release nIRQ pin
+    SI_SetMode (SiReset);   // Perform reset of all registers
+    SI_WAIT_IRQ();          // Wait for chip to become ready
     SI_RFConfig();
+    SI_FlushIRQs();         // Release nIRQ pin
+    SI_SetPacketLength(4);
+}
+
+void SI_SetMode (enum SiMode_t AMode) {
+    SI_WriteRegister(0x07, (uint8_t)AMode);
+}
+
+void SI_SetPacketLength (uint8_t ALength) {
+    SI_WriteRegister(0x3E, ALength);
 }
 
 void SI_FIFOWrite(uint8_t* PData, uint8_t ALen) {
@@ -54,8 +58,13 @@ void SI_FIFORead (uint8_t* PData, uint8_t ALen) {
     SI_NSEL_HI();
 }
 
+void SI_FlushIRQs (void) {
+    SI_ReadRegister(0x03);  //read the Interrupt Status1 register
+    SI_ReadRegister(0x04);  //read the Interrupt Status2 register
+}
 
-// Inner use
+
+// ============================== Inner use ====================================
 void SI_WriteRegister (const uint8_t Addr, const uint8_t AData) {
     SI_NSEL_LO();
     SI_ReadWriteByte (Addr | 0x80); // Send Addr with Write flag
@@ -110,19 +119,60 @@ void SI_SPIInit (void) {
     SPI_Cmd(SPI1, ENABLE);
 }
 
+
+
 void SI_RFConfig (void) {
+    // Setup IRQs
+    SI_WriteRegister(0x05, SI_R05);
+    SI_WriteRegister(0x06, SI_R06);
     // Setup carrier frequency
     SI_WriteRegister(0x75, SI_R75);
     SI_WriteRegister(0x76, SI_R76);
     SI_WriteRegister(0x77, SI_R77);
+    // Output power
+    SI_WriteRegister(0x6D, SI_R6D);
+    // GPIO setup
+    SI_WriteRegister(0x0B, SI_R0B);
+    SI_WriteRegister(0x0C, SI_R0C);
+    SI_WriteRegister(0x0D, SI_R0D);
+    // Setup AFC
+    SI_WriteRegister(0x1D, SI_R1D);
+    SI_WriteRegister(0x1E, SI_R1E);
+    SI_WriteRegister(0x2A, SI_R2A);
     // Setup modem
+    SI_WriteRegister(0x1C, SI_R1C);
+    SI_WriteRegister(0x1F, SI_R1F);
+    SI_WriteRegister(0x20, SI_R20);
+    SI_WriteRegister(0x21, SI_R21);
+    SI_WriteRegister(0x22, SI_R22);
+    SI_WriteRegister(0x23, SI_R23);
+    SI_WriteRegister(0x24, SI_R24);
+    SI_WriteRegister(0x25, SI_R25);
     SI_WriteRegister(0x6E, SI_R6E);
     SI_WriteRegister(0x6F, SI_R6F);
     SI_WriteRegister(0x70, SI_R70);
     // Deviation
     SI_WriteRegister(0x71, SI_R71);
     SI_WriteRegister(0x72, SI_R72);
-
+    // Packet structure
+    SI_WriteRegister(0x30, SI_R30);
+    SI_WriteRegister(0x32, SI_R32);
+    SI_WriteRegister(0x33, SI_R33);
+    SI_WriteRegister(0x34, SI_R34);
+    SI_WriteRegister(0x35, SI_R35);
+    SI_WriteRegister(0x36, SI_R36);
+    SI_WriteRegister(0x37, SI_R37);
+    // Headers
+    SI_WriteRegister(0x3F, SI_R3F);
+    SI_WriteRegister(0x40, SI_R40);
+    SI_WriteRegister(0x41, SI_R41);
+    SI_WriteRegister(0x42, SI_R42);
+    SI_WriteRegister(0x43, SI_R43);
+    SI_WriteRegister(0x44, SI_R44);
+    SI_WriteRegister(0x45, SI_R45);
+    SI_WriteRegister(0x46, SI_R46);
+    // Crystal capacitors
+    SI_WriteRegister(0x09, SI_R09);
 
 }
 
