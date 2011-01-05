@@ -68,6 +68,7 @@ void SiSetIRQs (uint8_t AIRQ1, uint8_t AIRQ2);
 void SiSetPktTotalLength (uint8_t ALength);
 
 void SiFlushIRQs (void);
+void SiPollIRQ1 (uint8_t AIRQ);
 void SiPollIRQ2 (uint8_t AIRQ);
 //void SiWaitIRQ1 (uint8_t AIRQ1);
 

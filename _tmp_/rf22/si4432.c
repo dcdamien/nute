@@ -2,6 +2,7 @@
 #include "stm32f10x_spi.h"
 #include "delay_util.h"
 #include "si4432_rfconfig.h"
+#include "uart.h"
 
 // Variables
 struct Sit Si;
@@ -19,11 +20,11 @@ void SiInit (void) {
     Si.TX_Pkt.PacketID = 0;
     SI_SWITCH_ON();
     Delay_ms(15);           // Wait at least 15ms before any initialization SPI commands are sent to the radio
-    SiFlushIRQs();         // Release nIRQ pin
-    SiSetMode (SI_RESET);  // Perform reset of all registers
+    SiFlushIRQs();          // Release nIRQ pin
+    SiSetMode (SI_RESET);   // Perform reset of all registers
     SI_WAIT_IRQ();          // Wait for chip to become ready
     SiRFConfig();
-    SiFlushIRQs();         // Release nIRQ pin
+    SiSetIRQs(SI_IRQ1_NONE, SI_IRQ2_NONE);
 }
 
 void SiTransmitPkt(void) {
@@ -41,6 +42,7 @@ void SiSetMode (uint8_t AMode) {
 void SiSetIRQs (uint8_t AIRQ1, uint8_t AIRQ2) {
     SiWriteRegister(0x05, AIRQ1);
     SiWriteRegister(0x06, AIRQ2);
+    SiFlushIRQs();
 }
 void SiSetPktTotalLength (uint8_t ALength) {
     SiWriteRegister(0x3E, ALength);
@@ -51,8 +53,9 @@ void SiFIFOWrite(uint8_t* PData, uint8_t ALen) {
     uint8_t FData = 0x7F | 0x80;                // Write to FIFO register = 0x7F
     SI_NSEL_LO();
     SPI1->DR = FData;                           // Write FIFO address
-    for (uint8_t i=0; i<ALen; i++) {
-        while (!(SPI1->SR & SPI_I2S_FLAG_TXE)); // Wait for buffer to empty
+    for (uint8_t i=0; i<ALen; i++) {            // Iterate data
+        while (!(SPI1->SR & SPI_I2S_FLAG_RXNE));// Wait for SPI transmission to complete
+        FData = SPI1->DR;                       // Dummy read to reset RXNE flag
         SPI1->DR = *PData++;                    // Write data
     }
     while (!(SPI1->SR & SPI_I2S_FLAG_RXNE));    // Wait for SPI transmission to complete
@@ -74,6 +77,12 @@ void SiFIFORead (uint8_t* PData, uint8_t ALen) {
 void SiFlushIRQs (void) {
     SiReadRegister(0x03);  //read the Interrupt Status1 register
     SiReadRegister(0x04);  //read the Interrupt Status2 register
+}
+void SiPollIRQ1 (uint8_t AIRQ) {
+    uint8_t R;
+    do {
+        R = SiReadRegister(0x03);
+    } while(!(R & AIRQ));
 }
 void SiPollIRQ2 (uint8_t AIRQ) {
     uint8_t R;
