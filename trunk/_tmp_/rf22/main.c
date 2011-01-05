@@ -55,10 +55,10 @@ void ReadIRQs(void) {
 void SysTick_Handler (void) {
   static uint32_t ticks;
 
-  if (ticks++ >= 45) {
+  if (ticks++ >= 72) {
     ticks = 0;
     LED_GPIO_PORT->ODR ^= LEDG_PIN;
-    ReadIRQs();
+    //ReadIRQs();
 
     //SI_WriteRegister(0x25, 0x55);
     //SI_ReadRegister(1);
@@ -97,39 +97,18 @@ void GeneralInit(void) {
 void Task_Si(void) {
     LEDB_ON();
     // Prepare IRQs
-    //SiSetIRQs(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
-    SiSetReady();
-    UARTSend('r');
-    //SiWriteRegister(0x05, 0x00);
-    //SiWriteRegister(0x06, SI_IRQ2_CHIP_READY);
-
+    SiSetIRQs(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
     // Prepare TX packet
-    SiSetPktTotalLength(4);
+    SiSetPktTotalLength(6);
     Si.TX_Pkt.PacketID++;
     Si.TX_Pkt.CommandID = 0x01;
     Si.TX_Pkt.Data[0] = 'A';
     Si.TX_Pkt.Data[1] = 'i';
-//    Si.TX_Pkt.Data[2] = 'y';
-//    Si.TX_Pkt.Data[3] = 'a';
-//    //SiTransmitPkt();
-    SiFIFOWrite(Si.TX_PktArray, Si.DataLength);    // Place TX packet to FIFO
-
-//    SiWriteRegister(0x7F, 'a');
-//    SiWriteRegister(0x7F, 'i');
-//    SiWriteRegister(0x7F, 'y');
-//    SiWriteRegister(0x7F, 'a');
-
-    UARTSend('w');
-
+    Si.TX_Pkt.Data[2] = 'y';
+    Si.TX_Pkt.Data[3] = 'a';
+    SiTransmitPkt();
+    SI_WAIT_IRQ();
+    //SiFlushIRQs();
     ReadIRQs();
-    SiWriteRegister(0x05, 0x04);
-    SiWriteRegister(0x06, 0x00);
-    SiFlushIRQs();
-    ReadIRQs();
-   
-    SiWriteRegister(0x07, 0x09);
-//    SI_WAIT_IRQ();
-    UARTSend('i');
-    //SiWaitIRQ1(SI_IRQ1_PKT_SENT);
     LEDB_OFF();
 }
