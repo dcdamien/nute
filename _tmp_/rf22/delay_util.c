@@ -1,72 +1,62 @@
 #include "delay_util.h"
 #include "system_kl.h"
+#include "stm32f10x_tim.h"
+#include "misc.h"
+
+uint32_t TickCounter;   // Global
+// =============================== Implementation ==============================
+void DelayInit(void) {
+    // Interrupt config
+    NVIC_InitTypeDef NVIC_InitStructure;
+    NVIC_InitStructure.NVIC_IRQChannel = TIM7_IRQn;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 1;
+    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+    NVIC_Init(&NVIC_InitStructure);
+
+    // TIM7 clock enable
+    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM7, ENABLE);
+    // Time base configuration: 1 ms == 1000 Hz = FCLK / (100 * (FCLK/100 000))
+    TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
+    TIM_TimeBaseStructure.TIM_CounterMode       = TIM_CounterMode_Up;   // Up-counter needed, nothing special
+    TIM_TimeBaseStructure.TIM_ClockDivision     = 0;                    // Dead-time divisor, not needed here
+    TIM_TimeBaseStructure.TIM_Period            = 100;                  // Auto-reload value
+    TIM_TimeBaseStructure.TIM_Prescaler         = (uint16_t)(SystemCoreClock / 100000) - 1; // Input clock divisor
+    TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
+    TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStructure);
+    // Enable timer
+    TIM_Cmd(TIM7, ENABLE);
+    // Clear Timer update pending flag
+    TIM_ClearFlag(TIM7, TIM_FLAG_Update);
+    // Interrupts config
+    TIM_ITConfig(TIM7, TIM_IT_Update, ENABLE);
+}
 
 // Simple delay loop
 void DelayLoop (volatile uint32_t ACounter) {
     for (; ACounter != 0; ACounter--);
 }
-
 void Delay_ms (uint32_t Ams) {
     uint32_t __ticks = (SystemCoreClock / 10000) * Ams;
     DelayLoop (__ticks);
 }
 
-// Choose OCR value
-/*
-#if F_CPU == 1000000
-    #define DELAY_TCCR  (0<<CS02)|(1<<CS01)|(0<<CS00)   // 1 MHz/8 = 125 kHz;
-    #define DELAY_OCRA  125  // 125 kHz / 125 = 1000 compares per second
-#elif F_CPU == 4000000
-    #define DELAY_TCCR  (0<<CS02)|(1<<CS01)|(1<<CS00)   // 4 MHz/64 = 62.5 kHz;
-    #define DELAY_OCRA  62
-#else
-    #error "Delay_util: Set correct frequency in project settings!"
-#endif
-*/
-
-//volatile uint16_t TickCounter;
-
-void DelayInit(void) {
-    // Millisecond timer initialization, with output compare interrupt enabled
-#ifdef __AVR_ATmega88__
-    TCCR0A = (1<<WGM01);                    // CTC mode
-    TCCR0B = (0<<CS02)|(1<<CS01)|(0<<CS00); // 1 MHz/8 = 125 kHz
-    OCR0A  = 125;                           // 125 kHz / 125 = 1000 compares per second
-    TIMSK0 |= (1<<OCIE0A);                  // Enable interrupt
-#elif defined __AVR_ATmega16A__
-    TCCR0 = (1<<WGM01)|DELAY_TCCR; // CTC mode
-    OCR0  = DELAY_OCRA;        
-    TIMSK |= (1<<OCIE0);                              // Enable interrupt 
-#endif
-}
-
-/*
-bool DelayElapsed(uint16_t *AVar, const uint16_t ADelay) {
-    bool Result = false;
-    ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
-        if ((TickCounter - *AVar) >= ADelay) {
-            *AVar = TickCounter;   // Reset delay
-            Result = true;
-        }
-    } // Atomic
-    return Result;
-}
-
-void DelayReset(uint16_t *AVar) {
-    ATOMIC_BLOCK (ATOMIC_RESTORESTATE) {
-        *AVar = TickCounter;
+// Interrupt-driven delays
+bool DelayElapsed(uint32_t *AVar, const uint32_t ADelay) {
+    if ((TickCounter - *AVar) >= ADelay) {
+        *AVar = TickCounter;   // Reset delay
+        return true;
     }
+    else return false;
+}
+void DelayReset(uint32_t *AVar) {
+    *AVar = TickCounter;
 }
 
 // ================================ Interrupts =================================
 // Delay counter
-#ifdef __AVR_ATmega88__
-ISR(TIMER0_COMPA_vect) {
+void TIM7_IRQHandler (void) {
+    // Clear TIM2 update interrupt
+    TIM_ClearITPendingBit(TIM7, TIM_IT_Update);
     TickCounter++;
 }
-#elif defined __AVR_ATmega16A__
-ISR(TIMER0_COMP_vect) {
-    TickCounter++;
-}
-#endif
-*/

@@ -27,7 +27,7 @@ void LEDInit(void) {
 #define LEDB_ON()   LED_GPIO_PORT->BSRR = LEDB_PIN
 #define LEDG_OFF()  LED_GPIO_PORT->BRR  = LEDG_PIN
 #define LEDB_OFF()  LED_GPIO_PORT->BRR  = LEDB_PIN
-//#define LEDB_TOGGLE()   LED_GPIO_PORT->BSRR = LEDB_PIN
+#define LEDB_TOGGLE()   LED_GPIO_PORT->ODR ^= LEDB_PIN
 
 
 #define BTN_P   GPIO_Pin_1
@@ -71,8 +71,12 @@ int main(void) {
     GeneralInit();
 LEDG_ON();
     UARTSendString("\rrf22\r");
-    Task_Si(); 
+    Task_Si();
+
+    uint32_t Tmr;
+
     while (1) {
+        if (DelayElapsed(&Tmr, 1000)) LEDB_TOGGLE();
         //UARTSend('a');
        // Delay_ms(100);
         
