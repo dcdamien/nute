@@ -16,8 +16,8 @@ void DelayLoop (volatile uint32_t ACounter);
 void Delay_ms (uint32_t Ams);
 
 void DelayInit(void);
-bool DelayElapsed(uint16_t *AVar, const uint16_t ADelay);
-void DelayReset(uint16_t *AVar);
+bool DelayElapsed(uint32_t *AVar, const uint32_t ADelay);
+void DelayReset(uint32_t *AVar);
 
 #endif	/* _TIME_UTILS_H */
 

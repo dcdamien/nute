@@ -58,7 +58,9 @@ SRC  = $(PRJSRC) \
 lib/src/stm32f10x_gpio.c \
 lib/src/stm32f10x_rcc.c \
 lib/src/stm32f10x_usart.c \
-lib/src/stm32f10x_spi.c
+lib/src/stm32f10x_spi.c \
+lib/src/stm32f10x_tim.c \
+lib/src/misc.c
 
 # Startup ASM file here
 ASRC =lib/startup/startup_stm32f10x_md_vl.s
@@ -125,7 +127,8 @@ CFLAGS += -MMD -MP -MF .dep/$(@F).d
 #  -listing-cont-lines: Sets the maximum number of continuation lines of hex
 #       dump that will be displayed for a given single line of source input.
 #ASFLAGS = $(ADEFS) -Wa,-adhlns=$(<:%.S=$(OBJDIR)/%.lst),-gstabs,--listing-cont-lines=100
-ASFLAGS = $(MCFLAGS) -g -gdwarf-2 -Wa,-amhls=$(<:.s=.lst)
+ASFLAGS = $(MCFLAGS) -g -gdwarf-2
+#ASFLAGS += -Wa,-amhls=$(<:.s=.lst)
 #ASFLAGS += $(patsubst %, -I%, $(STINCDIR))
 
 
@@ -182,20 +185,25 @@ sizeafter:
 $(OBJDIR)/%.o : %.c
 	@echo
 	@echo $(MSG_COMPILING) $<
-	$(CC) -c $(CFLAGS) $< -o $(OBJDIR)/$(notdir $@)
+	@mkdir -p `dirname $@`
+	$(CC) -c $(CFLAGS) $< -o $@
+#	$(CC) -c $(CFLAGS) $< -o $(OBJDIR)/$(notdir $@)
 
 # Assembling ASM files.
 $(OBJDIR)/%.o : %.s
 	@echo
 	@echo $(MSG_ASSEMBLING) $<
-	$(CC) -c $(ASFLAGS) $< -o $(OBJDIR)/$(notdir $@)
+	@mkdir -p `dirname $@`
+	$(CC) -c $(ASFLAGS) $< -o $@
+#	$(CC) -c $(ASFLAGS) $< -o $(OBJDIR)/$(notdir $@)
 
 # Linking .o files. Those must be ready yet.
 output.elf: $(OBJ)
 	@echo
 	@echo $(MSG_LINKING) $@
+	$(CC) $(OBJ) $(LDFLAGS_FLASH) -o $(OUTDIR)/$@
 #	@echo $(foreach oname, $(OBJ), $(OBJDIR)/$(notdir $(oname)))
-	$(CC) $(foreach oname, $(OBJ), $(OBJDIR)/$(notdir $(oname))) $(LDFLAGS_FLASH) -o $(OUTDIR)/$@
+#	$(CC) $(foreach oname, $(OBJ), $(OBJDIR)/$(notdir $(oname))) $(LDFLAGS_FLASH) -o $(OUTDIR)/$@
 
 
 # Create .bin file
@@ -225,7 +233,7 @@ clean:
 	@echo $(MSG_CLEANING)
 	-rm -f $(OBJ)
 	-rm -f $(OUTDIR)/*.*
-#	-rm -f $(PROJECT).hex
+	-rm -f $(OBJDIR)/*.*
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
