@@ -10,14 +10,34 @@
 
 #include <inttypes.h>
 #include <stdbool.h>
+#include "system_kl.h"
 
-// ========================== Function Prototypes ==============================
-void DelayLoop (volatile uint32_t ACounter);
-void Delay_ms (uint32_t Ams);
 
-void DelayInit(void);
-bool DelayElapsed(uint32_t *AVar, const uint32_t ADelay);
-void DelayReset(uint32_t *AVar);
+class Delay_t {
+private:
+    uint32_t TickCounter;
+public:
+    void Init(void);
+    // Simple loop-based delays, no init needed
+    void Loop (volatile uint32_t ACounter) { for (; ACounter != 0; ACounter--); }   
+    void ms (uint32_t Ams) {
+        uint32_t __ticks = (SystemCoreClock / 10000) * Ams;
+        Loop (__ticks);
+    }
+    // Interrupt-driven delays
+    bool Elapsed(uint32_t *AVar, const uint32_t ADelay);
+    void Reset(uint32_t *AVar) { *AVar = TickCounter; }
+    
+    void IncreaseTickCounter(void) { TickCounter++; }
+};
+
+extern Delay_t Delay;
+
+// Declare Timer IRQ. Use externC to make it visible from asm file.
+extern "C" {
+void TIM7_IRQHandler(void);
+}
+
 
 #endif	/* _TIME_UTILS_H */
 

@@ -23,9 +23,6 @@
 #define USART1_GPIO     GPIOA
 #define USART1_GPIO_CLK RCC_APB2Periph_GPIOA
 
-
-
-
 //#define TxPin
 //#define RxPin		
 //#define UARTPort
@@ -37,19 +34,25 @@
 #define GET_RX_PIN( )	(UARTPin & (1<<RxPin))
 #endif
 
-// ============================ Prototypes =====================================
-void UARTInit (void);
-void UARTSend (uint8_t AByte);
-void UARTSendAsHex (uint8_t AByte);
-void UARTNewLine (void);
-void UARTSendUint (uint16_t);
-void UARTSendInt (int16_t);
-void UARTSendString (const char *S);
-void UARTSendStringLen (const char *S, const uint8_t ALength);
-void UARTSendArr (uint8_t *Arr, uint8_t ALength);
-void UARTSendArrAsString (uint8_t *Arr, uint8_t ALength);
+class UART_t {
+private:
+    char UintToHexChar (uint8_t b);
+public:
+    void Init(void);
+    void Print (uint8_t AByte);
+    void PrintAsHex (uint8_t AByte);
+    void NewLine (void);
+    void PrintUint (uint16_t);
+    void PrintInt (int16_t);
+    void PrintString (const char *S);
+    void PrintStringLen (const char *S, const uint8_t ALength);
+    void PrintArr (uint8_t *Arr, uint8_t ALength);
+    void PrintArrAsString (uint8_t *Arr, uint8_t ALength);
+};
 
-char UintToHexChar (uint8_t b);
+extern UART_t Uart;
+
+// ============================ Prototypes =====================================
 
 #endif	
 
