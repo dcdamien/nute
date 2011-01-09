@@ -17,15 +17,14 @@ PROJECT = rf22
 OUTTYPE = binary
 #OUTTYPE = ihex
 
-# List project C source files here
-PRJCSRC = \
-system_kl.c \
-#si4432.c
+# List project source files here
+PRJCSRC = system_kl.c
 
 PRJCPPSRC = main.cpp \
 delay_util.cpp \
 uart.cpp \
-
+spi.cpp \
+si4432.cpp \
 
 # List project include directories here
 PRJINCDIR =

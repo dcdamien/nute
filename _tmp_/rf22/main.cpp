@@ -2,7 +2,7 @@
 #include "main.h"
 #include "delay_util.h"
 #include "uart.h"
-//#include "si4432.h"
+#include "si4432.h"
 
 #include "stm32f10x_tim.h"
 
@@ -73,7 +73,7 @@ int main(void) {
     while (1) {
         if (Delay.Elapsed(&tmr, 500)) Uart.Print('a');
 
-        //Task_Si();
+        Task_Si();
 //        if (BTN_IS_PRESSED()) LEDB_ON();
 //        else
         //LEDB_ON();
@@ -83,28 +83,28 @@ int main(void) {
 void GeneralInit(void) {
     LEDInit();
     Uart.Init();
-    //SiInit();
+    Si.Init(SPI1, br10000, bnd868);
     BtnInit();
     Delay.Init();
 }
 
 void Task_Si(void) {
-//    if (DelayElapsed(&SiSvc1.Timer, 200)) {
-//        LEDB_ON();
-//        // Prepare IRQs
-//        SiSetIRQs(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
-//        // Prepare TX packet
-//        SiSetPktTotalLength(6);
-//        Si.TX_Pkt.PacketID++;
-//        Si.TX_Pkt.CommandID = 0x01;
-//        Si.TX_Pkt.Data[0] = 'A';
-//        Si.TX_Pkt.Data[1] = 'i';
-//        Si.TX_Pkt.Data[2] = 'y';
-//        Si.TX_Pkt.Data[3] = 'a';
-//        SiTransmitPkt();
-//        SI_WAIT_IRQ();
-//        SiFlushIRQs();
-//        //ReadIRQs();
-   //     LEDB_OFF();
-   // }
+    if (Delay.Elapsed(&SiSvc1.Timer, 200)) {
+        LEDB_ON();
+        // Prepare IRQs
+        Si.SetIRQs(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
+        // Prepare TX packet
+        Si.SetPktTotalLength(6);
+        Si.TX_Pkt.PacketID++;
+        Si.TX_Pkt.CommandID = 0x01;
+        Si.TX_Pkt.Data[0] = 'A';
+        Si.TX_Pkt.Data[1] = 'i';
+        Si.TX_Pkt.Data[2] = 'y';
+        Si.TX_Pkt.Data[3] = 'a';
+        Si.TransmitPkt();
+        Si.WaitIRQ();
+        Si.FlushIRQs();
+        //ReadIRQs();
+        LEDB_OFF();
+    }
 }
