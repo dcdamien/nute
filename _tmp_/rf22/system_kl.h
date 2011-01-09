@@ -10,6 +10,10 @@
 #ifndef SYSTEM_KL_H
 #define	SYSTEM_KL_H
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 // Clocks
 #define SYS_CLK_HSI_DIRECT  // Use HSI as system clock without PLL
 // APB2 divider
@@ -20,6 +24,10 @@ extern uint32_t SystemCoreClock;
 
 // ============================== Prototypes ===================================
 extern void SystemInit(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* SYSTEM_KL_H */
 

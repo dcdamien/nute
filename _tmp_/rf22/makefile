@@ -11,7 +11,7 @@ CPUFAMILY = STM32F10X_MD_VL
 #CPUFAMILY = STM32F10X_MD
 
 # Define project name here
-PROJECT = fled
+PROJECT = rf22
 
 # Define output type here, uncomment needed line
 OUTTYPE = binary
@@ -20,10 +20,9 @@ OUTTYPE = binary
 # List project C source files here
 PRJCSRC = \
 system_kl.c \
-si4432.c
+#si4432.c
 
 PRJCPPSRC = main.cpp \
-test.cpp \
 delay_util.cpp \
 uart.cpp \
 
@@ -272,7 +271,6 @@ clean:
 	@echo $(MSG_CLEANING)
 	-rm -f $(OBJ)
 	-rm -f $(OUTDIR)/*.*
-	-rm -f $(OBJDIR)/*.*
 	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
 	-rm -f $(ASRC:.s=.s.bak)
