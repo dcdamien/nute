@@ -18,11 +18,15 @@ OUTTYPE = binary
 #OUTTYPE = ihex
 
 # List project C source files here
-PRJSRC = main.c \
+PRJCSRC = \
 system_kl.c \
-delay_util.c \
-uart.c \
 si4432.c
+
+PRJCPPSRC = main.cpp \
+test.cpp \
+delay_util.cpp \
+uart.cpp \
+
 
 # List project include directories here
 PRJINCDIR =
@@ -40,7 +44,7 @@ OBJDIR = obj
 OUTDIR = output
 
 # CPU flags
-MCFLAGS = -mcpu=cortex-m3
+MCFLAGS = -mcpu=cortex-m3 -mthumb
 
 # All default directories to look for include files here
 STINCDIR = . \
@@ -54,7 +58,7 @@ lib/inc \
 LDSCRIPT_FLASH = lib/stm32_flash.ld
 
 # List C source files here
-SRC  = $(PRJSRC) \
+SRC  = $(PRJCSRC) \
 lib/src/stm32f10x_gpio.c \
 lib/src/stm32f10x_rcc.c \
 lib/src/stm32f10x_usart.c \
@@ -86,7 +90,7 @@ BIN  = $(CP) -O binary
 SIZE = $(TRGT)size
 
 # Define all object files.
-OBJ = $(SRC:%.c=$(OBJDIR)/%.o) $(ASRC:%.s=$(OBJDIR)/%.o)
+OBJ = $(SRC:%.c=$(OBJDIR)/%.o) $(ASRC:%.s=$(OBJDIR)/%.o) $(PRJCPPSRC:%.cpp=$(OBJDIR)/%.o)
 
 # Define all listing files.
 #LST = $(SRC:%.c=$(OBJDIR)/%.lst)
@@ -99,22 +103,56 @@ OBJ = $(SRC:%.c=$(OBJDIR)/%.o) $(ASRC:%.s=$(OBJDIR)/%.o)
 #  -Wall...:     warning level
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
-CFLAGS  = -mthumb
-CFLAGS += $(MCFLAGS)
+CFLAGS  = $(MCFLAGS)
 CFLAGS += -g$(DEBUG)
 CFLAGS += -O$(OPT)
 CFLAGS += -D$(CPUFAMILY)
 CFLAGS += $(patsubst %, -I%, $(STINCDIR) $(PRJINCDIR))
-CFLAGS += -Wall
-#CFLAGS += -Wstrict-prototypes
-#CFLAGS += -Wa-ahlms=$(<:.c=.lst) $(DEFS)
-CFLAGS += -fomit-frame-pointer
-CFLAGS += -fverbose-asm
+CFLAGS += $(CSTANDARD)
 # Enable ST library usage
 CFLAGS += -DUSE_STDPERIPH_DRIVER
-CFLAGS += $(CSTANDARD)
+# From Wiki:
+CFLAGS += -ffunction-sections -fdata-sections
+CFLAGS += -Wall -Wextra
+CFLAGS += -Wimplicit -Wcast-align -Wpointer-arith -Wredundant-decls
+CFLAGS += -Wshadow -Wcast-qual -Wcast-align -Wnested-externs
+# End of Wiki
+#CFLAGS += -Wa-ahlms=$(<:.c=.lst) $(DEFS)
+CFLAGS += -fomit-frame-pointer
+#CFLAGS += -fverbose-asm
 # Compiler flags to generate dependency files.
 CFLAGS += -MMD -MP -MF .dep/$(@F).d
+
+
+#---------------- Compiler Options C++ ----------------
+#  -g*:          generate debugging information
+#  -O*:          optimization level
+#  -f...:        tuning, see GCC manual and avr-libc documentation
+#  -Wall...:     warning level
+#  -Wa,...:      tell GCC to pass this to the assembler.
+#    -adhlns...: create assembler listing
+CPPFLAGS  = $(MCFLAGS)
+CPPFLAGS += -g$(DEBUG)
+CPPFLAGS += -O$(OPT)
+CPPFLAGS += -D$(CPUFAMILY) -D__cplusplus
+CPPFLAGS += $(patsubst %, -I%, $(STINCDIR) $(PRJINCDIR))
+# Enable ST library usage
+CPPFLAGS += -DUSE_STDPERIPH_DRIVER
+# From Wiki:
+CPPFLAGS += -fomit-frame-pointer
+CPPFLAGS += -fno-exceptions -fno-rtti
+CPPFLAGS += -ffunction-sections -fdata-sections
+CPPFLAGS += -fno-elide-constructors
+CPPFLAGS += -funsigned-bitfields -fshort-enums
+CPPFLAGS += -Wall -Wextra
+CPPFLAGS += -Winline -finline-limit=40
+CPPFLAGS += -Wimplicit -Wcast-align
+CPPFLAGS += -Wpointer-arith -Wredundant-decls
+CPPFLAGS += -Wshadow -Wcast-qual -Wcast-align -pedantic
+# End of Wiki
+CPPFLAGS += -x c++
+# Compiler flags to generate dependency files.
+CPPFLAGS += -MMD -MP -MF .dep/$(@F).d
 
 
 #---------------- Assembler Options ----------------
@@ -136,8 +174,7 @@ ASFLAGS = $(MCFLAGS) -g -gdwarf-2
 #  -Wl,...:     tell GCC to pass this to linker.
 #    -Map:      create map file
 #    --cref:    add cross reference to  map file LDFLAGS  = -mthumb
-LDFLAGS  = -mthumb
-LDFLAGS += $(MCFLAGS)
+LDFLAGS  = $(MCFLAGS)
 #LDFLAGS += -nostartfiles
 LDFLAGS += -static
 LDFLAGS += -Wl,-cref,-u,Reset_Handler
@@ -187,7 +224,12 @@ $(OBJDIR)/%.o : %.c
 	@echo $(MSG_COMPILING) $<
 	@mkdir -p `dirname $@`
 	$(CC) -c $(CFLAGS) $< -o $@
-#	$(CC) -c $(CFLAGS) $< -o $(OBJDIR)/$(notdir $@)
+# Compiling CPP files. We need all .o files in OBJ directory and their source .cpp files to success
+$(OBJDIR)/%.o : %.cpp
+	@echo
+	@echo $(MSG_COMPILING) $<
+	@mkdir -p `dirname $@`
+	$(CC) -c $(CPPFLAGS) $< -o $@
 
 # Assembling ASM files.
 $(OBJDIR)/%.o : %.s
@@ -195,15 +237,12 @@ $(OBJDIR)/%.o : %.s
 	@echo $(MSG_ASSEMBLING) $<
 	@mkdir -p `dirname $@`
 	$(CC) -c $(ASFLAGS) $< -o $@
-#	$(CC) -c $(ASFLAGS) $< -o $(OBJDIR)/$(notdir $@)
 
 # Linking .o files. Those must be ready yet.
 output.elf: $(OBJ)
 	@echo
 	@echo $(MSG_LINKING) $@
 	$(CC) $(OBJ) $(LDFLAGS_FLASH) -o $(OUTDIR)/$@
-#	@echo $(foreach oname, $(OBJ), $(OBJDIR)/$(notdir $(oname)))
-#	$(CC) $(foreach oname, $(OBJ), $(OBJDIR)/$(notdir $(oname))) $(LDFLAGS_FLASH) -o $(OUTDIR)/$@
 
 
 # Create .bin file
