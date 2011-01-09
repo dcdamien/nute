@@ -12,7 +12,11 @@
 #include <stdbool.h>
 #include "si4432_rfconfig.h"
 
+// ================================ Global =====================================
+//#define SI_DOUBLE
+
 // ================================= Pins ======================================
+// ==== 1st ====
 #define SI_GPIO     GPIOA
 #define SI_SDN      GPIO_Pin_0  // Shutdown pin
 #define SI_NIRQ     GPIO_Pin_1
@@ -33,6 +37,29 @@
 #define SI_NIRQ_IS_HI() GPIO_ReadInputDataBit(SI_GPIO, SI_NIRQ)
 #define SI_WAIT_IRQ()   while (SI_NIRQ_IS_HI())
 
+// ==== 2nd ====
+#ifdef SI_DOUBLE
+#define SI2_GPIO     GPIOB
+#define SI2_SDN      GPIO_Pin_11    // Shutdown pin
+#define SI2_NIRQ     GPIO_Pin_10
+#define SI2_SCK      GPIO_Pin_13    // SCK
+#define SI2_DO       GPIO_Pin_14    // MISO
+#define SI2_DI       GPIO_Pin_15    // MOSI
+#define SI2_NSEL     GPIO_Pin_12    // SS
+// Clocks
+#define SI2_GPIO_CLK RCC_APB2Periph_GPIOA
+#define SI2_SPI_CLK  RCC_APB2Periph_SPI1
+// NSel
+#define SI2_NSEL_HI()    (SI2_GPIO->BSRR = SI2_NSEL)
+#define SI2_NSEL_LO()    (SI2_GPIO->BRR  = SI2_NSEL)
+// Shutdown pin
+#define SI2_SHUTDOWN()   (SI2_GPIO->BSRR = SI2_SDN)
+#define SI2_SWITCH_ON()  (SI2_GPIO->BRR  = SI2_SDN)
+// NIRQ
+#define SI2_NIRQ_IS_HI() GPIO_ReadInputDataBit(SI2_GPIO, SI2_NIRQ)
+#define SI2_WAIT_IRQ()   while (SI2_NIRQ_IS_HI())
+#endif
+
 // ========================== Types and variables ==============================
 #define SI_PKT_MAX_LENGTH  252 // Total length of PktID+Cmd+Data
 struct SI_Packet_t {
@@ -41,7 +68,8 @@ struct SI_Packet_t {
     uint8_t Data[SI_PKT_MAX_LENGTH-2];
 };
 
-struct Sit {
+struct Si_t {
+
     uint8_t State;
     uint8_t DataLength;
     union {
@@ -55,8 +83,10 @@ struct Sit {
     bool NewPacketReceived;
 };
 
-
-extern struct Sit Si;
+extern struct Si_t Si;
+#ifdef SI_DOUBLE
+extern struct Si_t Si2;
+#endif
 
 // ============================= Prototypes ====================================
 void SiInit (void);
@@ -77,6 +107,12 @@ void SiFIFORead (uint8_t* PData, uint8_t ALen);
 
 void SiWriteRegister (const uint8_t Addr, const uint8_t AData);
 uint8_t SiReadRegister (const uint8_t Addr);
+
+#ifdef SI_DOUBLE
+void Si2FlushIRQs (void);
+void Si2SetMode (uint8_t AMode);
+void Si2SetIRQs (uint8_t AIRQ1, uint8_t AIRQ2);
+#endif
 
 #endif	/* SI4432_H */
 
