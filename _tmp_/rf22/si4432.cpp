@@ -4,6 +4,9 @@
 
 // Variables
 Si_t Si;
+#ifdef SI_DOUBLE
+Si_t Si2;
+#endif
 
 // ============================ Implementation =================================
 void Si_t::Init(SPI_TypeDef* ASPI, const SiBitrate_t ABitrate, const SiBand_t ABand) {
@@ -16,10 +19,17 @@ void Si_t::Init(SPI_TypeDef* ASPI, const SiBitrate_t ABitrate, const SiBand_t AB
     SPI_Setup(FSPI);
     if (FSPI == SPI1) {
         FGPIO = GPIOA;
-        SDN   = GPIO_Pin_0;
-        NIRQ  = GPIO_Pin_1;
-        NSEL  = GPIO_Pin_8;
+        SDN   = GPIO_Pin_0; // Shutdown pin
+        NIRQ  = GPIO_Pin_1; // IRQ pin
+        NSEL  = GPIO_Pin_8; // CS pin
         RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+    }
+    else if (FSPI == SPI2) {
+        FGPIO = GPIOB;
+        SDN   = GPIO_Pin_11;
+        NIRQ  = GPIO_Pin_10;
+        NSEL  = GPIO_Pin_12;
+        RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB, ENABLE);
     }
     // Configure SDN & NSEL as Push Pull outputs
     GPIO_InitStructure.GPIO_Pin  = NSEL | SDN;
@@ -31,23 +41,18 @@ void Si_t::Init(SPI_TypeDef* ASPI, const SiBitrate_t ABitrate, const SiBand_t AB
     GPIO_Init(FGPIO, &GPIO_InitStructure);
     // ==== Init registers ====
     SwitchOn();
-    Delay.ms(15);       // Wait at least 15ms before any initialization SPI commands are sent to the radio
-    FlushIRQs();        // Release nIRQ pin
-    SetMode (SI_RESET); // Perform reset of all registers
-    WaitIRQ();          // Wait for chip to become ready
+    Delay.ms(15);           // Wait at least 15ms before any initialization SPI commands are sent to the radio
+    this->IRQsRead();       // Release nIRQ pin
+    SetMode (SI_MODE_RESET);// Perform reset of all registers
+    IRQWait();              // Wait for chip to become ready
     RF_Config(ABitrate, ABand);
     SetPower(0);        // Minimum
-    SetIRQs(SI_IRQ1_NONE, SI_IRQ2_NONE);
+    IRQsSet(SI_IRQ1_NONE, SI_IRQ2_NONE);
 }
 
 void Si_t::TransmitPkt(void) {
-    FIFOWrite(Si.TX_PktArray, Si.DataLength);    // Place TX packet to FIFO
-    SetMode(SI_TX);   // Enter TX mode
-}
-
-void Si_t::SetPktTotalLength (uint8_t ALength) {
-    WriteRegister(0x3E, ALength);
-    Si.DataLength = ALength;
+    FIFOWrite(Si.TX_PktArray, Si.PktLength);    // Place TX packet to FIFO
+    SetMode(SI_MODE_TX);   // Enter TX mode
 }
 
 void Si_t::FIFOWrite(uint8_t* PData, uint8_t ALen) {
@@ -63,26 +68,21 @@ void Si_t::FIFOWrite(uint8_t* PData, uint8_t ALen) {
     NSEL_Hi();
     FData = FSPI->DR;                   // Dummy read to reset RXNE flag
 }
-void Si_t::FIFORead (uint8_t* PData, uint8_t ALen) {
+void Si_t::FIFORead (void) {
     NSEL_Lo();
-    FSPI->DR = 0x7F;                    // Write FIFO address
-    SPI_BusyWait(FSPI);                 // Wait for SPI transmission to complete
-    for (uint8_t i=0; i<ALen; i++) {
-        FSPI->DR = 0;                   // Write dummy byte
-        SPI_BusyWait(FSPI);             // Wait for SPI transmission to complete
-        *PData = FSPI->DR;              // Read data
-    }
+    SPI_ReadWriteByte(FSPI, 0x7F);  // Write FIFO address
+    for (uint8_t i=0; i<PktLength; i++) RX_PktArray [i] = SPI_ReadWriteByte(FSPI, 0);
     NSEL_Hi();
 }
 
-void Si_t::SetIRQs (uint8_t AIRQ1, uint8_t AIRQ2) {
+void Si_t::IRQsSet (uint8_t AIRQ1, uint8_t AIRQ2) {
     WriteRegister(0x05, AIRQ1);
     WriteRegister(0x06, AIRQ2);
-    FlushIRQs();
+    this->IRQsRead();
 }
-void Si_t::FlushIRQs (void) {
-    ReadRegister(0x03);  //read the Interrupt Status1 register
-    ReadRegister(0x04);  //read the Interrupt Status2 register
+void Si_t::IRQsRead (void) {
+    IRQ1 = ReadRegister(0x03);  //read the Interrupt Status1 register
+    IRQ2 = ReadRegister(0x04);  //read the Interrupt Status2 register
 }
 
 // Radio control
@@ -173,5 +173,5 @@ void Si_t::RF_Config(const SiBitrate_t ABitrate, const SiBand_t ABand) {
     WriteRegister(0x46, 0xFF);
 
     // FIFO settings
-    WriteRegister(0x08, 0x00);// MultiPacket disable, auto transmit disable, LowDutyCycle disable
+    //WriteRegister(0x08, 0x00);// MultiPacket disable, auto transmit disable, LowDutyCycle disable
 }

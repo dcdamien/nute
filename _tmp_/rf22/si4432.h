@@ -12,33 +12,7 @@
 #include <stdbool.h>
 #include "spi.h"
 
-// ================================= Pins ======================================
-// ==== 1st ====
-#define SI1_GPIO     GPIOA
-#define SI1_SDN      GPIO_Pin_0  // Shutdown pin
-#define SI1_NIRQ     GPIO_Pin_1
-// ==== 2nd ====
-#ifdef SI_DOUBLE
-#define SI2_GPIO     GPIOB
-#define SI2_SDN      GPIO_Pin_11    // Shutdown pin
-#define SI2_NIRQ     GPIO_Pin_10
-#define SI2_SCK      GPIO_Pin_13    // SCK
-#define SI2_DO       GPIO_Pin_14    // MISO
-#define SI2_DI       GPIO_Pin_15    // MOSI
-#define SI2_NSEL     GPIO_Pin_12    // SS
-// Clocks
-#define SI2_GPIO_CLK RCC_APB2Periph_GPIOA
-#define SI2_SPI_CLK  RCC_APB2Periph_SPI1
-// NSel
-#define SI2_NSEL_HI()    (SI2_GPIO->BSRR = SI2_NSEL)
-#define SI2_NSEL_LO()    (SI2_GPIO->BRR  = SI2_NSEL)
-// Shutdown pin
-#define SI2_SHUTDOWN()   (SI2_GPIO->BSRR = SI2_SDN)
-#define SI2_SWITCH_ON()  (SI2_GPIO->BRR  = SI2_SDN)
-// NIRQ
-#define SI2_NIRQ_IS_HI() GPIO_ReadInputDataBit(SI2_GPIO, SI2_NIRQ)
-#define SI2_WAIT_IRQ()   while (SI2_NIRQ_IS_HI())
-#endif
+#define SI_DOUBLE
 
 // ========================== Types and variables ==============================
 enum SiBitrate_t {br10000};
@@ -57,7 +31,6 @@ private:
     uint16_t SDN, NIRQ, NSEL;
     SPI_TypeDef* FSPI;
     // Pins
-    uint8_t NIRQ_Is_Hi(void) { return GPIO_ReadInputDataBit(FGPIO, NIRQ); }
     void NSEL_Hi (void) { FGPIO->BSRR = NSEL; }
     void NSEL_Lo (void) { FGPIO->BRR  = NSEL; }
     // Registers
@@ -66,7 +39,7 @@ private:
     void RF_Config(const SiBitrate_t ABitrate, const SiBand_t ABand);
 public:
     uint8_t State;
-    uint8_t DataLength;
+    uint8_t PktLength;
     union {
         uint8_t RX_PktArray[sizeof(struct SI_Packet_t)];
         struct SI_Packet_t RX_Pkt;
@@ -76,6 +49,7 @@ public:
         struct SI_Packet_t TX_Pkt;
     };
     bool NewPacketReceived;
+    uint8_t IRQ1, IRQ2;
     // Methods
     void Init (SPI_TypeDef* ASPI, const SiBitrate_t ABitrate, const SiBand_t ABand);
     // Modes
@@ -83,27 +57,31 @@ public:
     void SwitchOff (void) { FGPIO->BSRR = SDN; }
     void SetMode (uint8_t AMode) { WriteRegister(0x07, AMode); }
     // IRQs
-    void SetIRQs (uint8_t AIRQ1, uint8_t AIRQ2);
-    void FlushIRQs (void);
-    void WaitIRQ (void) { while (NIRQ_Is_Hi()); }
+    uint8_t NIRQ_Is_Hi(void) { return GPIO_ReadInputDataBit(FGPIO, NIRQ); }
+    void IRQsSet (uint8_t AIRQ1, uint8_t AIRQ2);
+    void IRQsRead (void);
+    void IRQWait (void) { while (NIRQ_Is_Hi()); }
     // Data control
-    void SetPktTotalLength (uint8_t ALength);
+    void PktLengthSet (uint8_t ALength) { WriteRegister(0x3E, ALength); PktLength = ALength; }
+    void PktLengthGet (void) { PktLength = ReadRegister(0x4B); }
     void TransmitPkt(void);
     void FIFOWrite(uint8_t* PData, uint8_t ALen);
-    void FIFORead (uint8_t* PData, uint8_t ALen);
+    void FIFORead (void);
+    void FIFOReset(void) { WriteRegister(0x08, 0x02); WriteRegister(0x08, 0x00); }
     // Radio control
     void SetPower (uint8_t APower) { WriteRegister(0x6D, (uint8_t)(0x18 | APower)); }
 };
 
 extern Si_t Si;
-//extern Si_t Si2;
-
+#ifdef SI_DOUBLE
+extern Si_t Si2;
+#endif
 // ============================ Register settings ==============================
 // Operation modes
-#define SI_READY    0x01
-#define SI_RX       0x05
-#define SI_TX       0x09
-#define SI_RESET    0x80
+#define SI_MODE_READY    0x01
+#define SI_MODE_RX       0x05
+#define SI_MODE_TX       0x09
+#define SI_MODE_RESET    0x80
 
 // IRQs 1
 #define SI_IRQ1_NONE         0x00
