@@ -6,6 +6,7 @@
 
 #include "stm32f10x_tim.h"
 
+void Si_Prepare2RX (void);
 
 // Types
 struct SiSvc_t {
@@ -38,13 +39,18 @@ void BtnInit (void) {
 }
 
 void ReadIRQs(void) {
- //   uint8_t R;
-//    R = SiReadRegister(0x03);
-//    UARTSendAsHex(R);
-//    UARTSend(' ');
- //   R = SiReadRegister(0x04);
-  //  UARTSendAsHex(R);
-  //  UARTNewLine();
+    Si.IRQsRead();
+    Uart.PrintAsHex(Si.IRQ1);
+    Uart.Print(' ');
+    Uart.PrintAsHex(Si.IRQ2);
+    Uart.NewLine();
+}
+void ReadIRQs2(void) {
+    Si2.IRQsRead();
+    Uart.PrintAsHex(Si2.IRQ1);
+    Uart.Print(' ');
+    Uart.PrintAsHex(Si2.IRQ2);
+    Uart.NewLine();
 }
 
 //void SysTick_Handler (void) {
@@ -64,19 +70,10 @@ void ReadIRQs(void) {
 
 int main(void) {
     GeneralInit();
-    
     Uart.PrintString("\rrf22\r");
-
-    uint32_t tmr;
-    //LEDB_ON();
-
     while (1) {
-        if (Delay.Elapsed(&tmr, 500)) Uart.Print('a');
-
         Task_Si();
-//        if (BTN_IS_PRESSED()) LEDB_ON();
-//        else
-        //LEDB_ON();
+        Task_Si2();
     }
 }
 
@@ -84,6 +81,8 @@ void GeneralInit(void) {
     LEDInit();
     Uart.Init();
     Si.Init(SPI1, br10000, bnd868);
+    Si2.Init(SPI2, br10000, bnd868);
+    Si_Prepare2RX();
     BtnInit();
     Delay.Init();
 }
@@ -92,9 +91,9 @@ void Task_Si(void) {
     if (Delay.Elapsed(&SiSvc1.Timer, 200)) {
         LEDB_ON();
         // Prepare IRQs
-        Si.SetIRQs(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
+        Si.IRQsSet(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
         // Prepare TX packet
-        Si.SetPktTotalLength(6);
+        Si.PktLengthSet(6);
         Si.TX_Pkt.PacketID++;
         Si.TX_Pkt.CommandID = 0x01;
         Si.TX_Pkt.Data[0] = 'A';
@@ -102,9 +101,49 @@ void Task_Si(void) {
         Si.TX_Pkt.Data[2] = 'y';
         Si.TX_Pkt.Data[3] = 'a';
         Si.TransmitPkt();
-        Si.WaitIRQ();
-        Si.FlushIRQs();
-        //ReadIRQs();
+        Si.IRQWait();
+        //Si.FlushIRQs();
+        Si.IRQsRead();
         LEDB_OFF();
     }
+}
+
+
+
+void Task_Si2(void) {
+    // Check IRQ
+    if (!Si2.NIRQ_Is_Hi()) {    // Some IRQ fired
+        LEDG_ON();
+        Si2.IRQsRead();
+        // Check if CRC
+        if (Si2.IRQ1 & SI_IRQ1_CRC_ERR) {
+            Si2.SetMode(SI_MODE_READY); // Disable RX
+            Si2.FIFOReset();
+            Uart.Print('c');
+            Si2.SetMode(SI_MODE_RX);
+        }
+        else if (Si2.IRQ2 & SI_IRQ1_PKT_RCVD) {
+            Si2.SetMode(SI_MODE_READY); // Disable RX
+            Si2.PktLengthGet();
+            Si2.FIFORead();
+
+            Uart.PrintAsHex(Si2.RX_Pkt.CommandID);
+            Uart.NewLine();
+            Uart.PrintAsHex(Si2.RX_Pkt.PacketID);
+            Uart.NewLine();
+            for (uint8_t i=0; i<Si2.PktLength-2; i++) Uart.Print(Si2.RX_Pkt.Data[i]);
+            Uart.NewLine();
+            Si2.FIFOReset();
+            Si2.SetMode(SI_MODE_RX);
+        }
+        LEDG_OFF();
+    }
+
+}
+
+void Si_Prepare2RX (void) {
+    Si2.SetMode(SI_MODE_RX);
+    // Prepare IRQs
+    Si2.IRQsSet(SI_IRQ1_PKT_RCVD | SI_IRQ1_CRC_ERR, SI_IRQ2_NONE);
+
 }

@@ -29,6 +29,7 @@
 // ============================== Prototypes ===================================
 // Tasks
 void Task_Si(void);
+void Task_Si2(void);
 
 #endif	/* MAIN_H */
 
