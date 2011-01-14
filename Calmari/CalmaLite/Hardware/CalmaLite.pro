@@ -1,8 +1,13 @@
-update=10/01/2011 20:57:14
+update=17/08/2010 13:52:35
 version=1
 last_client=pcbnew
 [general]
 version=1
+[cvpcb]
+version=1
+NetIExt=net
+[cvpcb/libraries]
+EquName1=devcms
 [eeschema]
 version=1
 LibDir=
@@ -41,17 +46,10 @@ ShowSheetReferenceAndTitleBlock=1
 [eeschema/libraries]
 LibName1=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Atmel_kl
 LibName2=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Connectors_kl
-LibName3=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\pcb_details
-LibName4=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\power
-LibName5=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Power_kl
-LibName6=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Sensors
-LibName7=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Tittar_kl
-LibName8=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Transistors_kl
-[cvpcb]
-version=1
-NetIExt=net
-[cvpcb/libraries]
-EquName1=devcms
+LibName3=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\power
+LibName4=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Power_kl
+LibName5=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Tittar_kl
+LibName6=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Transistors_kl
 [pcbnew]
 version=1
 PadDrlX=320
@@ -69,9 +67,10 @@ DrawLar=150
 EdgeLar=150
 TxtLar=120
 MSegLar=150
-LastNetListRead=
+LastNetListRead=CalmaLite.net
 [pcbnew/libraries]
 LibDir=
-LibName1=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Common_kl
-LibName2=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Connectors_kl
+LibName1=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Batteries_kl
+LibName2=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Common_kl
 LibName3=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Tittar_kl
+LibName4=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Connectors_kl
