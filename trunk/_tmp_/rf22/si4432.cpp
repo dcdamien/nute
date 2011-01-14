@@ -41,12 +41,13 @@ void Si_t::Init(SPI_TypeDef* ASPI, const SiBitrate_t ABitrate, const SiBand_t AB
     GPIO_Init(FGPIO, &GPIO_InitStructure);
     // ==== Init registers ====
     SwitchOn();
-    Delay.ms(15);           // Wait at least 15ms before any initialization SPI commands are sent to the radio
+    Delay.ms(27);           // Wait at least 27ms before any initialization SPI commands are sent to the radio
     this->IRQsRead();       // Release nIRQ pin
     SetMode (SI_MODE_RESET);// Perform reset of all registers
     IRQWait();              // Wait for chip to become ready
     RF_Config(ABitrate, ABand);
-    SetPower(0);        // Minimum
+    SetPower(7);        // Maximum
+    //SetPower(0);        // Minimum
     IRQsSet(SI_IRQ1_NONE, SI_IRQ2_NONE);
 }
 

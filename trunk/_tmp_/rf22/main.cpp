@@ -88,7 +88,7 @@ void GeneralInit(void) {
 }
 
 void Task_Si(void) {
-    if (Delay.Elapsed(&SiSvc1.Timer, 200)) {
+    if (Delay.Elapsed(&SiSvc1.Timer, 4)) {
         LEDB_ON();
         // Prepare IRQs
         Si.IRQsSet(SI_IRQ1_PKT_SENT, SI_IRQ2_NONE);
