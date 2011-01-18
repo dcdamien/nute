@@ -1,0 +1,845 @@
+# EESchema Netlist Version 1.1 created  17/01/2011 19:27:30
+(
+ ( /4D2F485A SMD0402 C1 100pF
+  ( 1 GND )
+  ( 2 N-000081 )
+ )
+ ( /4D2F486C SMD0402 C2 1.5pF
+  ( 1 N-000080 )
+  ( 2 N-000081 )
+ )
+ ( /4D2F481D SMD0402 C3 1pF
+  ( 1 N-000081 )
+  ( 2 N-000080 )
+ )
+ ( /4D2F48A5 SMD0402 C4 12pF
+  ( 1 /RF1_OUT )
+  ( 2 N-000080 )
+ )
+ ( /4D2F487C SMD0402 C5 1.5pF
+  ( 1 N-000080 )
+  ( 2 GND )
+ )
+ ( /4D2F489C SMD0402 C6 3.3pF
+  ( 1 N-000080 )
+  ( 2 GND )
+ )
+ ( /4D303743 SMD0402 C7 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2F4E92 SMD0402 C8 220pF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2F5088 SMD0402 C9 0.01u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2F50A2 SMD0402 C10 3.3pF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2F50B5 SMD0402 C11 0.01u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2F50B2 SMD0402 C12 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2F50BF SMD0402 C13 220pF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D31BCDE SMD0402 C14 0.1u
+  ( 1 GND )
+  ( 2 /NRST )
+ )
+ ( /4D2F4ACD SMD0402 C15 18pF
+  ( 1 N-000030 )
+  ( 2 GND )
+ )
+ ( /4D2F4AC7 SMD0402 C16 18pF
+  ( 1 N-000083 )
+  ( 2 GND )
+ )
+ ( /4D2F4A18 SMD0402 C17 0.1u
+  ( 1 N-000033 )
+  ( 2 GND )
+ )
+ ( /4D303EA5 SMD0402 C18 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2D6966 SMD0402 C19 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2D6963 SMD0402 C20 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2D695C SMD0603 C21 1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D2D6C68 SMD0402 C22 0.1u
+  ( 1 N-000082 )
+  ( 2 GND )
+ )
+ ( /4D2D6C69 SMD0603 C23 1u
+  ( 1 N-000082 )
+  ( 2 GND )
+ )
+ ( /4D31BE30 SMD0402 C24 6.8pF
+  ( 1 N-000059 )
+  ( 2 GND )
+ )
+ ( /4D31BE2F SMD0402 C25 6.8pF
+  ( 1 N-000004 )
+  ( 2 GND )
+ )
+ ( /4D3199D9 SMD0402 C26 18pF
+  ( 1 N-000034 )
+  ( 2 GND )
+ )
+ ( /4D3199DC SMD0402 C27 18pF
+  ( 1 N-000061 )
+  ( 2 GND )
+ )
+ ( /4D32D396 SMD0402 C28 3.9pF
+  ( 1 GND )
+  ( 2 N-000067 )
+ )
+ ( /4D321947 SMD0402 C29 0.1u
+  ( 1 N-000084 )
+  ( 2 GND )
+ )
+ ( /4D32D3C8 SMD0402 C30 100pF
+  ( 1 /RF2_OUT )
+  ( 2 N-000066 )
+ )
+ ( /4D32D3B2 SMD0402 C31 6.8pF
+  ( 1 N-000064 )
+  ( 2 N-000067 )
+ )
+ ( /4D32D377 SMD0603 C32 2.2u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32D378 SMD0402 C33 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32D379 SMD0402 C34 100pF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32D37A SMD0402 C35 33pF
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32D37E SMD0402 C36 0.1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32D381 SMD0402 C37 100pF
+  ( 1 N-000063 )
+  ( 2 GND )
+ )
+ ( /4D32D382 SMD0603 C38 1u
+  ( 1 N-000063 )
+  ( 2 GND )
+ )
+ ( /4D32D389 SMD0402 C39 4.7pF
+  ( 1 /RF2_OUT )
+  ( 2 GND )
+ )
+ ( /4D32D388 SMD0402 C40 4.7pF
+  ( 1 /RF2_OUT )
+  ( 2 GND )
+ )
+ ( /4D32D3BB SMD0402 C41 39pF
+  ( 1 N-000065 )
+  ( 2 +3.3V )
+ )
+ ( /4D32D3C2 SMD0402 C42 100pF
+  ( 1 N-000071 )
+  ( 2 N-000065 )
+ )
+ ( /4D32D391 SMD0402 C43 6.8pF
+  ( 1 N-000065 )
+  ( 2 N-000065 )
+ )
+ ( /4D32D38F SMD0402 C44 3.3pF
+  ( 1 N-000065 )
+  ( 2 GND )
+ )
+ ( /4D30C149 SMD0603 C45 1u
+  ( 1 N-000011 )
+  ( 2 /DAC_OUT )
+ )
+ ( /4D30C0C0 SMD0603 C46 1u
+  ( 1 +BATT )
+  ( 2 GND )
+ )
+ ( /4D30C10A SMD0603 C47 1u
+  ( 1 N-000012 )
+  ( 2 GND )
+ )
+ ( /4D30C118 SMD0603 C48 1u
+  ( 1 N-000048 )
+  ( 2 GND )
+ )
+ ( /4D32A7AE SMD0603 C49 1u
+  ( 1 +BATT )
+  ( 2 GND )
+ )
+ ( /4D32A7B4 SMD0603 C50 1u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32A831 SMD0805 C51 10u
+  ( 1 +3.3V )
+  ( 2 GND )
+ )
+ ( /4D32A41D SMD0603 C52 1u
+  ( 1 /+5V )
+  ( 2 GND )
+ )
+ ( /4D32ABA2 Diode_SMA D1 D_SHOTTKY
+  ( A GND )
+  ( C /OUT )
+ )
+ ( /4D32C39C LED-3MM D2 LED
+  ( A N-000018 )
+  ( C GND )
+ )
+ ( /4D32D399 QLP20 DA1 SI4432
+  ( 1 +3.3V )
+  ( 2 +3.3V )
+  ( 3 N-000067 )
+  ( 4 N-000067 )
+  ( 5 ? )
+  ( 6 ? )
+  ( 7 ? )
+  ( 8 N-000070 )
+  ( 9 N-000062 )
+  ( 10 N-000063 )
+  ( 11 ? )
+  ( 12 +3.3V )
+  ( 13 /RF_SO )
+  ( 14 /RF_SI )
+  ( 15 /RF_SCLK )
+  ( 16 /RF_CS )
+  ( 17 /RF_IRQ )
+  ( 18 N-000068 )
+  ( 19 N-000069 )
+  ( 20 /RF_SDN )
+  ( PAD GND )
+ )
+ ( /4D32D38D 6SMM DA2 UPG2214
+  ( 1 N-000071 )
+  ( 2 GND )
+  ( 3 N-000064 )
+  ( 4 N-000062 )
+  ( 5 N-000066 )
+  ( 6 N-000070 )
+ )
+ ( /4D30BF17 DRB DA3 TPA6211
+  ( 1 /DAC_SHDN )
+  ( 2 N-000048 )
+  ( 3 N-000047 )
+  ( 4 N-000046 )
+  ( 5 N-000045 )
+  ( 6 +BATT )
+  ( 7 GND )
+  ( 8 N-000044 )
+  ( H GND )
+ )
+ ( /4D32A7A8 SOT23-5 DA4 AAT3221
+  ( 1 +BATT )
+  ( 2 GND )
+  ( 3 +BATT )
+  ( 4 ? )
+  ( 5 +3.3V )
+ )
+ ( /4D32A416 SOT23-5 DA5 LTC4054
+  ( 1 /CHARGING )
+  ( 2 GND )
+  ( 3 +BATT )
+  ( 4 /+5V )
+  ( 5 N-000027 )
+ )
+ ( /4D2F47C3 QLP20 DD1 CC1101
+  ( 1 /RF_SCLK )
+  ( 2 /RF_SO )
+  ( 3 ? )
+  ( 4 +3.3V )
+  ( 5 N-000033 )
+  ( 6 /RF_IRQ )
+  ( 7 /RF_CS )
+  ( 8 N-000030 )
+  ( 9 +3.3V )
+  ( 10 N-000083 )
+  ( 11 +3.3V )
+  ( 12 N-000081 )
+  ( 13 N-000080 )
+  ( 14 +3.3V )
+  ( 15 +3.3V )
+  ( 16 GND )
+  ( 17 N-000031 )
+  ( 18 +3.3V )
+  ( 19 GND )
+  ( 20 /RF_SI )
+  ( PAD GND )
+ )
+ ( /4D303E09 LQFP48 DD2 STM32F100c8-48
+  ( 1 +3.3V )
+  ( 2 /CHARGING )
+  ( 3 N-000004 )
+  ( 4 N-000059 )
+  ( 5 N-000061 )
+  ( 6 N-000035 )
+  ( 7 /NRST )
+  ( 8 GND )
+  ( 9 N-000082 )
+  ( 10 /RF_IRQ )
+  ( 11 /RF_CS )
+  ( 12 N-000038 )
+  ( 13 /RF_SDN )
+  ( 14 /DAC_OUT )
+  ( 15 /RF_SCLK )
+  ( 16 /RF_SO )
+  ( 17 /RF_SI )
+  ( 18 /LCD_BACKLT )
+  ( 19 /ADC1 )
+  ( 20 /LCD_XCS )
+  ( 21 /LCD_SDA )
+  ( 22 /SD_CS )
+  ( 23 GND )
+  ( 24 +3.3V )
+  ( 25 /LCD_SCLK )
+  ( 26 /SD_SCK )
+  ( 27 /SD_MISO )
+  ( 28 /SD_MOSI )
+  ( 29 /DAC_SHDN )
+  ( 30 N-000041 )
+  ( 31 N-000039 )
+  ( 32 /USB_DM )
+  ( 33 /USB_DP )
+  ( 34 /JTMS )
+  ( 35 GND )
+  ( 36 +3.3V )
+  ( 37 /JTCK )
+  ( 38 /JTDI )
+  ( 39 /JTDO )
+  ( 40 /JTRST )
+  ( 41 /LCD_XRES )
+  ( 42 /PWM1 )
+  ( 43 /ADC1-PWR )
+  ( 44 GND )
+  ( 45 /SD_POWER )
+  ( 46 /SD_DETECT )
+  ( 47 GND )
+  ( 48 +3.3V )
+ )
+ ( /4D32A74D SOLDERFUSE FU1 SOLDERFUSE
+  ( 1 /+5V )
+  ( 2 +BATT )
+ )
+ ( /4D2D6C7B SMD0805 L1 10uH
+  ( 1 N-000082 )
+  ( 2 +3.3V )
+ )
+ ( /4D32ABA3 MOTOR M1 MOTOR
+  ( 1 /OUT )
+  ( 2 GND )
+ )
+ ( /4D3036CC NOKIA1100_1_0MM Q1 NOKIA1100
+  ( 1 /LCD_XRES )
+  ( 2 /LCD_XCS )
+  ( 3 GND )
+  ( 4 /LCD_SDA )
+  ( 5 /LCD_SCLK )
+  ( 6 +3.3V )
+  ( 7 +3.3V )
+  ( 8 /LCD_BACKLT )
+ )
+ ( /4D321917 SOT23 Q2 IRLML6302
+  ( 1 /SD_POWER )
+  ( 2 +3.3V )
+  ( 3 N-000084 )
+ )
+ ( /4D32ABAC SOT23-6 Q3 IRLMS6702
+  ( 1 /OUT )
+  ( 2 /OUT )
+  ( 3 /PWM1 )
+  ( 4 +BATT )
+  ( 5 /OUT )
+  ( 6 /OUT )
+ )
+ ( /4D32B904 SOT23 Q4 IRLML6302
+  ( 1 /ADC1-PWR )
+  ( 2 +BATT )
+  ( 3 N-000019 )
+ )
+ ( /4D2F4A10 SMD0402 R1 56k
+  ( 1 N-000031 )
+  ( 2 GND )
+ )
+ ( /4D31BDA3 SMD0603 R2 220
+  ( 1 N-000034 )
+  ( 2 N-000035 )
+ )
+ ( /4D3219F6 SMD0603 R3 4k7
+  ( 1 /SD_CS )
+  ( 2 N-000084 )
+ )
+ ( /4D32D394 SMD0603 R4 51
+  ( 1 N-000065 )
+  ( 2 GND )
+ )
+ ( /4D305919 SMD0603 R5 1.5k
+  ( 1 +3.3V )
+  ( 2 N-000060 )
+ )
+ ( /4D32ABAA SMD0603 R6 100k
+  ( 1 +BATT )
+  ( 2 /PWM1 )
+ )
+ ( /4D305928 SMD0603 R7 22
+  ( 1 N-000060 )
+  ( 2 /USB_DM )
+ )
+ ( /4D30592E SMD0603 R8 22
+  ( 1 /USB_DP )
+  ( 2 N-000049 )
+ )
+ ( /4D30C141 SMD0603 R9 10k
+  ( 1 N-000011 )
+  ( 2 N-000046 )
+ )
+ ( /4D30C139 SMD0603 R10 10k
+  ( 1 N-000012 )
+  ( 2 N-000047 )
+ )
+ ( /4D32C3B5 SMD0603 R11 510
+  ( 1 /LCD_BACKLT )
+  ( 2 N-000018 )
+ )
+ ( /4D32B902 SMD0603 R12 10k
+  ( 1 N-000019 )
+  ( 2 /ADC1 )
+ )
+ ( /4D32A422 SMD0603 R13 2k
+  ( 1 N-000027 )
+  ( 2 GND )
+ )
+ ( /4D32B901 SMD0603 R14 10k
+  ( 1 /ADC1 )
+  ( 2 GND )
+ )
+ ( /4D2F4BB6 TESTPOINT_1MM TP1 TESTPOINT
+  ( 1 /RF_SCLK )
+ )
+ ( /4D2F4BCB TESTPOINT_1MM TP2 TESTPOINT
+  ( 1 /RF_SI )
+ )
+ ( /4D2F4BD1 TESTPOINT_1MM TP3 TESTPOINT
+  ( 1 /RF_SO )
+ )
+ ( /4D2F4BD0 TESTPOINT_1MM TP4 TESTPOINT
+  ( 1 /RF_CS )
+ )
+ ( /4D32D51C TESTPOINT_1MM TP5 TESTPOINT
+  ( 1 /RF_SDN )
+ )
+ ( /4D2F4BD7 TESTPOINT_1MM TP6 TESTPOINT
+  ( 1 /RF_IRQ )
+ )
+ ( /4D32D495 SIL-2 XL1 CONN_2
+  ( 1 N-000038 )
+  ( 2 GND )
+ )
+ ( /4D321C61 SIL-3 XL2 CONN_3
+  ( 1 N-000039 )
+  ( 2 N-000041 )
+  ( 3 GND )
+ )
+ ( /4D3214E4 MICROSD_HOLDER_TFCMF208 XL3 MICROSD
+  ( 1 ? )
+  ( 2 /SD_CS )
+  ( 3 /SD_MOSI )
+  ( 4 N-000084 )
+  ( 5 /SD_SCK )
+  ( 6 GND )
+  ( 7 /SD_MISO )
+  ( 8 ? )
+  ( CD /SD_DETECT )
+  ( H1 GND )
+  ( H2 GND )
+  ( H3 GND )
+ )
+ ( /4D32D243 SIL-8 XL4 CONN_8
+  ( 1 /ADC1 )
+  ( 2 /LCD_XCS )
+  ( 3 /LCD_XRES )
+  ( 4 /PWM1 )
+  ( 5 /ADC1-PWR )
+  ( 6 /SD_POWER )
+  ( 7 /SD_DETECT )
+  ( 8 /LCD_SDA )
+ )
+ ( /4D32D24D SIL-8 XL5 CONN_8
+  ( 1 /SD_CS )
+  ( 2 /LCD_SCLK )
+  ( 3 /SD_SCK )
+  ( 4 /SD_MISO )
+  ( 5 /SD_MOSI )
+  ( 6 /DAC_OUT )
+  ( 7 /DAC_SHDN )
+  ( 8 /CHARGING )
+ )
+ ( /4D31B8CA DIL2x4 XL6 CONN_8
+  ( 1 /JTMS )
+  ( 2 /JTCK )
+  ( 3 /JTDI )
+  ( 4 /JTDO )
+  ( 5 /JTRST )
+  ( 6 /NRST )
+  ( 7 +3.3V )
+  ( 8 GND )
+ )
+ ( /4D30588A USBDT_00501 XL7 USB_MINI_B
+  ( 1 /+5V )
+  ( 2 N-000060 )
+  ( 3 N-000049 )
+  ( 4 GND )
+  ( 5 GND )
+  ( SHLD GND )
+ )
+ ( /4D32AE58 SIL-2 XL8 CONN_2
+  ( 1 /OUT )
+  ( 2 GND )
+ )
+ ( /4D30C0A5 SIL-2 XL9 CONN_2
+  ( 1 N-000045 )
+  ( 2 N-000044 )
+ )
+ ( /4D32A6D9 PWRCON2PIN XL10 PWRCONN
+  ( 1 +BATT )
+  ( 2 GND )
+ )
+ ( /4D3320F0 SIL-1 XL11 CONN_1
+  ( 1 /RF1_OUT )
+ )
+ ( /4D3320E5 SIL-1 XL12 CONN_1
+  ( 1 /RF2_OUT )
+ )
+ ( /4D2F4A2C CRYSTAL_HC49 XTAL1 27MHz
+  ( 1 N-000030 )
+  ( 2 N-000083 )
+  ( H GND )
+ )
+ ( /4D31BE32 CRYSTAL_KX26 XTAL2 32768
+  ( 1 N-000059 )
+  ( 2 N-000004 )
+  ( H GND )
+ )
+ ( /4D2D7A1D CRYSTAL_HC49 XTAL3 8_MHz
+  ( 1 N-000034 )
+  ( 2 N-000061 )
+  ( H GND )
+ )
+ ( /4D32D384 CRYSTAL_HC49 XTAL4 30MHz
+  ( 1 N-000068 )
+  ( 2 N-000069 )
+  ( H GND )
+ )
+)
+*
+{ Allowed footprints by component:
+$component C1
+ SMD*
+$endlist
+$component C2
+ SMD*
+$endlist
+$component C3
+ SMD*
+$endlist
+$component C4
+ SMD*
+$endlist
+$component C5
+ SMD*
+$endlist
+$component C6
+ SMD*
+$endlist
+$component C7
+ SMD*
+$endlist
+$component C8
+ SMD*
+$endlist
+$component C9
+ SMD*
+$endlist
+$component C10
+ SMD*
+$endlist
+$component C11
+ SMD*
+$endlist
+$component C12
+ SMD*
+$endlist
+$component C13
+ SMD*
+$endlist
+$component C14
+ SMD*
+$endlist
+$component C15
+ SMD*
+$endlist
+$component C16
+ SMD*
+$endlist
+$component C17
+ SMD*
+$endlist
+$component C18
+ SMD*
+$endlist
+$component C19
+ SMD*
+$endlist
+$component C20
+ SMD*
+$endlist
+$component C21
+ SMD*
+$endlist
+$component C22
+ SMD*
+$endlist
+$component C23
+ SMD*
+$endlist
+$component C24
+ SMD*
+$endlist
+$component C25
+ SMD*
+$endlist
+$component C26
+ SMD*
+$endlist
+$component C27
+ SMD*
+$endlist
+$component C28
+ SMD*
+$endlist
+$component C29
+ SMD*
+$endlist
+$component C30
+ SMD*
+$endlist
+$component C31
+ SMD*
+$endlist
+$component C32
+ SMD*
+$endlist
+$component C33
+ SMD*
+$endlist
+$component C34
+ SMD*
+$endlist
+$component C35
+ SMD*
+$endlist
+$component C36
+ SMD*
+$endlist
+$component C37
+ SMD*
+$endlist
+$component C38
+ SMD*
+$endlist
+$component C39
+ SMD*
+$endlist
+$component C40
+ SMD*
+$endlist
+$component C41
+ SMD*
+$endlist
+$component C42
+ SMD*
+$endlist
+$component C43
+ SMD*
+$endlist
+$component C44
+ SMD*
+$endlist
+$component C45
+ SMD*
+$endlist
+$component C46
+ SMD*
+$endlist
+$component C47
+ SMD*
+$endlist
+$component C48
+ SMD*
+$endlist
+$component C49
+ SMD*
+$endlist
+$component C50
+ SMD*
+$endlist
+$component C51
+ SMD*
+$endlist
+$component C52
+ SMD*
+$endlist
+$component D1
+ D*
+$endlist
+$component D2
+ LED*
+$endlist
+$component DA1
+ QLP20
+$endlist
+$component DA2
+ 6SMM
+$endlist
+$component DA3
+ DRB
+$endlist
+$component DA4
+ SOT23-5
+$endlist
+$component DA5
+ SOT23-5
+$endlist
+$component DD1
+ QLP20
+$endlist
+$component DD2
+ LQFP48
+$endlist
+$component L1
+ INDUCTOR*
+ SMD*
+$endlist
+$component M1
+ MOT*
+$endlist
+$component Q2
+ SOT23
+$endlist
+$component Q3
+ SOT23-6
+$endlist
+$component Q4
+ SOT23
+$endlist
+$component R1
+ SMD*
+$endlist
+$component R2
+ SMD*
+$endlist
+$component R3
+ SMD*
+$endlist
+$component R4
+ SMD*
+$endlist
+$component R5
+ SMD*
+$endlist
+$component R6
+ SMD*
+$endlist
+$component R7
+ SMD*
+$endlist
+$component R8
+ SMD*
+$endlist
+$component R9
+ SMD*
+$endlist
+$component R10
+ SMD*
+$endlist
+$component R11
+ SMD*
+$endlist
+$component R12
+ SMD*
+$endlist
+$component R13
+ SMD*
+$endlist
+$component R14
+ SMD*
+$endlist
+$component TP1
+ TESTPOINT*
+$endlist
+$component TP2
+ TESTPOINT*
+$endlist
+$component TP3
+ TESTPOINT*
+$endlist
+$component TP4
+ TESTPOINT*
+$endlist
+$component TP5
+ TESTPOINT*
+$endlist
+$component TP6
+ TESTPOINT*
+$endlist
+$component XL3
+ SD_
+$endlist
+$component XL7
+ USB*
+$endlist
+$component XL10
+ PWRCON*
+$endlist
+$component XTAL1
+ CRYSTAL*
+$endlist
+$component XTAL2
+ CRYSTAL*
+$endlist
+$component XTAL3
+ CRYSTAL*
+$endlist
+$component XTAL4
+ CRYSTAL*
+$endlist
+$endfootprintlist
+}
