@@ -1,4 +1,4 @@
-EESchema Schematic File Version 2  date 17/01/2011 01:56:19
+EESchema Schematic File Version 2  date 18/01/2011 18:14:05
 LIBS:Audio_kl
 LIBS:Connectors_kl
 LIBS:display_kl
@@ -15,7 +15,7 @@ EELAYER END
 $Descr A3 16535 11700
 Sheet 1 1
 Title ""
-Date "16 jan 2011"
+Date "18 jan 2011"
 Rev ""
 Comp ""
 Comment1 ""
@@ -1868,7 +1868,7 @@ P 5700 4000
 F 0 "XTAL2" H 5700 4250 60  0000 C CNN
 F 1 "32768" H 5700 4150 60  0000 C CNN
 	1    5700 4000
-	1    0    0    -1  
+	-1   0    0    -1  
 $EndComp
 $Comp
 L GND #PWR046

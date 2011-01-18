@@ -1,4 +1,4 @@
-update=17/01/2011 19:27:41
+update=18/01/2011 18:08:04
 version=1
 last_client=pcbnew
 [cvpcb]
@@ -75,7 +75,7 @@ VEgarde=100
 DrawLar=150
 EdgeLar=150
 TxtLar=120
-MSegLar=50
+MSegLar=100
 LastNetListRead=Mdl03.net
 [pcbnew/libraries]
 LibDir=
