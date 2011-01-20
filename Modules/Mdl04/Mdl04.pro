@@ -1,4 +1,4 @@
-update=18/01/2011 18:08:04
+update=21/01/2011 00:34:27
 version=1
 last_client=pcbnew
 [cvpcb]
@@ -62,8 +62,8 @@ LibName10=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Transistor
 [pcbnew]
 version=1
 PadDrlX=0
-PadDimH=315
-PadDimV=79
+PadDimH=236
+PadDimV=118
 BoardThickness=630
 SgPcb45=1
 TxtPcbV=800
@@ -76,7 +76,7 @@ DrawLar=150
 EdgeLar=150
 TxtLar=120
 MSegLar=100
-LastNetListRead=Mdl03.net
+LastNetListRead=Mdl04.net
 [pcbnew/libraries]
 LibDir=
 LibName1=D:\\SVN\\Token\\TokenSmartCard\\Hardware\\trunk\\KiCadLibs\\Antennas_kl
