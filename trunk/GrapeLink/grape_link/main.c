@@ -30,17 +30,15 @@ int main(void) {
     GeneralInit();
     DDRB |= 1<< PB0;
     DDRC |= 1<<PC6;
-    sei();
 
-    PWMSet(1);
+    //Grape.FarMood = VeryBad;
+    sei();
     while (1) {
         wdt_reset();    // Reset watchdog
         //CC_Task();
 //        Battery_Task();
         LEDs_Task();
         _delay_ms(1);
-        //if(DelayElapsed(&Tmr, 100)) PORTC ^= 1<<PC6;
-       
     } // while
 }
 
@@ -48,7 +46,7 @@ FORCE_INLINE void GeneralInit(void) {
     //wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
 
-    //CC_Init();
+    CC_Init();
     LedsInit();
     DelayInit();
 
@@ -96,19 +94,17 @@ void CC_Task (void) {
 
 // Handle rise & fade
 void LEDs_Task(void) {
-    //if (!DelayElapsed(&ELeds.Timer, LED_STEP_DELAY)) return;
-    if (!DelayElapsed(&ELeds.Timer, 100)) return;
-    //return;
+    if (!DelayElapsed(&ELeds.Timer, LED_STEP_DELAY)) return;
+    //if (!DelayElapsed(&ELeds.Timer, 100)) return;
     if      (ELeds.CurrentPWM < ELeds.DesiredPWM) ELeds.CurrentPWM++;
     else if (ELeds.CurrentPWM > ELeds.DesiredPWM) ELeds.CurrentPWM--;
     else {  // Current = desired
-        
         if (ELeds.DesiredPWM == 0) {    // Bottom of fade out, switch to next LED
-            //PWMStop();
-            //LedSwitch(Off);             // Turn off current LED
-            //ChooseNextLED();
+            PWMStop();
+            LedSwitch(Off);             // Turn off current LED
+            ChooseNextLED();
             ELeds.DesiredPWM = PWM_MAX; 
-            //PWMStart();
+            PWMStart();
         } // if bottom
         else ELeds.DesiredPWM = 0;
     } // if current == desired
