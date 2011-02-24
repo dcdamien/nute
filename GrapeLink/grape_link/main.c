@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <avr/wdt.h>
 #include <util/delay.h>
+#include <avr/eeprom.h>
 #include "main.h"
 #include "delay_util.h"
 #include "battery.h"
@@ -19,26 +20,25 @@
 // ============================= Types =========================================
 enum Mood_t {Nobody, Neutral, Bad, VeryBad};
 struct {
+    uint8_t Addr;
     uint8_t CycleCounter;
     bool CC_IsSleeping;
     enum Mood_t SelfMood, FarMood;
-
 } Grape;
 
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
-    DDRB |= 1<< PB0;
-    DDRC |= 1<<PC6;
+    DDRB |= 1<<PB0; // DEBUG
+    DDRC |= 1<<PC6; // DEBUG
 
     //Grape.FarMood = VeryBad;
     sei();
     while (1) {
         wdt_reset();    // Reset watchdog
-        //CC_Task();
+        CC_Task();
 //        Battery_Task();
         LEDs_Task();
-        _delay_ms(1);
     } // while
 }
 
@@ -50,15 +50,20 @@ FORCE_INLINE void GeneralInit(void) {
     LedsInit();
     DelayInit();
 
+    // Grape init
+    Grape.Addr = eeprom_read_byte(EE_GRAPE_ADDR);
+    if (Grape.Addr == 0xFF) Grape.Addr = 0;   // Erased eeprom
+    Grape.CycleCounter = 0;
+    Grape.FarMood = Nobody;
+    Grape.SelfMood = Neutral;
+    
     // Setup Timer1: cycle timings
-/*
     TCNT1 = 0;
     TCCR1A = 0;
-    OCR1A = ((uint16_t)Corma.Addr) * PKT_DURATION;  // TX start
+    OCR1A = ((uint16_t)Grape.Addr) * PKT_DURATION;  // TX start
     ICR1 = SUBCYCLE_DURATION;                       // TX + RX/Sleep duration
     TIMSK |= (1<<OCIE1A)|(1<<TICIE1);
     CYC_TIMER_START();
-*/
 
     // Battery
     //BatteryInit();
@@ -88,6 +93,7 @@ void CC_Task (void) {
             break;
 
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
+            //PORTB &= ~(1<<PB0); // DEBUG
             break;
     }//Switch
 }
@@ -95,16 +101,18 @@ void CC_Task (void) {
 // Handle rise & fade
 void LEDs_Task(void) {
     if (!DelayElapsed(&ELeds.Timer, LED_STEP_DELAY)) return;
-    //if (!DelayElapsed(&ELeds.Timer, 100)) return;
+
     if      (ELeds.CurrentPWM < ELeds.DesiredPWM) ELeds.CurrentPWM++;
     else if (ELeds.CurrentPWM > ELeds.DesiredPWM) ELeds.CurrentPWM--;
     else {  // Current = desired
         if (ELeds.DesiredPWM == 0) {    // Bottom of fade out, switch to next LED
             PWMStop();
             LedSwitch(Off);             // Turn off current LED
-            ChooseNextLED();
-            ELeds.DesiredPWM = PWM_MAX; 
-            PWMStart();
+            if (Grape.FarMood != Nobody) {  // otherwise, left things as is
+                ChooseNextLED();
+                ELeds.DesiredPWM = PWM_MAX;
+                PWMStart();
+            } // if somebody
         } // if bottom
         else ELeds.DesiredPWM = 0;
     } // if current == desired
@@ -145,9 +153,18 @@ void ChooseNextLED(void) {
 
 // ============================== Events =======================================
 FORCE_INLINE void EVENT_NewPacket(void) {
-    if (CC.RX_Pkt.CmdID == PKT_ID_CALL) {
-    } // if PKT_ID_Call
+    Grape.FarMood = CC.RX_Pkt.Mood;
+    ATOMIC_BLOCK(ATOMIC_FORCEON) {
+        // Adjust our timer if sender address is lower, and do not otherwise
+        if (CC.RX_Pkt.SenderAddr < Grape.Addr) {
+            CYC_TIMER_STOP();
+            Grape.CycleCounter = CC.RX_Pkt.SenderCycle;
+            TCNT1 = CC.RX_Pkt.SenderTime;
+            CYC_TIMER_START();
+        } // if addr
+    } // Atomic
 }
+
 void EVENT_ADCMeasureCompleted(void) {
     // Choose mode of LED
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
@@ -159,37 +176,38 @@ void EVENT_ADCMeasureCompleted(void) {
 // ============================ Interrupts =====================================
 // Transmit interrupt
 ISR(TIMER1_COMPA_vect) {
-    PORTA &= ~(1<<PA4);
-    PORTA |= (1<<PA3); // DEBUG
+    PBHI;   // DEBUG
+    //_delay_us(500);
     CYC_TIMER_STOP();
+    CC_ENTER_IDLE();
     // Prepare packet & transmit it
-    CC.TX_Pkt.CmdID = PKT_ID_CALL;
-    CC_WriteTX (&CC.TX_PktArray[0], PKT_LNG); // Write bytes to FIFO
+    CC.TX_Pkt.Mood = Grape.SelfMood;
+    CC.TX_Pkt.SenderAddr = Grape.Addr;
+    CC.TX_Pkt.SenderCycle = Grape.CycleCounter;
+    CC.TX_Pkt.SenderTime = TCNT1;   // No need in ATOMIC here as we are in IRQ handler
+    CC_WriteTX (&CC.TX_PktArray[0], CC_DATA_LNG); // Write bytes to FIFO 
     CC_ENTER_TX();
     // Wait for packet to transmit completely
     while (!CC_GDO0_IS_HI());   // After this, SYNC word is transmitted
     while (CC_GDO0_IS_HI());    // After this, packet is transmitted
-//    if (Corma.CycleCounter == 0) CC_EnterRX();  // Enter RX after TX
+    if (Grape.CycleCounter == 0) CC_ENTER_RX();  // Enter RX-after-TX
     CYC_TIMER_START();
-    PORTA &= ~(1<<PA3); // DEBUG
+    CC_GDO0_IRQ_RESET();    // Do not check RX immediately
+    PBLO;   // DEBUG
 }
 
 // SubCycle end interrupt
 ISR(TIMER1_CAPT_vect) { // Means overflow IRQ
-    _delay_us(500);
+    //PORTC |= 1<<PC6;
+    //_delay_us(500);
     // Handle cycle counter
-/*
-    if (++Corma.CycleCounter >= CYCLE_COUNT) {  // Zero cycle begins
-        Corma.CycleCounter = 0;
-        // Flinch!
-        MotorSetCount (Corma.OthersCounter);
-        Corma.OthersCounter = 0;
-        // Enter RX-before-TX
-        CC_EnterRX();
+    if (++Grape.CycleCounter >= CYCLE_COUNT) {  // Zero cycle begins
+        Grape.CycleCounter = 0;
+        Grape.FarMood = Nobody; // Reset mood
+        CC_ENTER_RX();          // Enter RX-before-TX
     }
     else CC_ENTER_IDLE();   // Non-zero cycle
-*/
-    PORTA &= ~(1<<PA1);// DEBUG
+    //PORTC &= ~(1<<PC6);
 }
 
 

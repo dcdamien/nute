@@ -49,25 +49,28 @@
 #elif defined (__AVR_ATmega16__) || defined (__AVR_ATmega16A__)
 #define CC_GDO0_IRQ_ENABLE( )   GICR |=  (1<<INT2)
 #define CC_GDO0_IRQ_DISABLE( )  GICR &= ~(1<<INT2)
+#define CC_GDO0_IRQ_RESET( )    GIFR |=  (1<<INTF2)
 #endif
 
 // =============================== Variables ===================================
 struct CC_Packet_t{
-    uint8_t CmdID;
     uint8_t Mood;
+    uint8_t SenderAddr;
+    uint8_t SenderCycle;
+    uint16_t SenderTime;
     uint8_t RSSI;
     uint8_t LQI;
 };
-#define PKT_LNG sizeof(struct CC_Packet_t)
+#define CC_DATA_LNG     (sizeof(struct CC_Packet_t)-2)
 
 struct CC_t {
     uint8_t State;
     union {
-        uint8_t RX_PktArray[PKT_LNG];
+        uint8_t RX_PktArray[CC_DATA_LNG+2];
         struct CC_Packet_t RX_Pkt;
     };
     union {
-        uint8_t TX_PktArray[PKT_LNG];
+        uint8_t TX_PktArray[CC_DATA_LNG+2];
         struct CC_Packet_t TX_Pkt;
     };
     bool NewPacketReceived;

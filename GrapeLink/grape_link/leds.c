@@ -45,11 +45,9 @@ FORCE_INLINE void PWMSet(uint8_t APWM) {
 // Switch LED on
 ISR(TIMER2_OVF_vect) {
     LedSwitch(On);
-    //PORTB |= 1<<PB0;
 }
 // Switch LED off
 ISR(TIMER2_COMP_vect) {
     LedSwitch(Off);
-    //PORTB &= ~(1<<PB0);
 }
 
