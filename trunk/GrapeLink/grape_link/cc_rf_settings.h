@@ -9,8 +9,8 @@
 #define	_CC_RF_SETTINGS_H
 
 // Bitrate
-//#define CC_BITRATE_10K
-#define CC_BITRATE_38K4
+#define CC_BITRATE_10K
+//#define CC_BITRATE_38K4
 
 // ============================ Common use values ==============================
 #define CC_TX_FIFO_SIZE     33
@@ -40,9 +40,12 @@
 
 #define CC_FIFOTHR_VALUE    0b00000111  // RXFIFO and TXFIFO thresholds: TX 33, RX 32
 #define CC_IOCFG2_VALUE     0x0E        // GDO2 - Carrier sence
-#define CC_IOCFG0_VALUE     0x07        // GDO0 - Asserts when a packet has been received with CRC OK. De-asserts when the first byte is read from the RX FIFO.
+//#define CC_IOCFG0_VALUE     0x07        // GDO0 - Asserts when a packet has been received with CRC OK. De-asserts when the first byte is read from the RX FIFO.
+#define CC_IOCFG0_VALUE     0x06        // GDO0 - Asserts when sync word has been sent / received, and de-asserts at the end of the packet. In RX, the pin will de-assert
+                                        // when the optional address check fails or the RX FIFO overflows.
 
-#define CC_PKTCTRL1_VALUE   0b00001110  // PQT=0, CRC autoflush=1, Append=1, Address check = 10 (check, 0 is broadcast)
+//#define CC_PKTCTRL1_VALUE   0b00001110  // PQT=0, CRC autoflush=1, Append=1, Address check = 10 (check, 0 is broadcast)
+#define CC_PKTCTRL1_VALUE   0b00001100  // PQT=0, CRC autoflush=1, Append=1, Address check = 00 (no check)
 #define CC_PKTCTRL0_VALUE   0b01000100  // WhiteData=1, PKTFormat=normal, CRC enabled, Fixed Length
 #define CC_ADDR_VALUE       0x01        // Device address.
 

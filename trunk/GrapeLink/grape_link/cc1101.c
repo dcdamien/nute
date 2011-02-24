@@ -8,6 +8,9 @@
 #include <inttypes.h>
 #include <util/atomic.h>
 #include "cc1101.h"
+// DEBUG
+#include "main.h"
+#include <util/delay.h>
 
 struct CC_t CC;
 
@@ -19,7 +22,8 @@ void CC_Init(void){
     EICRA |= (1<<ISC21)|(1<<ISC20); // Rising edge generates an interrupt
     EIFR |= (1<<INTF2);             // Clear IRQ flag
     #elif defined (__AVR_ATmega16__) || defined (__AVR_ATmega16A__)
-    MCUCSR |= (1<<ISC2);    // Rising edge generates an interrupt
+    //MCUCSR |= (1<<ISC2);    // Rising edge generates an interrupt
+    MCUCSR &= ~(1<<ISC2);   // Falling edge generates an interrupt
     GIFR   |= (1<<INTF2);   // Clear IRQ flag
     #endif
 
@@ -150,7 +154,7 @@ void CC_RfConfig(void){
     CC_WriteRegister(CC_IOCFG0,   CC_IOCFG0_VALUE);     // GDO0 output pin configuration.
     CC_WriteRegister(CC_PKTCTRL1, CC_PKTCTRL1_VALUE);   // Packet automation control.
     CC_WriteRegister(CC_PKTCTRL0, CC_PKTCTRL0_VALUE);   // Packet automation control.
-    CC_WriteRegister(CC_PKTLEN,   PKT_LNG);             // Packet length.
+    CC_WriteRegister(CC_PKTLEN,   CC_DATA_LNG);         // Packet length.
 
     CC_WriteRegister(CC_PATABLE, CC_PATABLE0_VALUE);
     
@@ -170,11 +174,15 @@ uint8_t CC_ReadWriteByte(uint8_t AByte){
 // ============================ Interrupts =====================================
 ISR(INT2_vect){
     // Packet has been successfully recieved
-    //PORTA |= (1<<PA1); // DEBUG
+    //PBHI; // DEBUG
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
+        PORTC |= 1<<PC6;
+        _delay_us(500);
+        PORTC &= ~(1<<PC6);
+
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }
-    //PORTA &= ~(1<<PA1); // DEBUG
+    //PBLO; // DEBUG
 }
