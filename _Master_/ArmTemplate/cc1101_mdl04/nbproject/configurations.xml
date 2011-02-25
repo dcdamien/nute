@@ -11,6 +11,7 @@
       <itemPath>delay_util.h</itemPath>
       <itemPath>main.h</itemPath>
       <itemPath>system_kl.h</itemPath>
+      <itemPath>uart.h</itemPath>
     </logicalFolder>
     <logicalFolder name="lib" displayName="lib" projectFiles="true">
       <logicalFolder name="CoreSupport"
@@ -101,6 +102,7 @@
       <itemPath>delay_util.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
       <itemPath>system_kl.c</itemPath>
+      <itemPath>uart.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"
                    displayName="Test Files"

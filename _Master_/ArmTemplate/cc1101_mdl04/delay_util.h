@@ -35,7 +35,7 @@ extern Delay_t Delay;
 
 // Declare Timer IRQ. Use externC to make it visible from asm file.
 extern "C" {
-void TIM7_IRQHandler(void);
+extern void TIM4_IRQHandler(void);
 }
 
 
