@@ -23,7 +23,7 @@ PRJCSRC = system_kl.c
 PRJCPPSRC = main.cpp \
 delay_util.cpp \
 cc1101.cpp \
-
+uart.cpp \
 
 
 # List project include directories here
