@@ -11,7 +11,7 @@
             <sourceEncoding>windows-1251</sourceEncoding>
             <make-dep-projects/>
             <sourceRootList>
-                <sourceRootElem>lib</sourceRootElem>
+                <sourceRootElem>.</sourceRootElem>
             </sourceRootList>
             <confList>
                 <confElem>Debug</confElem>

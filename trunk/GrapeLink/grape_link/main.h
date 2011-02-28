@@ -14,6 +14,22 @@
 #define PBHI    PORTB |= (1<<PB0)
 #define PBLO    PORTB &= ~(1<<PB0)
 
+#define BTN_DDR     DDRD
+#define BTN_PORT    PORTD
+#define BTN_PIN     PIND
+#define BTN         PD0
+#define BTN_IS_PRESSED()    bit_is_clear(BTN_PIN, BTN)
+
+// Mood leds
+#define MDLED_DDR   DDRC
+#define MDLED_PORT  PORTC
+#define MDLED_RED   PC6
+#define MDLED_GREEN PC7
+#define MDLED_RED_ON()      PORTC |=  (1<<MDLED_RED)
+#define MDLED_RED_OFF()     PORTC &= ~(1<<MDLED_RED)
+#define MDLED_GREEN_ON()    PORTC |=  (1<<MDLED_GREEN)
+#define MDLED_GREEN_OFF()   PORTC &= ~(1<<MDLED_GREEN)
+
 // ================================== Timer ====================================
 // Divider = 256, resulting in 64 uS per pulse
 #define TCCR1B_ON   (1<<WGM13)|(1<<WGM12)|(1<<CS02)|(0<<CS01)|(0<<CS00)
@@ -34,6 +50,7 @@ void GeneralInit(void);
 // Tasks
 void CC_Task (void);
 void LEDs_Task(void);
+void Btn_Task(void);
 
 // General
 void ChooseNextLED(void);

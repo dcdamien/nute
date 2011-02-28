@@ -32,12 +32,7 @@ include Makefile
 OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
-OBJECTFILES= \
-	${OBJECTDIR}/battery.o \
-	${OBJECTDIR}/delay_util.o \
-	${OBJECTDIR}/leds.o \
-	${OBJECTDIR}/main.o \
-	${OBJECTDIR}/cc1101.o
+OBJECTFILES=
 
 
 # C Compiler Flags
@@ -63,31 +58,6 @@ LDLIBSOPTIONS=
 c\AvrDragon\AVRDragon.exe: ${OBJECTFILES}
 	${MKDIR} -p c\AvrDragon
 	${LINK.c} -o c:\AvrDragon\AVRDragon.exe ${OBJECTFILES} ${LDLIBSOPTIONS} 
-
-${OBJECTDIR}/battery.o: battery.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega16A__ -DF_CPU\ 4000000 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/battery.o battery.c
-
-${OBJECTDIR}/delay_util.o: delay_util.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega16A__ -DF_CPU\ 4000000 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/delay_util.o delay_util.c
-
-${OBJECTDIR}/leds.o: leds.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega16A__ -DF_CPU\ 4000000 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/leds.o leds.c
-
-${OBJECTDIR}/main.o: main.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega16A__ -DF_CPU\ 4000000 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
-
-${OBJECTDIR}/cc1101.o: cc1101.c 
-	${MKDIR} -p ${OBJECTDIR}
-	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega16A__ -DF_CPU\ 4000000 -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/cc1101.o cc1101.c
 
 # Subprojects
 .build-subprojects:

@@ -80,7 +80,7 @@ public:
     void IRQEnable (void) { NVIC_EnableIRQ (CC_GDO0_EXTI_IRQn); }
     void IRQReset  (void) { EXTI_ClearFlag (CC_GDO0_EXTI_LINE); }
     // Strobes
-    void Reset(void) { WriteStrobe(CC_SRES); }
+    void Reset(void)        { WriteStrobe(CC_SRES); }
     void FlushRxFIFO(void)  { WriteStrobe(CC_SFRX); }
     void EnterTX(void)      { WriteStrobe(CC_STX);  }
     void EnterRX(void)      { WriteStrobe(CC_SRX);  }
@@ -99,8 +99,6 @@ void Task_CC (void);
 
 void EVENT_NewPacket(void);
 
-// IRQ
-void EXTI0_IRQHandler(void);
 
 #endif	/* _CC1101_H */
 
