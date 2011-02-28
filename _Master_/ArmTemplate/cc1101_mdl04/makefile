@@ -10,20 +10,21 @@ CPUFAMILY = STM32F10X_MD_VL
 # STM32 Medium density devices - STM32F102x with 16 to 32 kByte of RAM
 #CPUFAMILY = STM32F10X_MD
 
-# Define project name here
-PROJECT = rf22
-
 # Define output type here, uncomment needed line
 OUTTYPE = binary
 #OUTTYPE = ihex
 
 # List project source files here
-PRJCSRC = system_kl.c
+PRJCSRC = system_kl.c \
+
+
 
 PRJCPPSRC = main.cpp \
+stm32f10x_it.cpp \
 delay_util.cpp \
 cc1101.cpp \
 uart.cpp \
+
 
 
 # List project include directories here
@@ -269,11 +270,10 @@ gccversion:
 clean:
 	@echo
 	@echo $(MSG_CLEANING)
+	@echo $(OBJ)
 	-rm -f $(OBJ)
 	-rm -f $(OUTDIR)/*.*
-	-rm -f $(SRC:.c=.c.bak)
 	-rm -f $(SRC:.c=.lst)
-	-rm -f $(ASRC:.s=.s.bak)
 	-rm -f $(ASRC:.s=.lst)
 	-rm -fR .dep
 

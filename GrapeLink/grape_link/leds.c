@@ -1,3 +1,4 @@
+#include <avr/io.h>
 #include "leds.h"
 #include "delay_util.h"
 #include "common.h"

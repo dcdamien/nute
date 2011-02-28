@@ -26,19 +26,35 @@ struct {
     enum Mood_t SelfMood, FarMood;
 } Grape;
 
+struct {
+    uint16_t Timer;
+    uint16_t Delay;
+    bool IsPressed;
+    bool FirstTime;
+} Btn;
+
+struct {
+    bool ItsMoodShow;
+    uint16_t Timer;
+} MoodShow;
+
+void MoodShow_Task(void);
+
+void ShowMood(void);
+void HideMood(void);
+
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
     DDRB |= 1<<PB0; // DEBUG
-    DDRC |= 1<<PC6; // DEBUG
-
-    //Grape.FarMood = VeryBad;
     sei();
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
 //        Battery_Task();
         LEDs_Task();
+        Btn_Task();
+        MoodShow_Task();
     } // while
 }
 
@@ -56,7 +72,16 @@ FORCE_INLINE void GeneralInit(void) {
     Grape.CycleCounter = 0;
     Grape.FarMood = Nobody;
     Grape.SelfMood = Neutral;
-    
+
+    // Button
+    BTN_DDR &= ~(1<<BTN);
+    BTN_PORT |= (1<<BTN);
+    Btn.FirstTime = true;
+
+    // Mood LEDs
+    MDLED_DDR |= (1<<MDLED_RED)|(1<<MDLED_GREEN);
+    MoodShow.ItsMoodShow = false;
+
     // Setup Timer1: cycle timings
     TCNT1 = 0;
     TCCR1A = 0;
@@ -149,6 +174,58 @@ void ChooseNextLED(void) {
         default:
             break;
     } // Switch
+}
+
+void Btn_Task(void) {
+    if (!DelayElapsed(&Btn.Timer, 100)) return;
+    if (BTN_IS_PRESSED() && !Btn.IsPressed) {   // Keypress occured
+        Btn.IsPressed = true;
+        // switch mood
+        if (!Btn.FirstTime) {
+            switch (Grape.SelfMood) {
+                case Neutral: Grape.SelfMood = Bad;     break;
+                case Bad:     Grape.SelfMood = VeryBad; break;
+                case VeryBad: Grape.SelfMood = Neutral; break;
+                default: break;
+            } // switch
+        }
+        ShowMood();
+        Btn.FirstTime = false;
+    } // if presed
+    else if (!BTN_IS_PRESSED() && Btn.IsPressed) {  // Key depress occured
+        Btn.IsPressed = false;
+    }
+}
+
+
+void MoodShow_Task(void) {
+    if (!MoodShow.ItsMoodShow) return;
+    if (DelayElapsed(&MoodShow.Timer, 2000)) HideMood();
+}
+void ShowMood(void) {
+    MoodShow.ItsMoodShow = true;
+    DelayReset(&MoodShow.Timer);
+    switch (Grape.SelfMood) {
+        case Neutral:
+            MDLED_GREEN_ON();
+            MDLED_RED_OFF();
+            break;
+        case Bad:
+            MDLED_GREEN_ON();
+            MDLED_RED_ON();
+            break;
+        case VeryBad:
+            MDLED_GREEN_OFF();
+            MDLED_RED_ON();
+            break;
+        default: break;
+    }
+}
+void HideMood(void) {
+    MDLED_GREEN_OFF();
+    MDLED_RED_OFF();
+    MoodShow.ItsMoodShow = false;
+    Btn.FirstTime = true;
 }
 
 // ============================== Events =======================================

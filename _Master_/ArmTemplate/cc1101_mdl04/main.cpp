@@ -18,14 +18,18 @@ void LEDInit(void) {
 
 int main(void) {
     GeneralInit();
-    //Uart.PrintString("\rCC1101\r");
+    Uart.PrintString("\rCC1101\r");
 
     uint32_t LEDTmr;
     while (1) {
-        if (Delay.Elapsed(&LEDTmr, 50)) {
+        if (Delay.Elapsed(&LEDTmr, 250)) {
         //Delay.ms(200);
             LED_TOGGLE();
-//            Uart.Print('a');
+            
+            uint8_t b = CC.ReadRegister(CC_IOCFG0);
+            Uart.PrintAsHex(b);
+            Uart.NewLine();
+            //Uart.Print('a');
         }
         //Task_CC();
     }
@@ -33,9 +37,11 @@ int main(void) {
 
 void GeneralInit(void) {
     LEDInit();
+    // Configure two bits for preemption priority
+    NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
     Delay.Init();
-    //CC.Init();
-    //Uart.Init();
+    Uart.Init();
+    CC.Init();
 }
 
 // ============================ Events =========================================
@@ -43,3 +49,6 @@ void EVENT_NewPacket(void) {
 
 
 }
+
+// ============================= IRQs ==========================================
+

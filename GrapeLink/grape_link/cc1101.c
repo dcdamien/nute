@@ -177,10 +177,6 @@ ISR(INT2_vect){
     //PBHI; // DEBUG
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
-        PORTC |= 1<<PC6;
-        _delay_us(500);
-        PORTC &= ~(1<<PC6);
-
         CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
         CC.NewPacketReceived = true;
     }

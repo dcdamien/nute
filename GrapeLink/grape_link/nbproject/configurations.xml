@@ -54,6 +54,11 @@
             <Elem>F_CPU 4000000</Elem>
           </preprocessorList>
         </cTool>
+        <ccTool>
+          <preprocessorList>
+            <Elem>__AVR_ATmega16A__</Elem>
+          </preprocessorList>
+        </ccTool>
         <linkerTool>
           <output>c:\AvrDragon\AVRDragon.exe</output>
         </linkerTool>
@@ -72,12 +77,15 @@
             <pElem>.</pElem>
           </incDir>
           <preprocessorList>
-            <Elem>__AVR_ATmega16__</Elem>
-            <Elem>F_CPU 1000000</Elem>
+            <Elem>__AVR_ATmega16A__</Elem>
+            <Elem>F_CPU 4000000</Elem>
           </preprocessorList>
         </cTool>
         <ccTool>
           <developmentMode>5</developmentMode>
+          <preprocessorList>
+            <Elem>__AVR_ATmega16A__</Elem>
+          </preprocessorList>
         </ccTool>
         <fortranCompilerTool>
           <developmentMode>5</developmentMode>

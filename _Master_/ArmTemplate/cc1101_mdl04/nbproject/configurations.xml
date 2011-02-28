@@ -10,6 +10,7 @@
       <itemPath>cc_rf_settings.h</itemPath>
       <itemPath>delay_util.h</itemPath>
       <itemPath>main.h</itemPath>
+      <itemPath>stm32f10x_it.h</itemPath>
       <itemPath>system_kl.h</itemPath>
       <itemPath>uart.h</itemPath>
     </logicalFolder>
@@ -117,7 +118,7 @@
     </logicalFolder>
   </logicalFolder>
   <sourceRootList>
-    <Elem>lib</Elem>
+    <Elem>.</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>

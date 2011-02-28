@@ -5,8 +5,10 @@
  * Created on 06/03/2010 г., 2:08
  */
 #include <inttypes.h>
+#include "stm32f10x_it.h"   // interrupts
 #include "cc1101.h"
 #include "cc_rf_settings.h"
+#include "uart.h"
 
 CC_t CC;
 
@@ -43,6 +45,11 @@ void CC_t::Init(void) {
     // ==== GPIO init ====
     GPIO_InitTypeDef GPIO_InitStructure;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    // Configure CC_CS as Push-Pull output
+    GPIO_InitStructure.GPIO_Pin  = CC_CS;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
+    GPIO_Init(CC_GPIO, &GPIO_InitStructure);
+    this->CS_Hi();
     // Configure MOSI & SCK as Alternate Function Push Pull
     GPIO_InitStructure.GPIO_Pin  = CC_SCLK | CC_MOSI;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AF_PP;
@@ -50,10 +57,6 @@ void CC_t::Init(void) {
     // Configure MISO as Input Floating
     GPIO_InitStructure.GPIO_Pin  = CC_MISO;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;
-    GPIO_Init(CC_GPIO, &GPIO_InitStructure);
-    // Configure CC_CS as Push-Pull output
-    GPIO_InitStructure.GPIO_Pin  = CC_CS;
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(CC_GPIO, &GPIO_InitStructure);
     // ==== IRQ ====
     // Configure CC_GDO as Input Pull-up
@@ -65,16 +68,15 @@ void CC_t::Init(void) {
     // Configure EXTI line
     EXTI_InitTypeDef EXTI_InitStructure;
     EXTI_InitStructure.EXTI_Line = CC_GDO0_EXTI_LINE;
-    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
+    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Event;
     EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
     EXTI_InitStructure.EXTI_LineCmd = ENABLE;
     EXTI_Init(&EXTI_InitStructure);
-    
     // Enable and set EXTI Interrupt to the lower priority
     NVIC_InitTypeDef NVIC_InitStructure;
     NVIC_InitStructure.NVIC_IRQChannel = CC_GDO0_EXTI_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0x07;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 0x07;
+    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
     this->IRQDisable();
@@ -195,6 +197,7 @@ uint8_t CC_t::ReadWriteByte(uint8_t AByte) {
 
 // ============================ Interrupt ======================================
 void EXTI0_IRQHandler(void) {
+    Uart.PrintString("\rIRQ\r");
     // Packet has been successfully recieved
     uint8_t FifoSize = CC.ReadRegister(CC_RXBYTES); // Get number of bytes in FIFO
     if (FifoSize > 0) {
