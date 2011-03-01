@@ -8,10 +8,16 @@
 #include "stm32f10x_it.h"   // interrupts
 #include "cc1101.h"
 #include "cc_rf_settings.h"
+#include "delay_util.h"
+
 #include "uart.h"
+#include "main.h"
 
+// ============================ Variables ======================================
 CC_t CC;
+CCSrv_t CCsrv;
 
+// ========================== Implementation ===================================
 void Task_CC (void) {
     // Handle packet if received
     if (CC.NewPacketReceived) {
@@ -25,15 +31,26 @@ void Task_CC (void) {
         case CC_STB_TX_UNDF: CC.FlushTxFIFO(); break;
 
         case CC_STB_IDLE:
-            // Set needed channel and enter RX if time has come
-            //CC_SetChannel(CC_Srv.Channel);
             //CC.EnterRX();
+            //Uart.PrintString("\rRX\r");
+
+            if (Delay.Elapsed(&CCsrv.Timer, 400)) {
+                LED_TOGGLE();
+                // Prepare packet to send
+                CC.TX_Pkt.CommandID = 0xCA;
+                CC.TX_Pkt.PacketID++;
+                CC.TX_Pkt.Payload[0] = 'A';
+                CC.TX_Pkt.Payload[1] = 'i';
+                CC.TX_Pkt.Payload[2] = 'y';
+                CC.TX_Pkt.Payload[3] = 'a';
+                CC.EnterTX();
+            }
             break;
 
         case CC_STB_RX:
             break;
 
-        default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
+        default: // Just get out in other cases
             break;
     }//Switch
 }
@@ -105,6 +122,15 @@ void CC_t::SetChannel(uint8_t AChannel) {
     while (CC.State != CC_STB_IDLE) this->EnterIdle();
     // Now set channel
     this->WriteRegister(CC_CHANNR, AChannel);
+}
+
+void CC_t::EnterTXAndWaitToComplete(void) {
+    IRQDisable();
+    EnterTX();
+    // Wait for packet to transmit completely
+    while (!GDO0_IsHi());   // After this, SYNC word is transmitted
+    while (GDO0_IsHi());    // After this, packet is transmitted
+    IRQEnable();
 }
 
 // ============================= Inner use =====================================
@@ -196,7 +222,7 @@ uint8_t CC_t::ReadWriteByte(uint8_t AByte) {
 }
 
 // ============================ Interrupt ======================================
-void EXTI0_IRQHandler(void) {
+void EXTI0_IRQHandler(void) { // TODO: workaround situation of FIFO size > PKT_LEN
     Uart.PrintString("\rIRQ\r");
     // Packet has been successfully recieved
     uint8_t FifoSize = CC.ReadRegister(CC_RXBYTES); // Get number of bytes in FIFO

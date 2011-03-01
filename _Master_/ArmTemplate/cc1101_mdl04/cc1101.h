@@ -35,16 +35,23 @@
 #define CC_GDO0_EXTI_LINE   EXTI_Line0              // As EXTI0 connected to Pin0
 #define CC_GDO0_EXTI_IRQn   EXTI0_IRQn
 
+// ============================ Types & variables ==============================
+struct CCSrv_t {
+    uint32_t Timer;
+};
+extern CCSrv_t CCsrv;
 
-// =============================== Variables ===================================
-#define CC_PKT_DATA_LEN 6
+
+#define CC_PKT_DATA_LEN     6
+#define CC_PKT_PAYLOAD_LEN  CC_PKT_DATA_LEN-2
 struct CC_Packet_t{
     uint8_t PacketID;
     uint8_t CommandID;
-    uint8_t Payload[CC_PKT_DATA_LEN-2];
+    uint8_t Payload[CC_PKT_PAYLOAD_LEN];
     uint8_t RSSI;
     uint8_t LQI;
 };
+#define PKT_FULL_LEN    sizeof(struct CC_Packet_t)
 
 class CC_t {
 private:
@@ -54,16 +61,17 @@ private:
     void CS_Hi(void) { CC_GPIO->BSRR = CC_CS; }
     void CS_Lo(void) { CC_GPIO->BRR  = CC_CS; }
     void BusyWait(void) { while (GPIO_ReadInputDataBit(CC_GPIO, CC_MISO)); }
+    bool GDO0_IsHi(void) { return GPIO_ReadInputDataBit(CC_GPIO, CC_GDO0); }
     // Methods
     void RfConfig(void);
 public:
     uint8_t State;
     union {
-        uint8_t RX_PktArray[sizeof(CC_Packet_t)];
+        uint8_t RX_PktArray[PKT_FULL_LEN];
         CC_Packet_t RX_Pkt;
     };
     union {
-        uint8_t TX_PktArray[sizeof(struct CC_Packet_t)];
+        uint8_t TX_PktArray[PKT_FULL_LEN];
         CC_Packet_t TX_Pkt;
     };
     bool NewPacketReceived;
@@ -72,6 +80,7 @@ public:
     void SetChannel(uint8_t AChannel);
     void WriteTX (uint8_t *PData, uint8_t ALength);
     void ReadRX  (uint8_t *PData, uint8_t ALength);
+    void EnterTXAndWaitToComplete (void);
     // Registers
     void WriteRegister (const uint8_t Addr, const uint8_t AData);
     uint8_t ReadRegister (const uint8_t Addr);
@@ -82,7 +91,7 @@ public:
     // Strobes
     void Reset(void)        { WriteStrobe(CC_SRES); }
     void FlushRxFIFO(void)  { WriteStrobe(CC_SFRX); }
-    void EnterTX(void)      { WriteStrobe(CC_STX);  }
+    void EnterTX(void)      { IRQDisable(); WriteStrobe(CC_STX);  }
     void EnterRX(void)      { WriteStrobe(CC_SRX);  }
     void EnterIdle(void)    { WriteStrobe(CC_SIDLE);}
     void PowerDown(void)    { WriteStrobe(CC_SPWD); }
