@@ -19,38 +19,53 @@ CCSrv_t CCsrv;
 
 // ========================== Implementation ===================================
 void Task_CC (void) {
-    // Handle packet if received
-    if (CC.NewPacketReceived) {
-        CC.NewPacketReceived = false;
-        EVENT_NewPacket();
-    }
+    uint8_t FifoSize;
     // Do with CC what needed
     CC.GetState();
     switch (CC.State){
-        case CC_STB_RX_OVF:  CC.FlushRxFIFO(); break;
-        case CC_STB_TX_UNDF: CC.FlushTxFIFO(); break;
+        case CC_STB_RX_OVF:  CC.FlushRxFIFO(); Uart.PrintString("\rRX_OVF"); break;
+        case CC_STB_TX_UNDF: CC.FlushTxFIFO(); Uart.PrintString("\rTX_OVF"); break;
 
         case CC_STB_IDLE:
-            //CC.EnterRX();
-            //Uart.PrintString("\rRX\r");
-
-            if (Delay.Elapsed(&CCsrv.Timer, 400)) {
-                LED_TOGGLE();
-                // Prepare packet to send
-                CC.TX_Pkt.CommandID = 0xCA;
-                CC.TX_Pkt.PacketID++;
-                CC.TX_Pkt.Payload[0] = 'A';
-                CC.TX_Pkt.Payload[1] = 'i';
-                CC.TX_Pkt.Payload[2] = 'y';
-                CC.TX_Pkt.Payload[3] = 'a';
-                CC.EnterTX();
-            }
+            //Uart.PrintString("\rIDLE");
+            CC.EnterRX();
+//            if (Delay.Elapsed(&CCsrv.Timer, 400)) {
+//                LED_TOGGLE();
+//                // Prepare packet to send
+//                CC.TX_Pkt.CommandID = 0xCA;
+//                CC.TX_Pkt.PacketID++;
+//                CC.TX_Pkt.Payload[0] = 'A';
+//                CC.TX_Pkt.Payload[1] = 'i';
+//                CC.TX_Pkt.Payload[2] = 'y';
+//                CC.TX_Pkt.Payload[3] = 'a';
+//                CC.WriteTX(CC.TX_PktArray, CC_PKT_LEN);
+//                //CC.EnterTXAndWaitToComplete();
+//                CC.EnterTX();
+//            }
             break;
 
         case CC_STB_RX:
+            //Uart.PrintString("\rRX");
+            if (CC.GDO0_IsHi()) CC.GDO0_WasHi = true;
+            // Check if GDO0 has fallen
+            else if (CC.GDO0_WasHi) {
+                Uart.PrintString("\rIRQ\r");
+                CC.GDO0_WasHi = false;
+                FifoSize = CC.ReadRegister(CC_RXBYTES); // Get number of bytes in FIFO
+                if (FifoSize > 0) {
+                    CC.ReadRX(CC.RX_PktArray, FifoSize);
+                    EVENT_NewPacket();
+                } // if size>0
+            } // if falling edge
+            break;
+
+        case CC_STB_TX:
+            //Uart.PrintString("\rTX");
             break;
 
         default: // Just get out in other cases
+            //Uart.PrintString("\rOther: ");
+            //Uart.PrintUint(CC.State);
             break;
     }//Switch
 }
@@ -80,23 +95,23 @@ void CC_t::Init(void) {
     GPIO_InitStructure.GPIO_Pin  = CC_GDO0;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IPU;
     GPIO_Init(CC_GPIO, &GPIO_InitStructure);
-    // Connect EXTI Line to GPIO Pin
-    GPIO_EXTILineConfig(CC_GDO0_PORTSOURCE, CC_GDO0_PINSOURCE);
-    // Configure EXTI line
-    EXTI_InitTypeDef EXTI_InitStructure;
-    EXTI_InitStructure.EXTI_Line = CC_GDO0_EXTI_LINE;
-    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Event;
-    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
-    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
-    EXTI_Init(&EXTI_InitStructure);
-    // Enable and set EXTI Interrupt to the lower priority
-    NVIC_InitTypeDef NVIC_InitStructure;
-    NVIC_InitStructure.NVIC_IRQChannel = CC_GDO0_EXTI_IRQn;
-    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
-    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
-    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
-    NVIC_Init(&NVIC_InitStructure);
-    this->IRQDisable();
+//    // Connect EXTI Line to GPIO Pin
+//    GPIO_EXTILineConfig(CC_GDO0_PORTSOURCE, CC_GDO0_PINSOURCE);
+//    // Configure EXTI line
+//    EXTI_InitTypeDef EXTI_InitStructure;
+//    EXTI_InitStructure.EXTI_Line = CC_GDO0_EXTI_LINE;
+//    EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Event;
+//    EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Falling;
+//    EXTI_InitStructure.EXTI_LineCmd = ENABLE;
+//    EXTI_Init(&EXTI_InitStructure);
+//    // Enable and set EXTI Interrupt to the lower priority
+//    NVIC_InitTypeDef NVIC_InitStructure;
+//    NVIC_InitStructure.NVIC_IRQChannel = CC_GDO0_EXTI_IRQn;
+//    NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
+//    NVIC_InitStructure.NVIC_IRQChannelSubPriority = 2;
+//    NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
+//    NVIC_Init(&NVIC_InitStructure);
+//    this->IRQDisable();
     // ==== SPI init ====    MSB first, master, SCK idle low
     SPI_InitTypeDef SPI_InitStructure;
     SPI_InitStructure.SPI_Direction = SPI_Direction_2Lines_FullDuplex;
@@ -110,11 +125,11 @@ void CC_t::Init(void) {
     SPI_Init(CC_SPI, &SPI_InitStructure);
     SPI_Cmd(CC_SPI, ENABLE);
     // ******* Firmware init section *******
-    CC.NewPacketReceived = false;
-    this->Reset();
-    this->FlushRxFIFO();
-    this->RfConfig();
-    this->IRQEnable();
+    GDO0_WasHi = false;
+    Reset();
+    FlushRxFIFO();
+    RfConfig();
+    //this->IRQEnable();
 }
 
 void CC_t::SetChannel(uint8_t AChannel) {
@@ -207,7 +222,7 @@ void CC_t::RfConfig(void){
     WriteRegister(CC_IOCFG0,   CC_IOCFG0_VALUE);     // GDO0 output pin configuration.
     WriteRegister(CC_PKTCTRL1, CC_PKTCTRL1_VALUE);   // Packet automation control.
     WriteRegister(CC_PKTCTRL0, CC_PKTCTRL0_VALUE);   // Packet automation control.
-    WriteRegister(CC_PKTLEN,   CC_PKT_DATA_LEN);     // Packet length.
+    WriteRegister(CC_PKTLEN,   CC_PKT_LEN);          // Packet length.
 
     WriteRegister(CC_PATABLE, CC_PATABLE0_VALUE);
     
@@ -222,13 +237,13 @@ uint8_t CC_t::ReadWriteByte(uint8_t AByte) {
 }
 
 // ============================ Interrupt ======================================
-void EXTI0_IRQHandler(void) { // TODO: workaround situation of FIFO size > PKT_LEN
-    Uart.PrintString("\rIRQ\r");
-    // Packet has been successfully recieved
-    uint8_t FifoSize = CC.ReadRegister(CC_RXBYTES); // Get number of bytes in FIFO
-    if (FifoSize > 0) {
-        CC.ReadRX(CC.RX_PktArray, FifoSize);
-        CC.NewPacketReceived = true;
-    }
-    //PORTA &= ~(1<<PA1); // DEBUG
-}
+//void EXTI0_IRQHandler(void) { // TODO: workaround situation of FIFO size > PKT_LEN
+//    Uart.PrintString("\rIRQ\r");
+//    // Packet has been successfully recieved
+//    uint8_t FifoSize = CC.ReadRegister(CC_RXBYTES); // Get number of bytes in FIFO
+//    if (FifoSize > 0) {
+//        CC.ReadRX(CC.RX_PktArray, FifoSize);
+//        CC.NewPacketReceived = true;
+//    }
+//    //PORTA &= ~(1<<PA1); // DEBUG
+//}

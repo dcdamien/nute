@@ -31,6 +31,7 @@ int main(void) {
 //            Uart.NewLine();
             //Uart.Print('a');
         //}
+        //Delay.ms(200);
         Task_CC();
     }
 }
@@ -48,7 +49,7 @@ void GeneralInit(void) {
 // ============================ Events =========================================
 void EVENT_NewPacket(void) {
     Uart.NewLine();
-    for (uint8_t i=0; i<PKT_FULL_LEN; i++)
+    for (uint8_t i=0; i<CC_PKT_EXTRA_LEN; i++)
         Uart.PrintAsHex(CC.RX_PktArray[i]);
     Uart.NewLine();
 }
