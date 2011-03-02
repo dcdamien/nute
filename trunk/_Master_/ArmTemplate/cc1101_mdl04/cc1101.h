@@ -42,16 +42,16 @@ struct CCSrv_t {
 extern CCSrv_t CCsrv;
 
 
-#define CC_PKT_DATA_LEN     6
-#define CC_PKT_PAYLOAD_LEN  CC_PKT_DATA_LEN-2
+#define CC_PKT_LEN          6
+#define CC_PKT_DTA_LEN      CC_PKT_LEN-2
+#define CC_PKT_EXTRA_LEN    CC_PKT_LEN+2
 struct CC_Packet_t{
     uint8_t PacketID;
     uint8_t CommandID;
-    uint8_t Payload[CC_PKT_PAYLOAD_LEN];
+    uint8_t Payload[CC_PKT_DTA_LEN];
     uint8_t RSSI;
     uint8_t LQI;
 };
-#define PKT_FULL_LEN    sizeof(struct CC_Packet_t)
 
 class CC_t {
 private:
@@ -61,20 +61,19 @@ private:
     void CS_Hi(void) { CC_GPIO->BSRR = CC_CS; }
     void CS_Lo(void) { CC_GPIO->BRR  = CC_CS; }
     void BusyWait(void) { while (GPIO_ReadInputDataBit(CC_GPIO, CC_MISO)); }
-    bool GDO0_IsHi(void) { return GPIO_ReadInputDataBit(CC_GPIO, CC_GDO0); }
     // Methods
     void RfConfig(void);
 public:
     uint8_t State;
     union {
-        uint8_t RX_PktArray[PKT_FULL_LEN];
+        uint8_t RX_PktArray[CC_PKT_EXTRA_LEN];
         CC_Packet_t RX_Pkt;
     };
     union {
-        uint8_t TX_PktArray[PKT_FULL_LEN];
+        uint8_t TX_PktArray[CC_PKT_EXTRA_LEN];
         CC_Packet_t TX_Pkt;
     };
-    bool NewPacketReceived;
+    bool GDO0_WasHi;
     // Methods
     void Init(void);
     void SetChannel(uint8_t AChannel);
@@ -85,13 +84,14 @@ public:
     void WriteRegister (const uint8_t Addr, const uint8_t AData);
     uint8_t ReadRegister (const uint8_t Addr);
     // IRQ
-    void IRQDisable(void) { NVIC_DisableIRQ(CC_GDO0_EXTI_IRQn); }   // Disable Exti line
-    void IRQEnable (void) { NVIC_EnableIRQ (CC_GDO0_EXTI_IRQn); }
-    void IRQReset  (void) { EXTI_ClearFlag (CC_GDO0_EXTI_LINE); }
+    void IRQDisable(void) { /* NVIC_DisableIRQ(CC_GDO0_EXTI_IRQn);  */}   // Disable Exti line
+    void IRQEnable (void) { /* NVIC_EnableIRQ (CC_GDO0_EXTI_IRQn); */}
+    void IRQReset  (void) { /* EXTI_ClearFlag (CC_GDO0_EXTI_LINE); */}
+    bool GDO0_IsHi(void) { return GPIO_ReadInputDataBit(CC_GPIO, CC_GDO0); }
     // Strobes
     void Reset(void)        { WriteStrobe(CC_SRES); }
     void FlushRxFIFO(void)  { WriteStrobe(CC_SFRX); }
-    void EnterTX(void)      { IRQDisable(); WriteStrobe(CC_STX);  }
+    void EnterTX(void)      { WriteStrobe(CC_STX);  }
     void EnterRX(void)      { WriteStrobe(CC_SRX);  }
     void EnterIdle(void)    { WriteStrobe(CC_SIDLE);}
     void PowerDown(void)    { WriteStrobe(CC_SPWD); }
