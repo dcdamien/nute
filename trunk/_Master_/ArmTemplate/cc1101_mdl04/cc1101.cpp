@@ -28,19 +28,19 @@ void Task_CC (void) {
 
         case CC_STB_IDLE:
             //Uart.PrintString("\rIDLE");
-            CC.EnterRX();
+            //CC.EnterRX();
 //            if (Delay.Elapsed(&CCsrv.Timer, 400)) {
-//                LED_TOGGLE();
-//                // Prepare packet to send
-//                CC.TX_Pkt.CommandID = 0xCA;
-//                CC.TX_Pkt.PacketID++;
-//                CC.TX_Pkt.Payload[0] = 'A';
-//                CC.TX_Pkt.Payload[1] = 'i';
-//                CC.TX_Pkt.Payload[2] = 'y';
-//                CC.TX_Pkt.Payload[3] = 'a';
-//                CC.WriteTX(CC.TX_PktArray, CC_PKT_LEN);
-//                //CC.EnterTXAndWaitToComplete();
-//                CC.EnterTX();
+                LED_TOGGLE();
+                // Prepare packet to send
+                CC.TX_Pkt.CommandID = 0xCA;
+                CC.TX_Pkt.PacketID++;
+                CC.TX_Pkt.Payload[0] = 'A';
+                CC.TX_Pkt.Payload[1] = 'i';
+                CC.TX_Pkt.Payload[2] = 'y';
+                CC.TX_Pkt.Payload[3] = 'a';
+                CC.WriteTX(CC.TX_PktArray, CC_PKT_LEN);
+                //CC.EnterTXAndWaitToComplete();
+                CC.EnterTX();
 //            }
             break;
 
