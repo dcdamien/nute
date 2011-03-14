@@ -14,7 +14,7 @@
  extern "C" {
 #endif
 
-#define DEBUG_SHORT_SOUND
+//#define DEBUG_SHORT_SOUND
      
 #ifdef DEBUG_SHORT_SOUND
     #define SND1_LEN    9

@@ -1,9 +1,9 @@
 #include "dac.h"
-#include "stm32f10x_tim.h"
 #include "stm32f10x_dac.h"
 #include "stm32f10x_dma.h"
 
 #include "sound_data.h"
+#include "time_domain.h"
 
 #include "uart.h"
 
@@ -14,7 +14,6 @@ void Dac_t::Init(void) {
     RCC_AHBPeriphClockCmd (RCC_AHBPeriph_DMA1,   ENABLE);
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC,   ENABLE);
-    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM6,  ENABLE);
     // ==== GPIO ====
     // Once the DAC channel is enabled, the corresponding GPIO pin is automatically
     // connected to the DAC converter. In order to avoid parasitic consumption,
@@ -27,15 +26,10 @@ void Dac_t::Init(void) {
     GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
-    // ==== Timer6 ==== // Here sampling frequency is set
-    //TIM_PrescalerConfig(TIM6, 1, TIM_PSCReloadMode_Update); // 8 MHz / (1+1) = 4 MHz;  4000 kHz / 250 = 16 kHz
-    //TIM_SetAutoreload(TIM6, 250);                           // is used earlier
-    TIM_PrescalerConfig(TIM6, 1, TIM_PSCReloadMode_Update); // 8 MHz / (1+1) = 4 MHz;  4000 kHz / 363 = 11.025 kHz
-    TIM_SetAutoreload(TIM6, 363);                           // is used earlier
-    TIM_SelectOutputTrigger(TIM6, TIM_TRGOSource_Update);   // TIM6 TRGO selection
+
     // ==== DAC channel1 Configuration ====
     DAC_InitTypeDef DAC_InitStructure;
-    DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;
+    DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;    // Defined in time_domain.h
     DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
     //DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
     DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
@@ -77,31 +71,25 @@ void Dac_t::Init(void) {
     // Enable DMA for DAC Channel1
     DAC_DMACmd(DAC_Channel_1, ENABLE);
     // Disable all
-    TIM_Cmd(TIM6, DISABLE);
     AmplifierOff();
     MayPlay = false;
+
+      TIM_PrescalerConfig(TIM6, 1, TIM_PSCReloadMode_Update);
+  TIM_SetAutoreload(TIM6, 363);
+  /* TIM6 TRGO selection */
+  TIM_SelectOutputTrigger(TIM6, TIM_TRGOSource_Update);
+  TIM_Cmd(TIM6, ENABLE);
 }
 
-void Dac_t::PlayLoop(void) {
-    // Enable timer and amplifier
-    TIM_Cmd(TIM6, ENABLE);
-    AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
-    MayPlay = true;
-}
-
-
-void Dac_t::CheckIfStop(void) {
-    if (!MayPlay) {
-        TIM_Cmd(TIM6, DISABLE);
-        AmplifierOff();
-    }
-}
 
 // ============================ Interrupts =====================================
 void DMA1_Channel3_IRQHandler(void) {
     // Test on DMA1 Channel3 Transfer Complete interrupt
     if(DMA_GetITStatus(DMA1_IT_TC3)) {
-        Dac.CheckIfStop();
+        if (!Dac.MayPlay) {
+            Trigger.Off();
+            Dac.AmplifierOff();
+        }
         // Clear DMA1 Channel6 Half Transfer, Transfer Complete and Global interrupt pending bits
         DMA_ClearITPendingBit(DMA1_IT_GL3);
     }

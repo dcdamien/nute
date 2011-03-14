@@ -13,14 +13,11 @@
 
 class Dac_t {
 private:
+public:
     bool MayPlay;
+    void Init(void);
     void AmplifierOn(void)  { GPIOA->BSRR = GPIO_Pin_8; }    // Set SHUTDOWN pin high
     void AmplifierOff(void) { GPIOA->BRR  = GPIO_Pin_8; }    // Set SHUTDOWN pin low
-public:
-    void Init(void);
-    void PlayLoop(void);
-    void StopLoop(void) { MayPlay = false; } // Stop playing continuosly
-    void CheckIfStop(void);
 };
 
 extern Dac_t Dac;

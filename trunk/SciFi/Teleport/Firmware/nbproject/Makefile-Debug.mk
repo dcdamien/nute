@@ -35,6 +35,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_hd_vl.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_ld_vl.o \
+	${OBJECTDIR}/time_domain.o \
 	${OBJECTDIR}/sound_data.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o \
@@ -90,6 +91,11 @@ ${OBJECTDIR}/lib/src/stm32f10x_adc.c.gch: lib/src/stm32f10x_adc.c
 	${MKDIR} -p ${OBJECTDIR}/lib/src
 	${RM} $@.d
 	$(COMPILE.c) -g -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -Ilib -Ilib/CoreSupport -Ilib/inc -I. -MMD -MP -MF $@.d -o $@ lib/src/stm32f10x_adc.c
+
+${OBJECTDIR}/time_domain.o: time_domain.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -Ilib -Ilib/CoreSupport -Ilib/inc -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/time_domain.o time_domain.cpp
 
 ${OBJECTDIR}/lib/src/stm32f10x_rcc.c.gch: lib/src/stm32f10x_rcc.c 
 	${MKDIR} -p ${OBJECTDIR}/lib/src

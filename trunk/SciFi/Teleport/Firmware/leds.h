@@ -10,16 +10,24 @@
 
 #include "stm32f10x.h"
 
+// Defines
 #define PWM1_PIN    GPIO_Pin_6
-#define PWM2_PIN    GPIO_Pin_7
-#define PWM3_PIN    GPIO_Pin_8
 
+#define RED_PIN     GPIO_Pin_7
+#define GREEN_PIN   GPIO_Pin_8
 
+#define PWM_START   40  // Start value for when music starts
+#define PWM_END     250
+
+// Types
 class Leds_t {
-private:
-
 public:
     void Init(void);
+    // Indicators
+    void RedOn(void)    { GPIOB->BSRR = RED_PIN; }
+    void RedOff(void)   { GPIOB->BRR  = RED_PIN; }
+    void GreenOn(void)  { GPIOB->BSRR = GREEN_PIN; }
+    void GreenOff(void) { GPIOB->BRR  = GREEN_PIN; }
 };
 
 extern Leds_t Leds;
