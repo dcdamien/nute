@@ -26,6 +26,7 @@ uart.cpp \
 dac.cpp \
 sound_data.cpp \
 leds.cpp \
+time_domain.cpp \
 
 
 # List project include directories here

@@ -35,6 +35,7 @@ OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
 OBJECTFILES= \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_hd_vl.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_ld_vl.o \
+	${OBJECTDIR}/time_domain.o \
 	${OBJECTDIR}/sound_data.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o \
@@ -80,6 +81,11 @@ ${OBJECTDIR}/lib/startup/startup_stm32f10x_hd_vl.o: lib/startup/startup_stm32f10
 ${OBJECTDIR}/lib/startup/startup_stm32f10x_ld_vl.o: lib/startup/startup_stm32f10x_ld_vl.s 
 	${MKDIR} -p ${OBJECTDIR}/lib/startup
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/lib/startup/startup_stm32f10x_ld_vl.o lib/startup/startup_stm32f10x_ld_vl.s
+
+${OBJECTDIR}/time_domain.o: time_domain.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -Ilib -Ilib/CoreSupport -Ilib/inc -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/time_domain.o time_domain.cpp
 
 ${OBJECTDIR}/sound_data.o: sound_data.cpp 
 	${MKDIR} -p ${OBJECTDIR}

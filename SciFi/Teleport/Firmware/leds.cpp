@@ -7,12 +7,21 @@ void Leds_t::Init(void) {
     // ==== GPIO ====
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOB | RCC_APB2Periph_AFIO, ENABLE);
     GPIO_InitTypeDef  GPIO_InitStructure;
-    GPIO_InitStructure.GPIO_Pin = PWM1_PIN | PWM2_PIN | PWM3_PIN;
-    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF_PP;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    // Blue LEDs, PWM powered
+    GPIO_InitStructure.GPIO_Pin = PWM1_PIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF_PP;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+    // Red
+    GPIO_InitStructure.GPIO_Pin = RED_PIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
+    GPIO_Init(GPIOB, &GPIO_InitStructure);
+    // Green
+    GPIO_InitStructure.GPIO_Pin = GREEN_PIN;
+    GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-    // ==== Timer4 ====
+    // ==== Timer4 as PWM ====
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     TIM_TimeBaseStructure.TIM_Period = 250;
@@ -32,5 +41,9 @@ void Leds_t::Init(void) {
     TIM_ARRPreloadConfig(TIM4, ENABLE);
     TIM_Cmd(TIM4, ENABLE);
 
-
+    // ==== Timer3 as divider of sample interval ====
+//    RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM3, ENABLE);
+//    // Slave Mode selection: TIM3
+//    TIM_SelectSlaveMode(TIM3, TIM_SlaveMode_Gated);
+//    TIM_SelectInputTrigger(TIM3, TIM_TS_ITR1);
 }

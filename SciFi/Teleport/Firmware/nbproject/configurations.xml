@@ -12,6 +12,7 @@
       <itemPath>sound_data.h</itemPath>
       <itemPath>stm32f10x_it.h</itemPath>
       <itemPath>system_kl.h</itemPath>
+      <itemPath>time_domain.h</itemPath>
       <itemPath>uart.h</itemPath>
     </logicalFolder>
     <logicalFolder name="lib" displayName="lib" projectFiles="true">
@@ -105,6 +106,7 @@
       <itemPath>main.cpp</itemPath>
       <itemPath>sound_data.cpp</itemPath>
       <itemPath>system_kl.c</itemPath>
+      <itemPath>time_domain.cpp</itemPath>
       <itemPath>uart.cpp</itemPath>
     </logicalFolder>
     <logicalFolder name="TestFiles"

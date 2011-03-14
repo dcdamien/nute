@@ -2,20 +2,26 @@
 #include "main.h"
 #include "delay_util.h"
 #include "dac.h"
+#include "leds.h"
+#include "time_domain.h"
 
 #include "uart.h"
-#include "leds.h"
 
 // ========================== Prototypes =======================================
 void GeneralInit(void);
+
+void PlayLoop(void);
+void StopLoop(void);
+
+void FieldOn(void);
 // ========================== Implementation ===================================
 void LEDInit(void) {
-//  RCC_APB2PeriphClockCmd(LED_GPIO_CLK, ENABLE);
-//  GPIO_InitTypeDef  GPIO_InitStructure;
-//  GPIO_InitStructure.GPIO_Pin = LED_PIN;
-//  GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
-//  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-//  GPIO_Init(LED_GPIO_PORT, &GPIO_InitStructure);
+  RCC_APB2PeriphClockCmd(LED_GPIO_CLK, ENABLE);
+  GPIO_InitTypeDef  GPIO_InitStructure;
+  GPIO_InitStructure.GPIO_Pin = LED_PIN;
+  GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
+  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+  GPIO_Init(LED_GPIO_PORT, &GPIO_InitStructure);
 }
 
 int main(void) {
@@ -24,11 +30,12 @@ int main(void) {
 
     //Dac.PlayLoop();
 
+    FieldOn();
     uint32_t LEDTmr;
     //Delay.Reset(&LEDTmr);
     while (1) {
         if (Delay.Elapsed(&LEDTmr, 400)) {
-            //LED_TOGGLE();
+            LED_TOGGLE();
             //Dac.StopLoop();
 //            Uart.PrintAsHex(b);
 //            Uart.NewLine();
@@ -43,8 +50,26 @@ void GeneralInit(void) {
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
     Delay.Init();
     Uart.Init();
+
+    //Trigger.Init();
     Dac.Init();
-    Leds.Init();
+    //Leds.Init();
+}
+
+void PlayLoop(void) {
+    // Enable timer and amplifier
+    Dac.AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
+    Dac.MayPlay = true;
+    //Trigger.On();
+}
+void StopLoop(void) {
+    Dac.MayPlay = false;
+}
+
+
+void FieldOn(void) {
+    PlayLoop();
+
 }
 
 // ============================ Events =========================================
