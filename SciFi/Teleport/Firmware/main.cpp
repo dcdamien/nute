@@ -10,10 +10,8 @@
 // ========================== Prototypes =======================================
 void GeneralInit(void);
 
-void PlayLoop(void);
-void StopLoop(void);
-
 void FieldOn(void);
+void FieldOff(void);
 // ========================== Implementation ===================================
 void LEDInit(void) {
   RCC_APB2PeriphClockCmd(LED_GPIO_CLK, ENABLE);
@@ -28,13 +26,10 @@ int main(void) {
     GeneralInit();
     Uart.PrintString("\rTeleport\r");
 
-    //Dac.PlayLoop();
-
     FieldOn();
     uint32_t LEDTmr;
-    //Delay.Reset(&LEDTmr);
     while (1) {
-        if (Delay.Elapsed(&LEDTmr, 400)) {
+        if (Delay.Elapsed(&LEDTmr, 100)) {
             LED_TOGGLE();
             //Dac.StopLoop();
 //            Uart.PrintAsHex(b);
@@ -51,26 +46,23 @@ void GeneralInit(void) {
     Delay.Init();
     Uart.Init();
 
-    //Trigger.Init();
+    Ticker.Init();
     Dac.Init();
     //Leds.Init();
 }
 
-void PlayLoop(void) {
+void FieldOn(void) {
     // Enable timer and amplifier
     Dac.AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
     Dac.MayPlay = true;
-    //Trigger.On();
+    Ticker.On();
 }
-void StopLoop(void) {
-    Dac.MayPlay = false;
+void FieldOff(void) {
+    Dac.MayPlay = false;    // All the next will be performed automatically
 }
 
 
-void FieldOn(void) {
-    PlayLoop();
 
-}
 
 // ============================ Events =========================================
 

@@ -29,9 +29,8 @@ void Dac_t::Init(void) {
 
     // ==== DAC channel1 Configuration ====
     DAC_InitTypeDef DAC_InitStructure;
-    DAC_InitStructure.DAC_Trigger = DAC_Trigger_T6_TRGO;    // Defined in time_domain.h
+    DAC_InitStructure.DAC_Trigger = DAC_TRIGGER;    // Defined in time_domain.h
     DAC_InitStructure.DAC_WaveGeneration = DAC_WaveGeneration_None;
-    //DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Enable;
     DAC_InitStructure.DAC_OutputBuffer = DAC_OutputBuffer_Disable;
     DAC_Init(DAC_Channel_1, &DAC_InitStructure);
 
@@ -87,7 +86,7 @@ void DMA1_Channel3_IRQHandler(void) {
     // Test on DMA1 Channel3 Transfer Complete interrupt
     if(DMA_GetITStatus(DMA1_IT_TC3)) {
         if (!Dac.MayPlay) {
-            Trigger.Off();
+            Ticker.Off();
             Dac.AmplifierOff();
         }
         // Clear DMA1 Channel6 Half Transfer, Transfer Complete and Global interrupt pending bits
