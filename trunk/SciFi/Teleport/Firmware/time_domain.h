@@ -15,16 +15,16 @@
 // Timer2 is used as master timer
 
 // DAC trigger
-#define DAC_TRIGGER     DAC_Trigger_T6_TRGO
+#define DAC_TRIGGER     DAC_Trigger_T2_TRGO
 
-class Trigger_t {
+class Ticker_t {
 public:
     void Init(void);
-    void On(void)  { TIM_Cmd(TIM6, ENABLE);  }
-    void Off(void) { TIM_Cmd(TIM6, DISABLE); }
+    void On(void)  { TIM_Cmd(TIM2, ENABLE);  }
+    void Off(void) { TIM_Cmd(TIM2, DISABLE); }
 };
 
-extern Trigger_t Trigger;
+extern Ticker_t Ticker;
 
 
 
