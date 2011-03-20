@@ -17,10 +17,8 @@ void Delay_t::Init(void) {
     // Time base configuration: 1 ms == 1000 Hz = FCLK / (100 * (FCLK/100 000))
     TIM_TimeBaseInitTypeDef TIM_TimeBaseStructure;
     TIM_TimeBaseStructure.TIM_CounterMode       = TIM_CounterMode_Up;   // Up-counter needed, nothing special
-    TIM_TimeBaseStructure.TIM_ClockDivision     = 0;                    // Dead-time divisor, not needed here
     TIM_TimeBaseStructure.TIM_Period            = 100;                  // Auto-reload value
     TIM_TimeBaseStructure.TIM_Prescaler         = (uint16_t)(SystemCoreClock / 100000) - 1; // Input clock divisor
-    TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
     TIM_TimeBaseInit(TIM7, &TIM_TimeBaseStructure);
     // Enable timer
     TIM_Cmd(TIM7, ENABLE);
