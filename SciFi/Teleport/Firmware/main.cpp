@@ -30,7 +30,8 @@ int main(void) {
     uint32_t LEDTmr;
     while (1) {
         if (Delay.Elapsed(&LEDTmr, 100)) {
-            LED_TOGGLE();
+            LEDTmr++; // dummy
+            //LED_TOGGLE();
             //Dac.StopLoop();
 //            Uart.PrintAsHex(b);
 //            Uart.NewLine();
@@ -48,13 +49,14 @@ void GeneralInit(void) {
 
     Ticker.Init();
     Dac.Init();
-    //Leds.Init();
+    Leds.Init();
 }
 
 void FieldOn(void) {
     // Enable timer and amplifier
     Dac.AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
     Dac.MayPlay = true;
+    Leds.FieldOn();
     Ticker.On();
 }
 void FieldOff(void) {

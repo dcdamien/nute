@@ -26,7 +26,10 @@ public:
 
 extern Ticker_t Ticker;
 
-
+// Declare DMA1_Channel3 IRQ. Use externC to make it visible from asm file.
+extern "C" {
+void DMA1_Channel3_IRQHandler(void);
+}
 
 #endif	/* TIME_DOMAIN_H */
 

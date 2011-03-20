@@ -80,16 +80,3 @@ void Dac_t::Init(void) {
   TIM_Cmd(TIM6, ENABLE);
 }
 
-
-// ============================ Interrupts =====================================
-void DMA1_Channel3_IRQHandler(void) {
-    // Test on DMA1 Channel3 Transfer Complete interrupt
-    if(DMA_GetITStatus(DMA1_IT_TC3)) {
-        if (!Dac.MayPlay) {
-            Ticker.Off();
-            Dac.AmplifierOff();
-        }
-        // Clear DMA1 Channel6 Half Transfer, Transfer Complete and Global interrupt pending bits
-        DMA_ClearITPendingBit(DMA1_IT_GL3);
-    }
-}

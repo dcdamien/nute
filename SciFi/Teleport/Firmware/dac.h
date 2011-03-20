@@ -22,10 +22,7 @@ public:
 
 extern Dac_t Dac;
 
-// Declare DMA1_Channel3 IRQ. Use externC to make it visible from asm file.
-extern "C" {
-void DMA1_Channel3_IRQHandler(void);
-}
+
 
 #endif	/* DAC_H */
 
