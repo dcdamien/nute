@@ -61,8 +61,8 @@
 #define LED_PWR_P       PB7
 #define LED_PWR_DDR     DDRB
 #define LED_PWR_PORT    PORTB
-#define LED_PWR_ON()    LED_PWR_PORT &= ~(1<<LED_PWR_P)
-#define LED_PWR_OFF()   LED_PWR_PORT |=  (1<<LED_PWR_P)
+#define LED_PWR_ON()    LED_PWR_DDR |=  (1<<LED_PWR_P)
+#define LED_PWR_OFF()   LED_PWR_DDR &= ~(1<<LED_PWR_P)
 
 #define LED_RED_DISABLE()   TCCR0A &= ~((1<<COM0A1)|(1<<COM0A0));
 #define LED_RED_ENABLE()    TCCR0A |=  ((1<<COM0A1)|(0<<COM0A0));

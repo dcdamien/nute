@@ -62,7 +62,8 @@ FORCE_INLINE void GeneralInit(void) {
     // Light
     LED_DDR  |= (1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P);
     LED_PORT &= ~((1<<RED_P)|(1<<GREEN_P)|(1<<BLUE_P));
-    LED_PWR_DDR |= (1<<LED_PWR_P);
+    // Led power
+    LED_PWR_PORT &= ~(1<<LED_PWR_P);    // Low if output, Hi-Z if input
     LED_PWR_OFF();
 
     TCCR0A = (1<<WGM01)|(1<<WGM00);
