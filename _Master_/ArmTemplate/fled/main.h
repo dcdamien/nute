@@ -23,7 +23,9 @@
 #define LEDB_TOGGLE()   LED_GPIO_PORT->ODR ^= LEDB_PIN
 
 #define BTN_P   GPIO_Pin_0
-#define BTN_IS_PRESSED() (GPIO_ReadInputDataBit(GPIOA, BTN_P))
+#define BTN1_IS_PRESSED() (GPIO_ReadInputDataBit(GPIOA, GPIO_Pin_8))
+#define BTN2_IS_PRESSED() (GPIO_ReadInputDataBit(GPIOA, BTN_P))
+#define BTN3_IS_PRESSED() (GPIO_ReadInputDataBit(GPIOA, BTN_P))
 
 
 #endif	/* MAIN_H */

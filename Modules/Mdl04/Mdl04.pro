@@ -1,4 +1,4 @@
-update=10/03/2011 01:25:41
+update=25/03/2011 13:34:06
 version=1
 last_client=pcbnew
 [cvpcb]
@@ -43,11 +43,7 @@ offY_E=0
 RptD_X=0
 RptD_Y=100
 RptLab=1
-SimCmd=
-UseNetN=0
 LabSize=60
-PrintMonochrome=0
-ShowSheetReferenceAndTitleBlock=1
 [eeschema/libraries]
 LibName1=D:\\libs\\Kicad\\Audio_kl
 LibName2=D:\\libs\\Kicad\\display_kl
@@ -58,6 +54,7 @@ LibName6=D:\\libs\\Kicad\\RF ICs
 LibName7=D:\\libs\\Kicad\\st_kl
 LibName8=D:\\libs\\Kicad\\Tittar_kl
 LibName9=D:\\libs\\Kicad\\Transistors_kl
+LibName10=D:\\libs\\Kicad\\Connectors_kl
 [pcbnew]
 version=1
 PadDrlX=0
