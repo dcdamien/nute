@@ -1,0 +1,323 @@
+# EESchema Netlist Version 1.1 created  04/04/2011 09:56:17
+(
+ ( /4D995AC2 $noname  XL4 ATMEL_ISP {Lib=ATMEL_ISP}
+  (    1 /MISO )
+  (    2 /Vcc )
+  (    3 /SCK )
+  (    4 /MOSI )
+  (    5 /RESET )
+  (    6 GND )
+ )
+ ( /4D98E220 $noname  R5 0.1R {Lib=R}
+  (    1 /LED_C )
+  (    2 GND )
+ )
+ ( /4D98DC03 $noname  SW2 PUSHBUTTON {Lib=PUSHBUTTON}
+  (    1 N-000036 )
+  (    2 GND )
+  (    H ? )
+ )
+ ( /4D98DA94 $noname  XL2 CONN_1 {Lib=CONN_1}
+  (    1 N-000036 )
+ )
+ ( /4D98D81F $noname  DA1 LM3410_LLP {Lib=LM3410_LLP}
+  (    1 GND )
+  (    2 /LM_PWR )
+  (    3 /LM_PWR )
+  (    4 N-000034 )
+  (    5 GND )
+  (    6 /LD )
+  (  PAD GND )
+ )
+ ( /4D985CD2 $noname  R4 1k {Lib=R}
+  (    1 /LED_C )
+  (    2 N-000034 )
+ )
+ ( /4D985C79 $noname  D2 ZENER {Lib=ZENER}
+  (    A N-000034 )
+  (    C /LED_A )
+ )
+ ( /4D984C28 $noname  D3 LED {Lib=LED}
+  (    A /LED_A )
+  (    C /LED_C )
+ )
+ ( /4D984B59 $noname  SW1 PUSHBUTTON {Lib=PUSHBUTTON}
+  (    1 N-000036 )
+  (    2 GND )
+  (    H ? )
+ )
+ ( /4B2A3FDC $noname  BZ1 BUZZER {Lib=BUZZER}
+  (    A N-000022 )
+  (    C GND )
+ )
+ ( /4D98487A $noname  XL3 CONN_2 {Lib=CONN_2}
+  (    1 /LED_A )
+  (    2 /LED_C )
+ )
+ ( /4BCFFCA9 $noname  Q1 IRLMS6702 {Lib=IRLMS6702}
+  (    1 /LM_PWR )
+  (    2 /LM_PWR )
+  (    3 /Fireline )
+  (    4 +BATT )
+  (    5 /LM_PWR )
+  (    6 /LM_PWR )
+ )
+ ( /4BCFF99C $noname  C6 2.2u {Lib=C}
+  (    1 GND )
+  (    2 /LED_A )
+ )
+ ( /4BCFF90D $noname  C4 10u {Lib=C}
+  (    1 +BATT )
+  (    2 GND )
+ )
+ ( /4BCFF591 $noname  C1 0.1u {Lib=C}
+  (    1 /Vcc )
+  (    2 GND )
+ )
+ ( /4BCFF58B $noname  C2 0.1u {Lib=C}
+  (    1 /Vcc )
+  (    2 GND )
+ )
+ ( /4B9E69EB $noname  DD1 ATMEGA88 {Lib=ATMEGA88}
+  (    1 ? )
+  (    2 ? )
+  (    3 GND )
+  (    4 /Vcc )
+  (    5 GND )
+  (    6 /Vcc )
+  (    7 ? )
+  (    8 ? )
+  (    9 ? )
+  (   10 /Fireline )
+  (   11 ? )
+  (   12 ? )
+  (   13 N-000026 )
+  (   14 ? )
+  (   15 /MOSI )
+  (   16 /MISO )
+  (   17 /SCK )
+  (   18 /Vcc )
+  (   19 ? )
+  (   20 ? )
+  (   21 GND )
+  (   22 ? )
+  (   23 ? )
+  (   24 ? )
+  (   25 ? )
+  (   26 ? )
+  (   27 ? )
+  (   28 ? )
+  (   29 /RESET )
+  (   30 ? )
+  (   31 ? )
+  (   32 N-000036 )
+  (  PAD GND )
+ )
+ ( /4B2A4619 $noname  R1 100 {Lib=R}
+  (    1 N-000022 )
+  (    2 N-000026 )
+ )
+ ( /4B2A455A $noname  L1 10uH {Lib=L}
+  (    1 /Vcc )
+  (    2 +BATT )
+ )
+ ( /4B2A4484 $noname  C3 0.1u {Lib=C}
+  (    1 /Vcc )
+  (    2 GND )
+ )
+ ( /4B03C5AF $noname  D1 D_Shottky {Lib=D_Shottky}
+  (    A /LD )
+  (    C /LED_A )
+ )
+ ( /4B03C58C $noname  L2 10uH {Lib=L}
+  (    1 /LD )
+  (    2 /LM_PWR )
+ )
+ ( /4B03C57A $noname  C5 10u {Lib=C}
+  (    1 /LM_PWR )
+  (    2 GND )
+ )
+ ( /4AF1448D $noname  R2 10k {Lib=R}
+  (    1 /Fireline )
+  (    2 +BATT )
+ )
+ ( /4AEF2B97 $noname  XL1 PwrConn {Lib=PwrConn}
+  (    1 +BATT )
+  (    2 GND )
+ )
+ ( /4AEF02CF $noname  R3 0.1R {Lib=R}
+  (    1 /LED_C )
+  (    2 GND )
+ )
+)
+*
+{ Allowed footprints by component:
+$component XL4
+ DIL2X3*
+$endlist
+$component R5
+ SMD*
+$endlist
+$component SW2
+ BUTTON*
+$endlist
+$component DA1
+ LLP6
+$endlist
+$component R4
+ SMD*
+$endlist
+$component D2
+ D*
+$endlist
+$component D3
+ LED*
+$endlist
+$component SW1
+ BUTTON*
+$endlist
+$component Q1
+ SOT23-6
+$endlist
+$component C6
+ SMD*
+$endlist
+$component C4
+ SMD*
+$endlist
+$component C1
+ SMD*
+$endlist
+$component C2
+ SMD*
+$endlist
+$component DD1
+ TQFP32
+ QFN32
+$endlist
+$component R1
+ SMD*
+$endlist
+$component L1
+ INDUCTOR*
+ SMD*
+$endlist
+$component C3
+ SMD*
+$endlist
+$component D1
+ D*
+$endlist
+$component L2
+ INDUCTOR*
+ SMD*
+$endlist
+$component C5
+ SMD*
+$endlist
+$component R2
+ SMD*
+$endlist
+$component XL1
+ PWRCON*
+$endlist
+$component R3
+ SMD*
+$endlist
+$endfootprintlist
+}
+{ Pin List by Nets
+Net 1 "GND" "GND"
+ XL4 6
+ DA1 1
+ SW2 2
+ C5 2
+ C6 1
+ DA1 5
+ DA1 PAD
+ R3 2
+ C3 2
+ XL1 2
+ R5 2
+ C1 2
+ C2 2
+ C4 2
+ DD1 PAD
+ DD1 3
+ SW1 2
+ DD1 21
+ BZ1 C
+ DD1 5
+Net 18 "/LED_A" "LED_A"
+ C6 2
+ D2 C
+ D1 C
+ D3 A
+ XL3 1
+Net 20 "+BATT" "+BATT"
+ C4 1
+ L1 2
+ Q1 4
+ XL1 1
+ R2 2
+Net 22 "" ""
+ R1 1
+ BZ1 A
+Net 23 "/Fireline" "Fireline"
+ R2 1
+ Q1 3
+ DD1 10
+Net 26 "" ""
+ R1 2
+ DD1 13
+Net 27 "/LD" "LD"
+ DA1 6
+ L2 1
+ D1 A
+Net 28 "/Vcc" "Vcc"
+ C3 1
+ DD1 6
+ DD1 4
+ DD1 18
+ C2 1
+ L1 1
+ C1 1
+ XL4 2
+Net 29 "/SCK" "SCK"
+ DD1 17
+ XL4 3
+Net 30 "/RESET" "RESET"
+ XL4 5
+ DD1 29
+Net 31 "/MISO" "MISO"
+ DD1 16
+ XL4 1
+Net 32 "/MOSI" "MOSI"
+ XL4 4
+ DD1 15
+Net 34 "" ""
+ R4 2
+ D2 A
+ DA1 4
+Net 35 "/LM_PWR" "LM_PWR"
+ L2 2
+ C5 1
+ DA1 2
+ Q1 2
+ DA1 3
+ Q1 6
+ Q1 5
+ Q1 1
+Net 36 "" ""
+ XL2 1
+ SW2 1
+ DD1 32
+ SW1 1
+Net 37 "/LED_C" "LED_C"
+ R5 1
+ XL3 2
+ R3 1
+ D3 C
+ R4 1
+}
+#End
