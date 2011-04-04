@@ -1,0 +1,185 @@
+Cmp-Mod V01 Created by CvPCB (2011-01-22 BZR 2754)-stable date = 04/04/2011 09:49:31
+
+BeginCmp
+TimeStamp = /4B2A3FDC;
+Reference = BZ1;
+ValeurCmp = BUZZER;
+IdModule  = BUZZER_HC0903;
+EndCmp
+
+BeginCmp
+TimeStamp = /4BCFF591;
+Reference = C1;
+ValeurCmp = 0.1u;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4BCFF58B;
+Reference = C2;
+ValeurCmp = 0.1u;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B2A4484;
+Reference = C3;
+ValeurCmp = 0.1u;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4BCFF90D;
+Reference = C4;
+ValeurCmp = 10u;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B03C57A;
+Reference = C5;
+ValeurCmp = 10u;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4BCFF99C;
+Reference = C6;
+ValeurCmp = 2.2u;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B03C5AF;
+Reference = D1;
+ValeurCmp = D_Shottky;
+IdModule  = Diode_SMA;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D985C79;
+Reference = D2;
+ValeurCmp = ZENER;
+IdModule  = DIODE_SOD80C;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D984C28;
+Reference = D3;
+ValeurCmp = LED;
+IdModule  = LED_Diamond_Dragon;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D98D81F;
+Reference = DA1;
+ValeurCmp = LM3410_LLP;
+IdModule  = LLP6;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B9E69EB;
+Reference = DD1;
+ValeurCmp = ATMEGA88;
+IdModule  = QFN32;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B2A455A;
+Reference = L1;
+ValeurCmp = 10uH;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B03C58C;
+Reference = L2;
+ValeurCmp = 10uH;
+IdModule  = INDUCTOR_SR0604;
+EndCmp
+
+BeginCmp
+TimeStamp = /4BCFFCA9;
+Reference = Q1;
+ValeurCmp = IRLMS6702;
+IdModule  = SOT23-6;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B2A4619;
+Reference = R1;
+ValeurCmp = 100;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4AF1448D;
+Reference = R2;
+ValeurCmp = 10k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4AEF02CF;
+Reference = R3;
+ValeurCmp = 0.1R;
+IdModule  = SMD1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D985CD2;
+Reference = R4;
+ValeurCmp = 1k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D98E220;
+Reference = R5;
+ValeurCmp = 0.1R;
+IdModule  = SMD1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D984B59;
+Reference = SW1;
+ValeurCmp = PUSHBUTTON;
+IdModule  = BUTTON_6x6SMD;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D98DC03;
+Reference = SW2;
+ValeurCmp = PUSHBUTTON;
+IdModule  = BUTTON_SWT9;
+EndCmp
+
+BeginCmp
+TimeStamp = /4AEF2B97;
+Reference = XL1;
+ValeurCmp = PwrConn;
+IdModule  = PWRCON2PIN;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D98DA94;
+Reference = XL2;
+ValeurCmp = CONN_1;
+IdModule  = SIL-1;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D98487A;
+Reference = XL3;
+ValeurCmp = CONN_2;
+IdModule  = SIL-2;
+EndCmp
+
+BeginCmp
+TimeStamp = /4D995AC2;
+Reference = XL4;
+ValeurCmp = ATMEL_ISP;
+IdModule  = DIL2X3_SMD;
+EndCmp
+
+EndListe
