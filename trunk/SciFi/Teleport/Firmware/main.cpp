@@ -4,6 +4,7 @@
 #include "dac.h"
 #include "leds.h"
 #include "time_domain.h"
+#include "mdl_inputs.h"
 
 #include "uart.h"
 
@@ -13,19 +14,13 @@ void GeneralInit(void);
 void FieldOn(void);
 void FieldOff(void);
 // ========================== Implementation ===================================
-void LEDInit(void) {
-  RCC_APB2PeriphClockCmd(LED_GPIO_CLK, ENABLE);
-  GPIO_InitTypeDef  GPIO_InitStructure;
-  GPIO_InitStructure.GPIO_Pin = LED_PIN;
-  GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_Out_PP;
-  GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-  GPIO_Init(LED_GPIO_PORT, &GPIO_InitStructure);
-}
 
 int main(void) {
     GeneralInit();
     Uart.PrintString("\rTeleport\r");
 
+    Leds.GreenOn();
+    
     FieldOn();
     uint32_t LEDTmr;
     while (1) {
@@ -41,7 +36,6 @@ int main(void) {
 }
 
 void GeneralInit(void) {
-    LEDInit();
     // Configure two bits for preemption priority
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
     Delay.Init();
@@ -50,6 +44,7 @@ void GeneralInit(void) {
     Ticker.Init();
     Dac.Init();
     Leds.Init();
+    Inputs.Init();
 }
 
 void FieldOn(void) {
