@@ -17,19 +17,20 @@ RANLIB=ranlib
 CC=arm-none-eabi-gcc.exe
 CCC=arm-none-eabi-g++.exe
 CXX=arm-none-eabi-g++.exe
-FC=
+FC=gfortran
 AS=arm-none-eabi-as.exe
 
 # Macros
 CND_PLATFORM=Yagarto-Windows
 CND_CONF=Debug
 CND_DISTDIR=dist
+CND_BUILDDIR=build
 
 # Include project Makefile
 include Makefile
 
 # Object Directory
-OBJECTDIR=build/${CND_CONF}/${CND_PLATFORM}
+OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
@@ -68,7 +69,7 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-Debug.mk output/output.elf.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk output/output.elf.exe
 
 output/output.elf.exe: ${OBJECTFILES}
 	${MKDIR} -p output
@@ -271,7 +272,7 @@ ${OBJECTDIR}/lib/src/stm32f10x_pwr.c.gch: lib/src/stm32f10x_pwr.c
 
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
-	${RM} -r build/Debug
+	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
 	${RM} output/output.elf.exe
 
 # Subprojects

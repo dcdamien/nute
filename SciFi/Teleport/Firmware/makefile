@@ -27,12 +27,14 @@ dac.cpp \
 sound_data.cpp \
 leds.cpp \
 time_domain.cpp \
+mdl_inputs.cpp \
+
 
 
 # List project include directories here
 PRJINCDIR =
 
-# Define optimisation level here
+# Define optimization level here
 OPT = 0
 
 
@@ -152,7 +154,7 @@ CPPFLAGS += -fno-elide-constructors
 CPPFLAGS += -funsigned-bitfields -fshort-enums
 CPPFLAGS += -Wall -Wextra
 CPPFLAGS += -Winline -finline-limit=40
-CPPFLAGS += -Wimplicit -Wcast-align
+CPPFLAGS += -Wcast-align
 CPPFLAGS += -Wpointer-arith -Wredundant-decls
 CPPFLAGS += -Wshadow -Wcast-qual -Wcast-align 
 # End of Wiki
