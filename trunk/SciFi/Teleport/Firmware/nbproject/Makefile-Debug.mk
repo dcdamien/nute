@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/sound_data.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o \
+	${OBJECTDIR}/mdl_inputs.o \
 	${OBJECTDIR}/leds.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_xl.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_hd.o \
@@ -166,6 +167,11 @@ ${OBJECTDIR}/lib/CoreSupport/core_cm3.c.gch: lib/CoreSupport/core_cm3.c
 ${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o: lib/startup/startup_stm32f10x_md_vl.s 
 	${MKDIR} -p ${OBJECTDIR}/lib/startup
 	$(AS) $(ASFLAGS) -g -o ${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o lib/startup/startup_stm32f10x_md_vl.s
+
+${OBJECTDIR}/mdl_inputs.o: mdl_inputs.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -g -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -Ilib -Ilib/CoreSupport -Ilib/inc -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/mdl_inputs.o mdl_inputs.cpp
 
 ${OBJECTDIR}/lib/src/stm32f10x_tim.c.gch: lib/src/stm32f10x_tim.c 
 	${MKDIR} -p ${OBJECTDIR}/lib/src

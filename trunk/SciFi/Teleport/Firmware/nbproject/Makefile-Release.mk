@@ -40,6 +40,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/sound_data.o \
 	${OBJECTDIR}/main.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o \
+	${OBJECTDIR}/mdl_inputs.o \
 	${OBJECTDIR}/leds.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_xl.o \
 	${OBJECTDIR}/lib/startup/startup_stm32f10x_hd.o \
@@ -101,6 +102,11 @@ ${OBJECTDIR}/main.o: main.cpp
 ${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o: lib/startup/startup_stm32f10x_md_vl.s 
 	${MKDIR} -p ${OBJECTDIR}/lib/startup
 	$(AS) $(ASFLAGS) -o ${OBJECTDIR}/lib/startup/startup_stm32f10x_md_vl.o lib/startup/startup_stm32f10x_md_vl.s
+
+${OBJECTDIR}/mdl_inputs.o: mdl_inputs.cpp 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.cc) -O2 -DSTM32F10X_MD_VL -DUSE_STDPERIPH_DRIVER -Ilib -Ilib/CoreSupport -Ilib/inc -I. -MMD -MP -MF $@.d -o ${OBJECTDIR}/mdl_inputs.o mdl_inputs.cpp
 
 ${OBJECTDIR}/leds.o: leds.cpp 
 	${MKDIR} -p ${OBJECTDIR}

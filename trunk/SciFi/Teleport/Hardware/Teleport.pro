@@ -1,4 +1,4 @@
-update=05/04/2011 11:24:12
+update=05/04/2011 23:55:39
 version=1
 last_client=eeschema
 [cvpcb]
@@ -115,3 +115,4 @@ LibName1=D:/libs/Kicad/Audio_kl
 LibName2=D:/libs/Kicad/Connectors_kl
 LibName3=D:/libs/Kicad/power
 LibName4=D:/libs/Kicad/Tittar_kl
+LibName5=D:/libs/Kicad/modules
