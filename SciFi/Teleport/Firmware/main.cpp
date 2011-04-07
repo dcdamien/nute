@@ -22,16 +22,8 @@ int main(void) {
     Leds.GreenOn();
     
     FieldOn();
-    uint32_t LEDTmr;
     while (1) {
-        if (Delay.Elapsed(&LEDTmr, 100)) {
-            LEDTmr++; // dummy
-            //LED_TOGGLE();
-            //Dac.StopLoop();
-//            Uart.PrintAsHex(b);
-//            Uart.NewLine();
-            //Uart.Print('a');
-        }
+        Inputs.Check();
     }
 }
 

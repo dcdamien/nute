@@ -8,6 +8,7 @@
       <itemPath>delay_util.h</itemPath>
       <itemPath>leds.h</itemPath>
       <itemPath>main.h</itemPath>
+      <itemPath>mdl_inputs.h</itemPath>
       <itemPath>sound_data.h</itemPath>
       <itemPath>stm32f10x_it.h</itemPath>
       <itemPath>system_kl.h</itemPath>
@@ -90,6 +91,7 @@
       <itemPath>delay_util.cpp</itemPath>
       <itemPath>leds.cpp</itemPath>
       <itemPath>main.cpp</itemPath>
+      <itemPath>mdl_inputs.cpp</itemPath>
       <itemPath>sound_data.cpp</itemPath>
       <itemPath>system_kl.c</itemPath>
       <itemPath>time_domain.cpp</itemPath>
