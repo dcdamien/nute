@@ -22,6 +22,8 @@ void Ticker_t::Init(void) {
 void DMA1_Channel3_IRQHandler(void) {
     // Test on DMA1 Channel3 Transfer Complete interrupt
     if(DMA_GetITStatus(DMA1_IT_TC3)) {
+        // Clear DMA1 Channel3 Half Transfer, Transfer Complete and Global interrupt pending bits
+        DMA_ClearITPendingBit(DMA1_IT_GL3);
         if (!Dac.MayPlay) {
             Ticker.Off();
             Dac.AmplifierOff();
@@ -31,7 +33,5 @@ void DMA1_Channel3_IRQHandler(void) {
             // Reset LEDs' brightness
             Leds.PWMReset();
         }
-        // Clear DMA1 Channel6 Half Transfer, Transfer Complete and Global interrupt pending bits
-        DMA_ClearITPendingBit(DMA1_IT_GL3);
-    }
+    } // if IT_TC3
 }
