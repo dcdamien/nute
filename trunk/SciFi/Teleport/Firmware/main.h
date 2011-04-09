@@ -12,7 +12,10 @@
 
 
 // ============================== Prototypes ===================================
-// Tasks
+// Events
+void EVENT_OnInputRight(void);
+void EVENT_OnInputWrong(void);
+void EVENT_OnInputNone(void);
 
 
 

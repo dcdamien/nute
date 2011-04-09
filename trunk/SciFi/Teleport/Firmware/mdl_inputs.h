@@ -9,8 +9,10 @@
 #define	MDL_INPUTS_H
 
 #include "stm32f10x.h"
+#include "common.h"
 
-#define DELAY_CHECK     1000     // ms
+// Timings
+#define DELAY_CHECK     999     // ms
 
 // Ports
 #define M1_GPIO GPIOB
@@ -38,14 +40,18 @@
 #define M5_2    GPIO_Pin_11     // USB_DM
 #define M5_3    GPIO_Pin_12     // USB_DP
 
+// =============================== Types =======================================
+enum InputsState_t {None, Wrong, Right};
+
 class Inputs_t {
 private:
-    uint32_t Timer;
-    uint8_t Inlets[5];
+    void SetState(void);
 public:
+    uint8_t Inlets[5];
     void Init(void);
-    void Check(void);
-    bool ChangeOccured;
+    void ReadConnections(void);
+    InputsState_t State;
+    FVoid_p OnWrong, OnRight, OnNone;
 };
 
 extern Inputs_t Inputs;
