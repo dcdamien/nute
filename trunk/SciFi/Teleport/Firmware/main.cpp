@@ -20,13 +20,16 @@ int main(void) {
     Uart.PrintString("\rTeleport\r");
 
     //Leds.GreenOn();
-    
+
     FieldOn();
-    
+
 //    uint32_t InpTimer;
     while (1) {
         // Check inputs
-//        if (Delay.Elapsed(&InpTimer, DELAY_CHECK)) {
+        //if (Delay.Elapsed(&InpTimer, DELAY_CHECK)) {
+//        if (Delay.Elapsed(&InpTimer, 350)) {
+//            Leds.PWMReset();
+//        }
 //        //    Inputs.ReadConnections();
 //            // Debug
 //            Uart.PrintUint(Inputs.Inlets[0]);
@@ -52,7 +55,7 @@ void GeneralInit(void) {
     Ticker.Init();
     Dac.Init();
     Leds.Init();
-    
+
     //Inputs.Init();
     Inputs.OnRight = &EVENT_OnInputRight;
     Inputs.OnWrong = &EVENT_OnInputWrong;

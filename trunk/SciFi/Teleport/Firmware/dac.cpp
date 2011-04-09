@@ -72,11 +72,5 @@ void Dac_t::Init(void) {
     // Disable all
     AmplifierOff();
     MayPlay = false;
-
-      TIM_PrescalerConfig(TIM6, 1, TIM_PSCReloadMode_Update);
-  TIM_SetAutoreload(TIM6, 363);
-  /* TIM6 TRGO selection */
-  TIM_SelectOutputTrigger(TIM6, TIM_TRGOSource_Update);
-  TIM_Cmd(TIM6, ENABLE);
 }
 

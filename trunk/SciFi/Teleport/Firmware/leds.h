@@ -42,9 +42,9 @@ public:
     void RedOff(void)   { GPIOB->BRR  = RED_PIN; }
     void GreenOn(void)  { GPIOB->BSRR = GREEN_PIN; }
     void GreenOff(void) { GPIOB->BRR  = GREEN_PIN; }
-    // Field
+    // FieldPWMSet(PWM_MIN);
     void PWMIncrease(void);
-    void PWMReset(void) { FPWM = PWM_MIN; PWMSet(PWM_MIN); }
+    void PWMReset(void) { FPWM = PWM_MIN;  }
     void FieldOn(void);
     void FieldOff(void);
 };
