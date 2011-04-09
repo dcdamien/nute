@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   sound_data.h
  * Author: Kreyl Laurelindo
  *
@@ -15,14 +15,17 @@
 #endif
 
 //#define DEBUG_SHORT_SOUND
-     
+
 #ifdef DEBUG_SHORT_SOUND
     #define SND1_LEN    9
 #else
     #define SND1_LEN    21683
 #endif
 
+#define SND2_LEN    1857
+
 extern const uint16_t Snd1[SND1_LEN];
+extern const uint16_t Snd2[SND2_LEN];
 
 
 

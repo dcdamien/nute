@@ -1,6 +1,6 @@
 #include "leds.h"
 #include "sound_data.h"
-
+#include "stm32f10x.h"
 #include "main.h"
 
 Leds_t Leds;
@@ -69,7 +69,8 @@ void Leds_t::FieldOn(void) {
     GPIO_InitStructure.GPIO_Mode  = GPIO_Mode_AF_PP;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 
-    PWMReset();
+    FPWM = PWM_MIN;
+    FadeOut = false;
 
     // Setup sampling freq dividing timer
     SetDivider(PWM_DIV1);
@@ -88,16 +89,24 @@ void Leds_t::FieldOff(void) {
     GPIO_Init(GPIOB, &GPIO_InitStructure);
 }
 
-void Leds_t::PWMIncrease(void) {
+void Leds_t::PWMChange(void) {
     // Setup next delay
-    if       (FPWM <= PWM_STEP1)                         SetDivider(PWM_DIV1);
-    else if ((FPWM >  PWM_STEP1) && (FPWM <= PWM_STEP2)) SetDivider(PWM_DIV2);
-    else                                                 SetDivider(PWM_DIV3);
-    // Increase PWM value
-    if (FPWM < PWM_MAX) {
-        FPWM++;
-        PWMSet(FPWM);
+    if (!FadeOut) {
+        if       (FPWM <= PWM_STEP1)                         SetDivider(PWM_DIV1);
+        else if ((FPWM >  PWM_STEP1) && (FPWM <= PWM_STEP2)) SetDivider(PWM_DIV2);
+        else                                                 SetDivider(PWM_DIV3);
     }
+    else SetDivider(PWM_DIV4);
+
+    // Change PWM value
+    if (!FadeOut) {
+        FPWM++;
+        FadeOut = (FPWM >= PWM_MAX);
+    }
+    else {
+        if(FPWM > PWM_MIN) FPWM--;
+    }
+    PWMSet(FPWM);
 }
 
 // ================================ Interrupts =================================
@@ -105,5 +114,5 @@ void Leds_t::PWMIncrease(void) {
 void TIM3_IRQHandler (void) {
     // Clear TIimer update interrupt
     TIM_ClearITPendingBit(TIM3, TIM_IT_Update);
-    Leds.PWMIncrease();
+    Leds.PWMChange();
 }

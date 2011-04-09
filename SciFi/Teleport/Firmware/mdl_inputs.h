@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   mdl_inputs.h
  * Author: Kreyl
  *
@@ -45,12 +45,13 @@ enum InputsState_t {None, Wrong, Right};
 
 class Inputs_t {
 private:
+    uint8_t InletsOld[5];
+    bool HasChanged;
     void SetState(void);
 public:
     uint8_t Inlets[5];
     void Init(void);
-    void ReadConnections(void);
-    InputsState_t State;
+    void ReadInlets(void);
     FVoid_p OnWrong, OnRight, OnNone;
 };
 

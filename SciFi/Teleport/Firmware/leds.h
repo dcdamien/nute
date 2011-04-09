@@ -19,20 +19,22 @@
 #define GREEN_PIN   GPIO_Pin_8
 
 // Timings & steps calculated in EXCEL
-#define PWM_DIV1    267
-#define PWM_DIV2    178
-#define PWM_DIV3    44
+#define PWM_DIV1    198
+#define PWM_DIV2    135
+#define PWM_DIV3    45
+#define PWM_DIV4    18
 
-#define PWM_MIN     27
+#define PWM_MIN     7
 #define PWM_STEP1   36
 #define PWM_STEP2   54
-#define PWM_MAX     250
+#define PWM_MAX     254
 
 
 // Types
 class Leds_t {
 private:
     uint16_t FPWM;
+    bool FadeOut;
     void PWMSet(uint16_t APWM) { TIM4->CCR1 = APWM; }
     void SetDivider(uint16_t ADiv) { TIM_SetAutoreload(TIM3, ADiv); }
 public:
@@ -43,8 +45,8 @@ public:
     void GreenOn(void)  { GPIOB->BSRR = GREEN_PIN; }
     void GreenOff(void) { GPIOB->BRR  = GREEN_PIN; }
     // FieldPWMSet(PWM_MIN);
-    void PWMIncrease(void);
-    void PWMReset(void) { FPWM = PWM_MIN;  }
+    void PWMChange(void);
+    void PWMReset(void) { FPWM = PWM_MIN; FadeOut = false; }
     void FieldOn(void);
     void FieldOff(void);
 };
