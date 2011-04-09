@@ -1,4 +1,5 @@
 #include "dac.h"
+#include "stm32f10x.h"
 #include "stm32f10x_dac.h"
 #include "stm32f10x_dma.h"
 
@@ -43,14 +44,26 @@ void Dac_t::Init(void) {
     NVIC_InitStructure.NVIC_IRQChannelCmd = ENABLE;
     NVIC_Init(&NVIC_InitStructure);
 
+    // ==== Last settings ====
+    // Enable DAC Channel1: Once the DAC channel1 is enabled, PA.04 is automatically connected to the DAC converter.
+    DAC_Cmd(DAC_Channel_1, ENABLE);
+    // Enable DMA for DAC Channel1
+    DAC_DMACmd(DAC_Channel_1, ENABLE);
+    // Disable all
+    AmplifierOff();
+    MayPlay = false;
+}
+
+void Dac_t::WhatToPlay(uint32_t ASnd, uint32_t ALength) {
+    // Setup DMA
     // ==== DMA1 channel3 configuration ====
     DMA_DeInit(DMA1_Channel3);
     DMA_InitTypeDef DMA_InitStructure;
     //DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&DAC->DHR8R1;    // 8bit register
     DMA_InitStructure.DMA_PeripheralBaseAddr = (uint32_t)&DAC->DHR12R1;
-    DMA_InitStructure.DMA_MemoryBaseAddr = (uint32_t)&Snd1;
+    DMA_InitStructure.DMA_MemoryBaseAddr = ASnd;
+    DMA_InitStructure.DMA_BufferSize = ALength;
     DMA_InitStructure.DMA_DIR = DMA_DIR_PeripheralDST;
-    DMA_InitStructure.DMA_BufferSize = SND1_LEN;
     DMA_InitStructure.DMA_PeripheralInc = DMA_PeripheralInc_Disable;
     DMA_InitStructure.DMA_MemoryInc = DMA_MemoryInc_Enable;
     //DMA_InitStructure.DMA_PeripheralDataSize = DMA_PeripheralDataSize_Byte; // 8 bit
@@ -64,13 +77,4 @@ void Dac_t::Init(void) {
     DMA_Cmd(DMA1_Channel3, ENABLE);
     // Enable DMA1 Channel3 Transfer Complete interrupt
     DMA_ITConfig(DMA1_Channel3, DMA_IT_TC, ENABLE);
-    // ==== Last settings ====
-    // Enable DAC Channel1: Once the DAC channel1 is enabled, PA.04 is automatically connected to the DAC converter.
-    DAC_Cmd(DAC_Channel_1, ENABLE);
-    // Enable DMA for DAC Channel1
-    DAC_DMACmd(DAC_Channel_1, ENABLE);
-    // Disable all
-    AmplifierOff();
-    MayPlay = false;
 }
-

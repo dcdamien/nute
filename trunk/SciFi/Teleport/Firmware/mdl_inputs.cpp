@@ -19,15 +19,13 @@ void Inputs_t::Init(void) {
     GPIO_InitStructure.GPIO_Pin = M1_1|M1_2|M1_3|M2_1|M2_2|M2_3|M3_1|M3_2|M3_3|M4_1|M4_2|M4_3;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
     // ==== Internal variables ====
-    OnNone = 0x0000;
+    OnNone  = 0x0000;
     OnWrong = 0x0000;
     OnRight = 0x0000;
-    State = None;
 }
 
-void Inputs_t::ReadConnections() {
-    //if (!Delay.Elapsed(&Timer, DELAY_CHECK)) return;
-    //ChangeOccured = false;
+void Inputs_t::ReadInlets() {
+    // Read inlets
     Inlets[0] = 0;
     if(GPIO_ReadInputDataBit(M1_GPIO, M1_1)) Inlets[0] += 0x01;
     if(GPIO_ReadInputDataBit(M1_GPIO, M1_2)) Inlets[0] += 0x02;
@@ -48,16 +46,22 @@ void Inputs_t::ReadConnections() {
     if(GPIO_ReadInputDataBit(M5_GPIO, M5_1)) Inlets[4] += 0x01;
     if(GPIO_ReadInputDataBit(M5_GPIO, M5_2)) Inlets[4] += 0x02;
     if(GPIO_ReadInputDataBit(M5_GPIO, M5_3)) Inlets[4] += 0x04;
-    // Replace 0x07 with 0x00 due to inversion of inputs
-    for (uint8_t i=0; i<=4; i++)
-        if (Inlets[i] == 0x07) Inlets[i] = 0;
+    // Replace 0x07 & check for changes
+    HasChanged = false;
+    for(uint8_t i=0; i<=4; i++) {
+        if(Inlets[i] == 0x07) Inlets[i] = 0;   // Replace 0x07 with 0x00 due to inversion of inputs
+        if(Inlets[i] != InletsOld[i]) {
+            HasChanged = true;
+            InletsOld[i] = Inlets[i];
+        }
+    } // for i
     // Set state
-    SetState();
+    if(HasChanged) SetState();
 }
 
 // Set state depending on inputs connections
 void Inputs_t::SetState(void) {
-    InputsState_t OldState = State;
+    InputsState_t State;
     // Check if nothing is connected
     if (!Inlets[0] && !Inlets[1] && !Inlets[2] && !Inlets[3] && !Inlets[4]) State = None;
     else {
@@ -70,11 +74,10 @@ void Inputs_t::SetState(void) {
             } // if
         } // for
     } // else
-    // Check if state has changed
-    if (State != OldState) 
-        switch (State) {
-            case None:  if (OnNone  != 0) (*OnNone)();  break;
-            case Wrong: if (OnWrong != 0) (*OnWrong)(); break;
-            case Right: if (OnRight != 0) (*OnRight)(); break;
-        } // switch
+    // Handle changes
+    switch (State) {
+        case None:  if (OnNone  != 0) (*OnNone)();  break;
+        case Wrong: if (OnWrong != 0) (*OnWrong)(); break;
+        case Right: if (OnRight != 0) (*OnRight)(); break;
+    } // switch
 }

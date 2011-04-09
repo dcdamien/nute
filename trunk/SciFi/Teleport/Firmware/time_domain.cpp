@@ -1,5 +1,6 @@
 #include "time_domain.h"
 #include "stm32f10x_dma.h"
+#include "stm32f10x_tim.h"
 #include "leds.h"
 #include "dac.h"
 
@@ -32,6 +33,11 @@ void DMA1_Channel3_IRQHandler(void) {
         else {
             // Reset LEDs' brightness
             Leds.PWMReset();
+            // Handle repeat counter
+            if (Dac.RepeatCount > 0) {
+                Dac.RepeatCount--;
+                if (Dac.RepeatCount == 0) Dac.MayPlay = false;
+            }
         }
     } // if IT_TC3
 }

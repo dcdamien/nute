@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   dac.h
  * Author: Kreyl Laurelindo
  *
@@ -12,12 +12,13 @@
 #include <stdbool.h>
 
 class Dac_t {
-private:
 public:
     bool MayPlay;
+    uint8_t RepeatCount;
     void Init(void);
     void AmplifierOn(void)  { GPIOA->BSRR = GPIO_Pin_8; }    // Set SHUTDOWN pin high
     void AmplifierOff(void) { GPIOA->BRR  = GPIO_Pin_8; }    // Set SHUTDOWN pin low
+    void WhatToPlay(uint32_t ASnd, uint32_t ALength);
 };
 
 extern Dac_t Dac;

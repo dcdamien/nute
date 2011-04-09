@@ -5,6 +5,7 @@
 #include "leds.h"
 #include "time_domain.h"
 #include "mdl_inputs.h"
+#include "sound_data.h"
 
 #include "uart.h"
 
@@ -13,24 +14,18 @@ void GeneralInit(void);
 
 void FieldOn(void);
 void FieldOff(void);
+void AlarmOn(void);
 // ========================== Implementation ===================================
 
 int main(void) {
     GeneralInit();
     Uart.PrintString("\rTeleport\r");
 
-    //Leds.GreenOn();
-
-    FieldOn();
-
-//    uint32_t InpTimer;
+    uint32_t InpTimer;
     while (1) {
         // Check inputs
-        //if (Delay.Elapsed(&InpTimer, DELAY_CHECK)) {
-//        if (Delay.Elapsed(&InpTimer, 350)) {
-//            Leds.PWMReset();
-//        }
-//        //    Inputs.ReadConnections();
+        if (Delay.Elapsed(&InpTimer, DELAY_CHECK)) {
+            Inputs.ReadInlets();
 //            // Debug
 //            Uart.PrintUint(Inputs.Inlets[0]);
 //            Uart.Print(' ');
@@ -42,7 +37,7 @@ int main(void) {
 //            Uart.Print(' ');
 //            Uart.PrintUint(Inputs.Inlets[4]);
 //            Uart.NewLine();
-//        } // if delay
+        } // if delay
     } // while (1)
 }
 
@@ -56,14 +51,16 @@ void GeneralInit(void) {
     Dac.Init();
     Leds.Init();
 
-    //Inputs.Init();
+    Inputs.Init();
     Inputs.OnRight = &EVENT_OnInputRight;
     Inputs.OnWrong = &EVENT_OnInputWrong;
     Inputs.OnNone  = &EVENT_OnInputNone;
 }
 
+// =========================== Sound & LEDs ====================================
 void FieldOn(void) {
     // Enable timer and amplifier
+    Dac.WhatToPlay((uint32_t)&Snd1, SND1_LEN);
     Dac.AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
     Dac.MayPlay = true;
     Leds.FieldOn();
@@ -77,16 +74,26 @@ void FieldOff(void) {
         Dac.AmplifierOff();
     }
 }
+void AlarmOn(void) {
+    Leds.FieldOff();
+    Dac.WhatToPlay((uint32_t)&Snd2, SND2_LEN);
+    Dac.AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
+    Dac.MayPlay = true;
+    Dac.RepeatCount = 9;
+    Ticker.On();
+}
 
 // ============================ Events =========================================
 void EVENT_OnInputRight (void) {
     Leds.GreenOn();
+    Leds.RedOff();
     FieldOn();
 }
 void EVENT_OnInputWrong (void) {
     Leds.GreenOff();
     Leds.RedOn();
     FieldOff();
+    AlarmOn();
 }
 void EVENT_OnInputNone (void) {
     Leds.GreenOff();
