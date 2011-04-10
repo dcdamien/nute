@@ -1,0 +1,122 @@
+# EESchema Netlist Version 1.1 created  01/12/2009 12:59:03
+(
+ ( /4B0868F1 SMD0805 C1 10u
+  ( 1 VCC )
+  ( 2 GND )
+ )
+ ( /4B0868F6 SMD0603 C2 0.1
+  ( 1 VCC )
+  ( 2 GND )
+ )
+ ( /4B086790 SMD0805 C3 10u
+  ( 1 VCC )
+  ( 2 GND )
+ )
+ ( /4B0866E7 SMD0603 C4 10u
+  ( 1 N-000008 )
+  ( 2 N-000009 )
+ )
+ ( /4B08672C SMD0805 C5 10u
+  ( 1 N-000007 )
+  ( 2 GND )
+ )
+ ( /4B086722 DIODE_SOD110 D1 D_Shottky
+  ( A N-000008 )
+  ( C N-000007 )
+ )
+ ( /4B0C5B0E DIODE_SOD80C D2 Zener_20V
+  ( A N-000003 )
+  ( C N-000007 )
+ )
+ ( /4B086511 SOT23-5 DA1 LM3410
+  ( 1 N-000009 )
+  ( 2 GND )
+  ( 3 N-000003 )
+  ( 4 /PWM )
+  ( 5 VCC )
+ )
+ ( /4B0860E4 8S2 DD1 ATTINY45
+  ( 1 ? )
+  ( 2 ? )
+  ( 3 ? )
+  ( 4 GND )
+  ( 5 ? )
+  ( 6 /PWM )
+  ( 7 /PB2 )
+  ( 8 VCC )
+ )
+ ( /4B0866BB SMD_INDUCTOR_1812 L1 100uH
+  ( 1 N-000009 )
+  ( 2 VCC )
+ )
+ ( /4B086710 SMD_INDUCTOR_1812 L2 100uH
+  ( 1 N-000008 )
+  ( 2 GND )
+ )
+ ( /4B08669F SMD0603 R1 100k
+  ( 1 /PWM )
+  ( 2 GND )
+ )
+ ( /4B086757 SMD1206 R2 6R8
+  ( 1 N-000006 )
+  ( 2 GND )
+ )
+ ( /4B0C5B41 SMD0603 R3 100k
+  ( 1 N-000006 )
+  ( 2 N-000003 )
+ )
+ ( /4B0861C2 SW_6x6SMD SW1 PUSHBUTTON
+  ( 1 GND )
+  ( 2 /PB2 )
+ )
+ ( /4B08674C SIL-2 XL3 CONN_2
+  ( 1 N-000007 )
+  ( 2 N-000006 )
+ )
+ ( /4B14D4A0 SIL-1 XL4 CONN_1
+  ( 1 VCC )
+ )
+ ( /4B14D4B4 SIL-1 XL5 CONN_1
+  ( 1 GND )
+ )
+)
+*
+{ Allowed footprints by component:
+$component C1
+ SMD*
+$endlist
+$component C2
+ SMD*
+$endlist
+$component C3
+ SMD*
+$endlist
+$component C4
+ SMD*
+$endlist
+$component C5
+ SMD*
+$endlist
+$component D1
+ D*
+$endlist
+$component D2
+ D*
+$endlist
+$component DA1
+ SOT23-5
+$endlist
+$component R1
+ SMD*
+$endlist
+$component R2
+ SMD*
+$endlist
+$component R3
+ SMD*
+$endlist
+$component SW1
+ SW_6x6SMD
+$endlist
+$endfootprintlist
+}

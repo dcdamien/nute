@@ -1,0 +1,129 @@
+Cmp-Mod V01 Created by CVpcb (20090216-RC1) date = 01/12/2009 12:59:03
+
+BeginCmp
+TimeStamp = /4B0868F1;
+Reference = C1;
+ValeurCmp = 10u;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0868F6;
+Reference = C2;
+ValeurCmp = 0.1;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B086790;
+Reference = C3;
+ValeurCmp = 10u;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0866E7;
+Reference = C4;
+ValeurCmp = 10u;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B08672C;
+Reference = C5;
+ValeurCmp = 10u;
+IdModule  = SMD0805;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B086722;
+Reference = D1;
+ValeurCmp = D_Shottky;
+IdModule  = DIODE_SOD110;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0C5B0E;
+Reference = D2;
+ValeurCmp = Zener_20V;
+IdModule  = DIODE_SOD80C;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B086511;
+Reference = DA1;
+ValeurCmp = LM3410;
+IdModule  = SOT23-5;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0860E4;
+Reference = DD1;
+ValeurCmp = ATTINY45;
+IdModule  = 8S2;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0866BB;
+Reference = L1;
+ValeurCmp = 100uH;
+IdModule  = SMD_INDUCTOR_1812;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B086710;
+Reference = L2;
+ValeurCmp = 100uH;
+IdModule  = SMD_INDUCTOR_1812;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B08669F;
+Reference = R1;
+ValeurCmp = 100k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B086757;
+Reference = R2;
+ValeurCmp = 6R8;
+IdModule  = SMD1206;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0C5B41;
+Reference = R3;
+ValeurCmp = 100k;
+IdModule  = SMD0603;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B0861C2;
+Reference = SW1;
+ValeurCmp = PUSHBUTTON;
+IdModule  = SW_6x6SMD;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B08674C;
+Reference = XL3;
+ValeurCmp = CONN_2;
+IdModule  = SIL-2;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B14D4A0;
+Reference = XL4;
+ValeurCmp = CONN_1;
+IdModule  = SIL-1;
+EndCmp
+
+BeginCmp
+TimeStamp = /4B14D4B4;
+Reference = XL5;
+ValeurCmp = CONN_1;
+IdModule  = SIL-1;
+EndCmp
+
+EndListe
