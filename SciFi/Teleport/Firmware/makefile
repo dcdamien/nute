@@ -22,7 +22,6 @@ PRJCSRC = system_kl.c \
 PRJCPPSRC = main.cpp \
 stm32f10x_it.cpp \
 delay_util.cpp \
-uart.cpp \
 dac.cpp \
 sound_data.cpp \
 leds.cpp \
@@ -156,7 +155,7 @@ CPPFLAGS += -Wall -Wextra
 CPPFLAGS += -Winline -finline-limit=40
 CPPFLAGS += -Wcast-align
 CPPFLAGS += -Wpointer-arith -Wredundant-decls
-CPPFLAGS += -Wshadow -Wcast-qual -Wcast-align 
+CPPFLAGS += -Wshadow -Wcast-qual -Wcast-align
 # End of Wiki
 CPPFLAGS += -x c++
 # Compiler flags to generate dependency files.
@@ -285,7 +284,7 @@ clean:
 	-rm -f $(ASRC:.s=.lst)
 	-rm -fR .dep
 
-# 
+#
 # Include the dependency files, should be the last of the makefile
 #
 -include $(shell mkdir .dep 2>/dev/null) $(wildcard .dep/*)

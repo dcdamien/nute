@@ -29,6 +29,9 @@ void DMA1_Channel3_IRQHandler(void) {
             Ticker.Off();
             Dac.AmplifierOff();
             Leds.FieldOff();
+            // Switch LEDs off to save energy
+            Leds.RedOff();
+            Leds.GreenOff();
         }
         else {
             // Reset LEDs' brightness

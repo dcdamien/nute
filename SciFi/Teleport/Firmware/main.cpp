@@ -7,8 +7,6 @@
 #include "mdl_inputs.h"
 #include "sound_data.h"
 
-#include "uart.h"
-
 // ========================== Prototypes =======================================
 void GeneralInit(void);
 
@@ -19,25 +17,21 @@ void AlarmOn(void);
 
 int main(void) {
     GeneralInit();
-    Uart.PrintString("\rTeleport\r");
+
+    // Blink LEDs
+    for (uint8_t i=0; i<4; i++) {
+        Leds.GreenOn();
+        Delay.ms(333);
+        Leds.GreenOff();
+        Leds.RedOn();
+        Delay.ms(333);
+        Leds.RedOff();
+    }
 
     uint32_t InpTimer;
     while (1) {
         // Check inputs
-        if (Delay.Elapsed(&InpTimer, DELAY_CHECK)) {
-            Inputs.ReadInlets();
-//            // Debug
-//            Uart.PrintUint(Inputs.Inlets[0]);
-//            Uart.Print(' ');
-//            Uart.PrintUint(Inputs.Inlets[1]);
-//            Uart.Print(' ');
-//            Uart.PrintUint(Inputs.Inlets[2]);
-//            Uart.Print(' ');
-//            Uart.PrintUint(Inputs.Inlets[3]);
-//            Uart.Print(' ');
-//            Uart.PrintUint(Inputs.Inlets[4]);
-//            Uart.NewLine();
-        } // if delay
+        if (Delay.Elapsed(&InpTimer, DELAY_CHECK)) Inputs.ReadInlets();
     } // while (1)
 }
 
@@ -45,7 +39,6 @@ void GeneralInit(void) {
     // Configure two bits for preemption priority
     NVIC_PriorityGroupConfig(NVIC_PriorityGroup_2);
     Delay.Init();
-    Uart.Init();
 
     Ticker.Init();
     Dac.Init();
