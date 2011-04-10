@@ -29,7 +29,6 @@
 #define PWM_STEP2   54
 #define PWM_MAX     254
 
-
 // Types
 class Leds_t {
 private:
