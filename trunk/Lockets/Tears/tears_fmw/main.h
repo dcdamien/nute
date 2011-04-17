@@ -34,7 +34,6 @@
 #define PWMDelayFast    18  // High brightness
 
 // Light constants
-#define PWM_MAX         250
 #define PWMStepOver1	36	// Where to switch to quick PWM change mode
 #define PWMStepOver2	54
 
@@ -46,7 +45,7 @@
 void GeneralInit(void);
 
 // PWM
-bool MayChangePWM(void);
+bool PWMDelayElapsed(void);
 void PWMEnable(void);
 void PWMDisable(void);
 

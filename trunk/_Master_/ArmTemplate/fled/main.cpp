@@ -31,12 +31,12 @@ int main(void) {
     while (1) {
         LEDB_TOGGLE();
         LEDG_TOGGLE();
-        Delay.ms(100);
+        Delay.ms(400);
     }
 }
 
 void GeneralInit(void) {
     LEDInit();
-    BtnInit();
+//    BtnInit();
     Delay.Init();
 }

@@ -13,7 +13,7 @@ Dac_t Dac;
 void Dac_t::Init(void) {
     // ==== Clocks ====
     RCC_AHBPeriphClockCmd (RCC_AHBPeriph_DMA1,   ENABLE);
-    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
+    RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA | RCC_APB2Periph_AFIO, ENABLE);
     RCC_APB1PeriphClockCmd(RCC_APB1Periph_DAC,   ENABLE);
     // ==== GPIO ====
     // Once the DAC channel is enabled, the corresponding GPIO pin is automatically
@@ -25,6 +25,7 @@ void Dac_t::Init(void) {
     GPIO_Init(GPIOA, &GPIO_InitStructure);
     // DAC Shutdown pin
     GPIO_InitStructure.GPIO_Pin =  GPIO_Pin_8;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
 

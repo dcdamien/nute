@@ -9,19 +9,19 @@ CND_DISTDIR=dist
 # Debug configuration
 CND_PLATFORM_Debug=WinAVR-Windows
 CND_ARTIFACT_DIR_Debug=dist/Debug/WinAVR-Windows
-CND_ARTIFACT_NAME_Debug=tears_fmw
-CND_ARTIFACT_PATH_Debug=dist/Debug/WinAVR-Windows/tears_fmw
+CND_ARTIFACT_NAME_Debug=candle_fmw
+CND_ARTIFACT_PATH_Debug=dist/Debug/WinAVR-Windows/candle_fmw
 CND_PACKAGE_DIR_Debug=dist/Debug/WinAVR-Windows/package
-CND_PACKAGE_NAME_Debug=tearsfmw.tar
-CND_PACKAGE_PATH_Debug=dist/Debug/WinAVR-Windows/package/tearsfmw.tar
+CND_PACKAGE_NAME_Debug=candlefmw.tar
+CND_PACKAGE_PATH_Debug=dist/Debug/WinAVR-Windows/package/candlefmw.tar
 # Release configuration
-CND_PLATFORM_Release=Yagarto-Windows
-CND_ARTIFACT_DIR_Release=dist/Release/Yagarto-Windows
-CND_ARTIFACT_NAME_Release=tears_fmw
-CND_ARTIFACT_PATH_Release=dist/Release/Yagarto-Windows/tears_fmw
-CND_PACKAGE_DIR_Release=dist/Release/Yagarto-Windows/package
-CND_PACKAGE_NAME_Release=tearsfmw.tar
-CND_PACKAGE_PATH_Release=dist/Release/Yagarto-Windows/package/tearsfmw.tar
+CND_PLATFORM_Release=WinAVR-Windows
+CND_ARTIFACT_DIR_Release=dist/Release/WinAVR-Windows
+CND_ARTIFACT_NAME_Release=candle_fmw
+CND_ARTIFACT_PATH_Release=dist/Release/WinAVR-Windows/candle_fmw
+CND_PACKAGE_DIR_Release=dist/Release/WinAVR-Windows/package
+CND_PACKAGE_NAME_Release=candlefmw.tar
+CND_PACKAGE_PATH_Release=dist/Release/WinAVR-Windows/package/candlefmw.tar
 #
 # include compiler specific variables
 #

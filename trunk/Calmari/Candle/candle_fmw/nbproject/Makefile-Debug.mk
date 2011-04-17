@@ -33,7 +33,9 @@ include Makefile
 OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
-OBJECTFILES=
+OBJECTFILES= \
+	${OBJECTDIR}/delay_util.o \
+	${OBJECTDIR}/main.o
 
 
 # C Compiler Flags
@@ -54,21 +56,21 @@ LDLIBSOPTIONS=
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}
-	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw.exe
+	"${MAKE}"  -f nbproject/Makefile-${CND_CONF}.mk ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/candle_fmw.exe
 
-${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw.exe: ${OBJECTFILES}
+${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/candle_fmw.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/candle_fmw ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/delay_util.c.gch: delay_util.c 
+${OBJECTDIR}/delay_util.o: delay_util.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o $@ delay_util.c
+	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/delay_util.o delay_util.c
 
-${OBJECTDIR}/main.c.gch: main.c 
+${OBJECTDIR}/main.o: main.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o $@ main.c
+	$(COMPILE.c) -g -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.c
 
 # Subprojects
 .build-subprojects:
@@ -76,7 +78,7 @@ ${OBJECTDIR}/main.c.gch: main.c
 # Clean Targets
 .clean-conf: ${CLEAN_SUBPROJECTS}
 	${RM} -r ${CND_BUILDDIR}/${CND_CONF}
-	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw.exe
+	${RM} ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/candle_fmw.exe
 
 # Subprojects
 .clean-subprojects:

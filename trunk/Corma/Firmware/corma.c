@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   corma.c
  * Author: Laurelindo
  *
@@ -36,7 +36,7 @@ int main(void) {
 
     DDRA |= (1<<PA0)|(1<<PA1)|(1<<PA2)|(1<<PA3)|(1<<PA4);
 
-    sei(); 
+    sei();
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
@@ -108,7 +108,7 @@ void CC_Task (void) {
         case CC_STB_RX:
             PORTA |= (1<<PA4);
             break;
-            
+
         default: // Just get out in case of RX, TX, FSTXON, CALIBRATE, SETTLING
             PORTA &= ~(1<<PA4);
             break;
@@ -146,7 +146,7 @@ FORCE_INLINE void EVENT_NewPacket(void) {
                 }
             if (!IsCounted)
                 Corma.OtherAddr[Corma.OthersCounter++] = CC.RX_Pkt.SenderAddr;
-            
+
             // Adjust our timer if sender address is lower, and do not otherwise
             if (CC.RX_Pkt.SenderAddr < Corma.Addr) {
                 CYC_TIMER_STOP();

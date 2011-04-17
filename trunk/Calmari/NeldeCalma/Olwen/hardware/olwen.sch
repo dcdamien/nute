@@ -1,20 +1,12 @@
-EESchema Schematic File Version 2  date 10/06/2010 17:51:49
-LIBS:Atmel_kl
-LIBS:Connectors_kl
-LIBS:pcb_details
-LIBS:power
-LIBS:Power_kl
-LIBS:RF ICs
-LIBS:Sensors
-LIBS:Tittar_kl
-LIBS:Transistors_kl
+EESchema Schematic File Version 2  date 16/04/2011 22:15:38
 LIBS:olwen-cache
-EELAYER 24  0
+EELAYER 25  0
 EELAYER END
 $Descr A3 16535 11700
+encoding utf-8
 Sheet 1 1
 Title ""
-Date "1 jun 2010"
+Date "16 apr 2011"
 Rev ""
 Comp ""
 Comment1 ""
@@ -734,7 +726,7 @@ L R R5
 U 1 1 4BEAA1B5
 P 10400 6700
 F 0 "R5" V 10480 6700 50  0000 C CNN
-F 1 "4k7" V 10400 6700 50  0000 C CNN
+F 1 "2k7" V 10400 6700 50  0000 C CNN
 	1    10400 6700
 	1    0    0    -1  
 $EndComp
@@ -797,7 +789,7 @@ L L L1
 U 1 1 4BEAA133
 P 8850 6400
 F 0 "L1" V 8760 6310 40  0000 C CNN
-F 1 "L" V 8750 6500 40  0000 C CNN
+F 1 "100uH" V 8750 6500 40  0000 C CNN
 	1    8850 6400
 	0    1    1    0   
 $EndComp
