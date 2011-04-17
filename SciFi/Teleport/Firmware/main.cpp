@@ -18,13 +18,14 @@ void AlarmOn(void);
 int main(void) {
     GeneralInit();
 
+    AlarmOn();
     // Blink LEDs
     for (uint8_t i=0; i<4; i++) {
         Leds.GreenOn();
-        Delay.ms(333);
+        Delay.ms(100);
         Leds.GreenOff();
         Leds.RedOn();
-        Delay.ms(333);
+        Delay.ms(100);
         Leds.RedOff();
     }
 
@@ -56,6 +57,7 @@ void FieldOn(void) {
     Dac.WhatToPlay((uint32_t)&Snd1, SND1_LEN);
     Dac.AmplifierOn();  // It would be desirable to put some delay after amplifier switching on to allow capacitors to charge.
     Dac.MayPlay = true;
+    Dac.RepeatCount = 0;    // Play infinitely
     Leds.FieldOn();
     Ticker.On();
 }
@@ -93,7 +95,3 @@ void EVENT_OnInputNone (void) {
     Leds.RedOff();
     FieldOff();
 }
-
-
-// ============================= IRQs ==========================================
-

@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   cc2500.h of NeldeCalma
  * Author: Laurelindo
  *

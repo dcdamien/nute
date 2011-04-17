@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   cc1101.c of NeldeCalma
  * Author: Laurelindo
  *
@@ -151,29 +151,29 @@ void CC_RfConfig(void){
     CC_WriteRegister(CC_PKTLEN,   CC_PKTLEN_VALUE);     // Packet length.
 
     CC_WriteRegister(CC_PATABLE, CC_PATABLE0_VALUE);
-    
+
     CC_WriteRegister(CC_MCSM2, CC_MCSM2_VALUE);
     CC_WriteRegister(CC_MCSM1, CC_MCSM1_VALUE);
 }
 
 
 // ============================= Low level =====================================
-uint8_t CC_ReadWriteByte(uint8_t AByte){
+uint8_t CC_ReadWriteByte(uint8_t AByte) {
     UDR0 = AByte;	// Start transmission
     // Wait for transmission to complete
-    //while (bit_is_clear (UCSR0A, TXC0));    // Wait until transmission completed
     while (bit_is_clear (UCSR0A, RXC0));    // Wait until reception completed
     uint8_t Response = UDR0;
     return Response;
 }
 
 // ============================ Interrupts =====================================
-ISR(INT0_vect) {    // TODO: Carefully rewrite this handler, as it can easily destroy memory in case of RX_FIFO is bigger than PKT_LENGTH. Replace GDO_0 behavior, too.
+ISR(INT0_vect) {
     //PORTC |= (1<<PC0); // DEBUG
     // Packet has been successfully recieved
     uint8_t FifoSize = CC_ReadRegister(CC_RXBYTES); // Get bytes in FIFO
     if (FifoSize > 0) {
-        CC_ReadRX(&CC.RX_PktArray[0], FifoSize);
+        CC_ReadRX(&CC.RX_PktArray[0], sizeof(struct CC_Packet_t));
+        CC_FLUSH_RX_FIFO();     // One packet a time
         CC.NewPacketReceived = true;
     }
     //PORTC &= ~(1<<PC0);

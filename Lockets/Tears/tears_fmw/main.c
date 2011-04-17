@@ -30,6 +30,9 @@ struct {
 // ============================== General ======================================
 int main(void) {
     GeneralInit();
+
+    DDRC |= (1<<PC2);   // DEBUG
+
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
@@ -38,7 +41,7 @@ int main(void) {
 }
 
 FORCE_INLINE void GeneralInit(void) {
-    wdt_enable(WDTO_2S);
+    //wdt_enable(WDTO_2S);
     ACSR = 1<<ACD;  // Disable analog comparator
     DelayInit();
     // Tear init
@@ -62,6 +65,8 @@ FORCE_INLINE void GeneralInit(void) {
     OCR1A = ((uint16_t)Tear.Addr) * PKT_DURATION;   // TX start
     ICR1 = SUBCYCLE_DURATION;                       // TX + RX/Sleep duration
     TIMSK1 = (1<<OCIE1A)|(1<<ICIE1);
+    // Clear IRQs
+    TIFR1 = (1<<ICF1)|(1<<OCF1B)|(1<<OCF1A)|(1<<TOV1);
     CYC_TIMER_START();
 
     sei();
@@ -89,9 +94,9 @@ void CC_Task (void) {
 }
 
 void LED_Task(void) {
-    if (ELED.PWM == ELED.PWMDesired) return;    // Nothing to do if ok
+    if (ELED.PWM == ELED.PWMDesired) return;    // Nothing to do if equal
     if (ELED.PWMDesired < ELED.PWM) {           // Lower PWM
-        if (MayChangePWM()) {
+        if (PWMDelayElapsed()) {
             ELED.PWM--;
             PWM_SET(ELED.PWM);
         }
@@ -100,7 +105,7 @@ void LED_Task(void) {
     }
     else {
         if (ELED.PWM == 0) PWMEnable();
-        if (MayChangePWM()) {
+        if (PWMDelayElapsed()) {
             ELED.PWM++;
             PWM_SET(ELED.PWM);
         } // if may change
@@ -115,13 +120,14 @@ FORCE_INLINE void PWMEnable(void){
     // Disable Timer1 interrupts
     TIMSK2 = 0;
     // B-Channel Fast PWM
-    TCCR2A = (1<<COM2B1)|(1<<COM2B0)|(1<<WGM21)|(1<<WGM20);
+    TCCR2A = (1<<COM2B1)|(0<<COM2B0)|(1<<WGM21)|(1<<WGM20);
     TCCR2B = (1<<CS20); // Highest frequency
 }
 FORCE_INLINE void PWMDisable(void){
-    TCCR2B  = 0x00;     // Stop Timer2
+    TCCR2A = 0x00;  // Disconnect output
+    TCCR2B = 0x00;  // Stop Timer2
 }
-bool MayChangePWM(void) {
+bool PWMDelayElapsed(void) {
     if (ELED.PWM <= PWMStepOver1)                                   return DelayElapsed(&ELED.Timer, PWMDelayLong);        // Low speed
     else if (ELED.PWM > PWMStepOver1 && ELED.PWM <= PWMStepOver2)   return DelayElapsed(&ELED.Timer, PWMDelayMid);         // Mid-speed
     else if (ELED.PWM > PWMStepOver2)                               return DelayElapsed(&ELED.Timer, PWMDelayFast);        // High-speed
@@ -165,12 +171,16 @@ ISR(TIMER1_COMPA_vect) {
 
 // SubCycle end interrupt
 ISR(TIMER1_CAPT_vect) {
+PORTC |= 1<<PC2;
+_delay_us(500);
+PORTC &= ~(1<<PC2);
     // Handle cycle counter
-    if (++Tear.CycleCounter >= CYCLE_COUNT) {  // Zero cycle begins
+    Tear.CycleCounter++;
+    if (Tear.CycleCounter >= CYCLE_COUNT) {  // Zero cycle begins
         Tear.CycleCounter = 0;
         ELED.PWMDesired = 0;    // Reset light
         // Enter RX-before-TX
-        CC_ENTER_RX();
+  //      CC_ENTER_RX();
     }
     else CC_ENTER_IDLE();   // Non-zero cycle
 }
