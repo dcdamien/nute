@@ -20,7 +20,8 @@
 #define CC_RX_FIFO_SIZE     32
 
 // =================================== Power ===================================
-#define CC_PATABLE0_VALUE   0x93    // -18 dBm
+//#define CC_PATABLE0_VALUE   0x93    // -18 dBm
+#define CC_PATABLE0_VALUE   0xC6    // -12 dBm
 //#define CC_PATABLE0_VALUE   0xFE    // 0 dBm
 //#define CC_PATABLE0_VALUE   0xFF    // +1 dBm
 
