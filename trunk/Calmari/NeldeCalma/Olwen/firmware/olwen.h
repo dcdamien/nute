@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   calma3c.h
  * Author: Laurelindo
  *
@@ -90,7 +90,6 @@ void EVENT_DownTouched(void);
 void EVENT_BothTouched(void);
 
 void EVENT_HandleTouched(void);
-void EVENT_HandleDetouched(void);
 
 void EVENT_DownHoldTick(void);
 void EVENT_UpHoldTick(void);

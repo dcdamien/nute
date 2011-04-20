@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   calma3c.c
  * Author: Laurelindo
  *
@@ -31,6 +31,7 @@ struct {
     uint16_t Timer;
     struct Color_t DesiredColor, CurrentColor, SavedColor;
     uint8_t Indx;
+    bool IsOn;
 } ELight;
 
 bool MustSleep; // toggles in Handle Touch events
@@ -39,7 +40,7 @@ bool MustSleep; // toggles in Handle Touch events
 int main(void) {
     GeneralInit();
 
-    sei(); 
+    sei();
     while (1) {
         wdt_reset();    // Reset watchdog
         CC_Task();
@@ -75,6 +76,7 @@ FORCE_INLINE void GeneralInit(void) {
     SetTableColor();
     ELight.SavedColor = ELight.DesiredColor;
     SetDesiredColor(0, 0, 0);   // Initial fade
+    ELight.IsOn = false;
 
     // Sensors
     SENS_DDR  &= ~((1<<SENS_DOWN)|(1<<SENS_UP)|(1<<SENS_HANDLE));
@@ -98,7 +100,7 @@ FORCE_INLINE void SetDesiredColor (uint8_t ARed, uint8_t AGreen, uint8_t ABlue) 
     ELight.DesiredColor.Green = AGreen;
     ELight.DesiredColor.Blue  = ABlue;
 }
-void SetTableColor () {
+void SetTableColor(void) {
     ELight.DesiredColor.Red   = pgm_read_byte(&ColorTable[ELight.Indx][0]);
     ELight.DesiredColor.Green = pgm_read_byte(&ColorTable[ELight.Indx][1]);
     ELight.DesiredColor.Blue  = pgm_read_byte(&ColorTable[ELight.Indx][2]);
@@ -112,7 +114,7 @@ void SENS_Task (void) {
     ATOMIC_BLOCK(ATOMIC_RESTORESTATE) {
         ESens.PollTime = SENS_POLL_TIME;
     }
-    
+
     // ******** Up sensor *******
     if (!ESens.UpIsOn && SENS_UP_IS_ON()) {     // Touch occured
         ESens.UpIsOn = true;
@@ -128,7 +130,7 @@ void SENS_Task (void) {
         ESens.UpIsOn   = false;
         ESens.BothIsOn = false;
     }
-    
+
     // ******* Down sensor *******
     if (!ESens.DownIsOn && SENS_DOWN_IS_ON()) { // Touch occured
         ESens.DownIsOn = true;
@@ -144,7 +146,7 @@ void SENS_Task (void) {
         ESens.DownIsOn = false;
         ESens.BothIsOn = false;
     }
-    
+
     // ******* Handle sensor *******
     if (!ESens.HandleIsOn && SENS_HANDLE_IS_ON()) { // Mainly, handle touch event is recalled immediately after sleep.
         ESens.HandleIsOn = true;                    // But it may occur if retouch performed during fade of LED
@@ -152,7 +154,6 @@ void SENS_Task (void) {
     }
     else if (ESens.HandleIsOn && !SENS_HANDLE_IS_ON()) {
         ESens.HandleIsOn = false;
-        EVENT_HandleDetouched();
     }
 
     // ******* Holding handlers *******
@@ -291,17 +292,21 @@ void EVENT_BothTouched(void) {
 }
 
 void EVENT_HandleTouched(void) {
-    ELight.DesiredColor = ELight.SavedColor;
-    MustSleep = false;
-    SENS_PWR_ON();
-    LED_PWR_ON();
-}
-void EVENT_HandleDetouched(void) {
-    // Prepare to die
-    ELight.SavedColor = ELight.DesiredColor;
-    SetDesiredColor(0, 0, 0);
-    MustSleep = true;
-    SENS_PWR_OFF();
+    // Toggle on/off
+    if (!ELight.IsOn) { // Switch on
+        ELight.IsOn = true;
+        ELight.DesiredColor = ELight.SavedColor;
+        MustSleep = false;
+        SENS_PWR_ON();
+        LED_PWR_ON();
+    }
+    else {
+        ELight.IsOn = false;
+        ELight.SavedColor = ELight.DesiredColor;
+        SetDesiredColor(0, 0, 0);
+        MustSleep = true;
+        SENS_PWR_OFF();
+    }
 }
 
 void EVENT_UpHoldTick(void) {   // Fires every N ms when Up is holded
