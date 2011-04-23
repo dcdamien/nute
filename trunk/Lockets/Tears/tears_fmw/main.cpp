@@ -183,7 +183,7 @@ void EVENT_TxToIdle(void) {
     }
     else if (Cycle.CurrentSubCycle == SUBCYCLE_MAX) {    // Change length of last subcycle
         ATOMIC_BLOCK(ATOMIC_FORCEON) {
-            Cycle.CurrentDelay = LISTEN_TIME + (((uint8_t)rand()) >> 4);
+            Cycle.CurrentDelay = LISTEN_TIME - (((uint8_t)rand()) >> 2);
         }
     }
     // Otherwise, stay in IDLE for LISTEN_TIME.
