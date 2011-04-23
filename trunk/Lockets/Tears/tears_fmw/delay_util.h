@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   time_utils.h
  * Author: Laurelindo
  *
@@ -14,10 +14,20 @@
 #include <stdbool.h>
 #include <util/atomic.h>
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+
 // ========================== Function Prototypes ==============================
 void DelayInit(void);
 bool DelayElapsed(uint16_t *AVar, const uint16_t ADelay);
 void DelayReset(uint16_t *AVar);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif	/* _TIME_UTILS_H */
 

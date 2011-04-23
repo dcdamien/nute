@@ -33,7 +33,11 @@ include Makefile
 OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
-OBJECTFILES=
+OBJECTFILES= \
+	${OBJECTDIR}/cc2500.o \
+	${OBJECTDIR}/main.o \
+	${OBJECTDIR}/delay_util.o \
+	${OBJECTDIR}/uart_soft.o
 
 
 # C Compiler Flags
@@ -58,17 +62,27 @@ LDLIBSOPTIONS=
 
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw.exe: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
-	${LINK.c} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw ${OBJECTFILES} ${LDLIBSOPTIONS} 
+	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/tears_fmw ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
-${OBJECTDIR}/delay_util.c.gch: delay_util.c 
+${OBJECTDIR}/cc2500.o: cc2500.c 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o $@ delay_util.c
+	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/cc2500.o cc2500.c
 
-${OBJECTDIR}/main.c.gch: main.c 
+${OBJECTDIR}/main.o: main.cpp 
 	${MKDIR} -p ${OBJECTDIR}
 	${RM} $@.d
-	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o $@ main.c
+	$(COMPILE.cc) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -MMD -MP -MF $@.d -o ${OBJECTDIR}/main.o main.cpp
+
+${OBJECTDIR}/delay_util.o: delay_util.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/delay_util.o delay_util.c
+
+${OBJECTDIR}/uart_soft.o: uart_soft.c 
+	${MKDIR} -p ${OBJECTDIR}
+	${RM} $@.d
+	$(COMPILE.c) -g -D__AVR_ATmega88__ -DF_CPU\ 1000000 -IC/WinAVR/lib/gcc/avr/4.3.3 -IC/WinAVR/avr/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/uart_soft.o uart_soft.c
 
 # Subprojects
 .build-subprojects:
