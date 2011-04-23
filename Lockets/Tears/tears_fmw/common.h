@@ -1,4 +1,4 @@
-/* 
+/*
  * File:   common.h
  * Author: Kreyl Laurelindo
  *
@@ -8,9 +8,17 @@
 #ifndef _COMMON_H
 #define	_COMMON_H
 
-#define nop( )  asm volatile ("nop\n\t" ::) 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
+#define nop( )  asm volatile ("nop\n\t" ::)
 #define FORCE_INLINE inline __attribute__ ((__always_inline__))
 #define io_uint8_t  volatile uint8_t    // for io register pointer
+
+#ifdef __cplusplus
+}
+#endif 
 
 #endif	/* _COMMON_H */
 

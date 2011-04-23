@@ -13,16 +13,12 @@
 #include <inttypes.h>
 
 // ============================= Defines =======================================
-#define CMD_ID          0xCA
 #define TEAR_CHANNEL    8
 
 // ============================== Types ========================================
 struct CC_Packet_t {
     uint8_t ToAddr;
-    uint8_t CommandID;
-    uint8_t SenderAddr;
-    uint8_t SenderCycle;
-    uint16_t SenderTime;
+    uint16_t PktID;
     uint8_t RSSI;
     uint8_t LQI;
 };

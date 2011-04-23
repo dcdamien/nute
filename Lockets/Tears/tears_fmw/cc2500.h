@@ -17,6 +17,10 @@
 #include "cc2500_rf_settings.h"
 #include "common.h"
 
+#ifdef __cplusplus
+ extern "C" {
+#endif
+
 // ================================== Defins ===================================
 // Ports
 #define CC_DDR  DDRD
@@ -44,7 +48,7 @@
 
 // =============================== Variables ===================================
 struct CC_t {
-    uint8_t State;
+    uint8_t State, OldState;
     union { // RX packet
         uint8_t RX_PktArray[sizeof(struct CC_Packet_t)];
         struct CC_Packet_t RX_Pkt;
@@ -94,6 +98,10 @@ uint8_t CC_ReadWriteByte(uint8_t AByte);
 #define CC_FLUSH_RX_FIFO()  CC_WriteStrobe(CC_SFRX)
 #define CC_FLUSH_TX_FIFO()  CC_WriteStrobe(CC_SFTX)
 #define CC_GET_STATE()      CC_WriteStrobe(CC_SNOP)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif	/* _CC1101_H */
 
