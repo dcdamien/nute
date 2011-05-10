@@ -1,0 +1,215 @@
+(session D:\Nute\Calmari\Candle02\Hardware\Candle02.ses
+   (placement 
+      (resolution MM 100000)
+      (component "ASMT-QTB0-0AA02_EDGE"
+         (place "Q5" 11810130 -4260250 front 270)
+         (place "Q6" 14700000 -4837500 front 180)
+      )
+      (component "CRYSTAL_HC49"
+         (place "XTAL1" 13380290 -5189900 front 0)
+      )
+      (component "DIL2X3"
+         (place "XL1" 9679940 -4519930 front 180)
+      )
+      (component "QFN20"
+         (place "DD2" 13350000 -4575000 front 0)
+      )
+      (component "QFN32"
+         (place "DD1" 10804390 -4778020 front 180)
+      )
+      (component "REF_POINT_1MM"
+         (place "RP1" 14587500 -5337500 front 0)
+         (place "RP2" 7300000 -4362500 front 0)
+      )
+      (component "SIL-1"
+         (place "XL4" 12400000 -5300000 front 0)
+         (place "XL3" 11450000 -5300000 front 0)
+         (place "XL2" 10200000 -4400000 front 0)
+         (place "XL11" 8299960 -4400040 front 0)
+         (place "XL9" 8650000 -4400000 front 0)
+         (place "XL5" 10200000 -5300000 front 0)
+         (place "XL10" 9160000 -4400040 front 0)
+      )
+      (component "SIL-2"
+         (place "XL7" 9912500 -4937500 front 180)
+      )
+      (component "SIL-3"
+         (place "XL12" 8650000 -5062500 front 90)
+         (place "XL8" 9162500 -5062500 front 90)
+      )
+      (component "SMD0402"
+         (place "C151" 13750000 -4362500 front 90)
+         (place "C181" 13062500 -4312500 front 180)
+         (place "C141" 13850000 -4387500 front 90)
+         (place "C91" 13462500 -4887500 front 0)
+         (place "C51" 12962500 -4675000 front 180)
+         (place "R171" 13587500 -4312500 front 0)
+         (place "C111" 13750000 -4700000 front 0)
+         (place "C41" 12962500 -4587500 front 180)
+      )
+      (component "SMD0603"
+         (place "R6" 9400000 -4975000 front 90)
+         (place "R5" 8180070 -4640070 front 0)
+         (place "R4" 10300000 -5062500 front 0)
+         (place "R3" 11500000 -4887500 front 180)
+         (place "R2" 11200000 -5350000 front 180)
+         (place "R1" 10200000 -4600000 front 0)
+         (place "R8" 12200000 -4837500 front 0)
+         (place "R9" 12550000 -4837500 front 0)
+         (place "C4" 10600000 -4350000 front 180)
+         (place "C5" 10689570 -5304400 front 270)
+         (place "C6" 9375000 -5300000 front 90)
+         (place "C7" 9937500 -5275000 front 270)
+         (place "R10" 11537500 -4575000 front 0)
+         (place "R11" 12225000 -4350000 front 0)
+         (place "C8" 11050000 -5200000 front 0)
+         (place "C9" 11262500 -4925000 front 90)
+         (place "R12" 12525000 -4350000 front 0)
+         (place "R13" 9562500 -4975000 front 270)
+         (place "R14" 11737500 -5175000 front 0)
+         (place "R15" 12012500 -5175000 front 0)
+         (place "C101" 13875000 -4862500 front 0)
+         (place "C3" 10950000 -4350000 front 0)
+         (place "C81" 12850000 -4875000 front 180)
+         (place "C2" 10400000 -4550000 front 270)
+         (place "R7" 11862500 -4837500 front 0)
+         (place "C12" 10835180 -5304390 front 270)
+         (place "C11" 8420100 -5100070 front 90)
+         (place "C10" 10362500 -4850000 front 270)
+         (place "C1" 8420100 -4759960 front 90)
+         (place "R16" 7899910 -5340100 front 0)
+      )
+      (component "SMD0805"
+         (place "Q1" 12012500 -5350000 front 0)
+      )
+      (component "SOT23"
+         (place "Q4" 12550000 -4600000 front 180)
+         (place "Q2" 11850000 -4600000 front 180)
+         (place "Q3" 12200000 -4600000 front 180)
+      )
+      (component "SOT23-5"
+         (place "DA1" 9650000 -5275000 front 270)
+         (place "DA2" 8180070 -4979920 front 0)
+      )
+      (component "SWITCH_HALF_BTN"
+         (place "SW1" 7899910 -4849880 back 90)
+      )
+      (component "USBDT_00501"
+         (place "XL6" 7350000 -4849880 front 0)
+      )
+      (component "LED0805"
+         (place "D1" 8199880 -5340100 front 0)
+      )
+   )
+   (routes
+      (resolution MM 100000)
+      (library_out
+         (padstack "Via[0-1]_35:25_mil"
+            (shape (circ "Front" 90000 0 0))
+            (shape (circ "Back" 90000 0 0))
+         )
+      )
+      (network_out
+         (Net "+3.3V"
+         )
+         (Net "+BATT"
+         )
+         (Net "/ACTIVE_SNS"
+         )
+         (Net "/ACTIVE_SNSK"
+         )
+         (Net "/Ant"
+         )
+         (Net "/BAT_PWR"
+         )
+         (Net "/Bl1"
+         )
+         (Net "/Bl2"
+         )
+         (Net "/Blue_PWM"
+         )
+         (Net "/CC_CS"
+         )
+         (Net "/CC_GDO0"
+         )
+         (Net "/CC_MISO"
+         )
+         (Net "/CC_MOSI"
+         )
+         (Net "/CC_SCK"
+         )
+         (Net "/CHRG"
+         )
+         (Net "/Charging"
+         )
+         (Net "/DOWN_SNS"
+         )
+         (Net "/DOWN_SNSK"
+         )
+         (Net "/Gr1"
+         )
+         (Net "/Gr2"
+         )
+         (Net "/Green_PWM"
+         )
+         (Net "/LightSensor"
+         )
+         (Net "/MISO"
+         )
+         (Net "/MOSI"
+         )
+         (Net "/ON_OFF_SNS"
+         )
+         (Net "/ON_OFF_SNSK"
+         )
+         (Net "/RESET"
+         )
+         (Net "/Red1"
+         )
+         (Net "/Red2"
+         )
+         (Net "/Red_PWM"
+         )
+         (Net "/SCK"
+         )
+         (Net "/UP_SNS"
+         )
+         (Net "/UP_SNSK"
+         )
+         (Net "/USB_PWR"
+         )
+         (Net "GND"
+         )
+         (Net "GNDPWR"
+         )
+         (Net "N-000012"
+         )
+         (Net "N-000015"
+         )
+         (Net "N-000016"
+         )
+         (Net "N-000018"
+         )
+         (Net "N-000019"
+         )
+         (Net "N-000025"
+         )
+         (Net "N-000030"
+         )
+         (Net "N-000036"
+         )
+         (Net "N-000041"
+         )
+         (Net "N-000042"
+         )
+         (Net "N-000043"
+         )
+         (Net "N-000044"
+         )
+         (Net "N-000046"
+         )
+         (Net "N-000050"
+         )
+      )
+   )
+)
